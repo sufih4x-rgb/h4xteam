@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Reset Password</title>
+
+<style>
+body {
+    background: #000;
+    color: #0ff;
+    font-family: Arial;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+.card {
+    background: rgba(0,0,0,0.5);
+    padding: 30px;
+    width: 350px;
+    border: 1px solid #0ff;
+    box-shadow: 0 0 20px #0ff;
+    border-radius: 10px;
+}
+input, button {
+    width: 100%;
+    padding: 12px;
+    margin-top: 10px;
+    border-radius: 6px;
+}
+input {
+    background: #000;
+    border: 1px solid #0ff;
+    color: #0ff;
+    box-shadow: inset 0 0 10px #0ff;
+}
+button {
+    background: #0ff;
+    color: #000;
+    font-weight: bold;
+    box-shadow: 0 0 20px #0ff;
+}
+a {
+    color: #0ff;
+}
+</style>
+</head>
+<body>
+
+<div class="card">
+    <h2>Reset Password</h2>
+    <input id="reset_email" type="email" placeholder="Enter your email">
+    <button onclick="resetPass()">Send Reset Link</button>
+
+    <a href="index.html">← Back to login</a>
+    <p id="msg"></p>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+  authDomain: "test-eb5e7.firebaseapp.com",
+  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+  projectId: "test-eb5e7",
+  storageBucket: "test-eb5e7.appspot.com",
+  messagingSenderId: "366282855653",
+  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+  measurementId: "G-ECKCTBLQJ8"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth();
+
+window.resetPass = function(){
+    const email = reset_email.value;
+
+    sendPasswordResetEmail(auth, email)
+    .then(() => msg.innerHTML = "Reset link sent to your email.")
+    .catch(e => msg.innerHTML = e.message);
+};
+</script>
+
+</body>
+</html>
