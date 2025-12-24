@@ -63,14 +63,13 @@ export default function AuthApp() {
       }
     >
       <div className="p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-96">
-        {/* Title */}
+
         <h2 className="text-2xl font-bold text-center mb-6 dark:text-white">
           {mode === "login" && "Login"}
           {mode === "signup" && "Create Account"}
           {mode === "reset" && "Reset Password"}
         </h2>
 
-        {/* Email Field */}
         <input
           type="email"
           placeholder="Email"
@@ -79,7 +78,6 @@ export default function AuthApp() {
           onChange={(e) => setEmail(e.target.value)}
         />
 
-        {/* Password Field (Skip for reset mode) */}
         {mode !== "reset" && (
           <input
             type="password"
@@ -90,7 +88,6 @@ export default function AuthApp() {
           />
         )}
 
-        {/* ACTION BUTTONS */}
         {mode === "login" && (
           <button
             className="w-full bg-indigo-600 text-white p-3 rounded-xl"
@@ -118,40 +115,28 @@ export default function AuthApp() {
           </button>
         )}
 
-        {/* Message Display */}
         <p className="text-center mt-3 text-red-500">{message}</p>
 
-        {/* Mode Switch Links */}
         <div className="text-center mt-4 space-y-2 dark:text-white">
           {mode !== "login" && (
-            <p
-              className="cursor-pointer underline"
-              onClick={() => setMode("login")}
-            >
+            <p className="cursor-pointer underline" onClick={() => setMode("login")}>
               Back to Login
             </p>
           )}
 
           {mode !== "signup" && (
-            <p
-              className="cursor-pointer underline"
-              onClick={() => setMode("signup")}
-            >
+            <p className="cursor-pointer underline" onClick={() => setMode("signup")}>
               Create an Account
             </p>
           )}
 
           {mode !== "reset" && (
-            <p
-              className="cursor-pointer underline"
-              onClick={() => setMode("reset")}
-            >
+            <p className="cursor-pointer underline" onClick={() => setMode("reset")}>
               Forgot Password?
             </p>
           )}
         </div>
 
-        {/* Dark Mode Toggle */}
         <div className="mt-6 text-center">
           <button
             className="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded-xl"
