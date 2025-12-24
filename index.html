@@ -1,131 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Login Page</title>
+    <style>
+        body { font-family: Arial; padding: 40px; max-width: 500px; margin: auto; }
+        input, button { width: 100%; padding: 10px; margin: 5px 0; }
+        #status { margin-top: 15px; padding: 15px; background: #f0f0f0; }
+    </style>
+</head>
+<body>
+
+<h2>Register</h2>
+<input id="reg_email" type="email" placeholder="Email">
+<input id="reg_pass" type="password" placeholder="Password">
+<button onclick="register()">Register</button>
+
+<h2>Login</h2>
+<input id="log_email" type="email" placeholder="Email">
+<input id="log_pass" type="password" placeholder="Password">
+<button onclick="login()">Login</button>
+
+<div id="status"></div>
+
 <script type="module">
-  // Firebase imports
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-  import { 
-      getAuth, 
-      createUserWithEmailAndPassword, 
-      signInWithEmailAndPassword,
-      sendEmailVerification,
-      signOut
-  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-  import {
-      getFirestore,
-      doc,
-      getDoc,
-      setDoc,
-      deleteDoc
-  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import {
+  getAuth,
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+  sendEmailVerification,
+  signOut
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-  // ----------------------------
-  // YOUR FIREBASE CONFIG
-  // ----------------------------
-  const firebaseConfig = {
-      apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-      authDomain: "test-eb5e7.firebaseapp.com",
-      databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-      projectId: "test-eb5e7",
-      storageBucket: "test-eb5e7.appspot.com",
-      messagingSenderId: "366282855653",
-      appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-      measurementId: "G-ECKCTBLQJ8"
-  };
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-  const app = initializeApp(firebaseConfig);
-  const auth = getAuth(app);
-  const db   = getFirestore(app);
+const firebaseConfig = {
+    apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+    authDomain: "test-eb5e7.firebaseapp.com",
+    databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+    projectId: "test-eb5e7",
+    storageBucket: "test-eb5e7.appspot.com",
+    messagingSenderId: "366282855653",
+    appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+    measurementId: "G-ECKCTBLQJ8"
+};
 
-  // ----------------------------
-  // DEVICE ID
-  // ----------------------------
-  function getDeviceID() {
-      let dev = localStorage.getItem("device_id");
-      if (!dev) {
-          dev = crypto.randomUUID();
-          localStorage.setItem("device_id", dev);
-      }
-      return dev;
-  }
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getFirestore(app);
 
-  // ----------------------------
-  // REGISTER (unchanged)
-  // ----------------------------
-  window.register = function() {
-      const email = document.getElementById("reg_email").value;
-      const pass  = document.getElementById("reg_pass").value;
+// -------------------------------------------------------------
+// Device ID
+// -------------------------------------------------------------
+function getDeviceID() {
+    let id = localStorage.getItem("device_id");
+    if (!id) {
+        id = crypto.randomUUID();
+        localStorage.setItem("device_id", id);
+    }
+    return id;
+}
 
-      createUserWithEmailAndPassword(auth, email, pass)
-      .then((userCredential) => {
-          sendEmailVerification(userCredential.user);
-          document.getElementById("status").innerHTML =
-              "Registered! Verification email sent.";
-      })
-      .catch((error) => {
-          document.getElementById("status").innerHTML = error.message;
-      });
-  }
+// -------------------------------------------------------------
+// REGISTER
+// -------------------------------------------------------------
+window.register = function() {
+    const email = reg_email.value;
+    const pass  = reg_pass.value;
 
-  // ----------------------------
-  // SECURE ONE-DEVICE LOGIN
-  // ----------------------------
-  window.login = function() {
-      const email = document.getElementById("log_email").value;
-      const pass  = document.getElementById("log_pass").value;
+    createUserWithEmailAndPassword(auth, email, pass)
+    .then((cred) => {
+        sendEmailVerification(cred.user);
+        status.innerHTML = "Registered! Please verify your email.";
+    })
+    .catch(err => status.innerHTML = err.message);
+};
 
-      signInWithEmailAndPassword(auth, email, pass)
-      .then(async (userCredential) => {
-          const user = userCredential.user;
+// -------------------------------------------------------------
+// LOGIN + REDIRECT
+// -------------------------------------------------------------
+window.login = function() {
+    const email = log_email.value;
+    const pass  = log_pass.value;
 
-          // --- Check email verified ---
-          if (!user.emailVerified) {
-              document.getElementById("status").innerHTML =
-                  "Please verify your email before logging in.";
-              await signOut(auth);
-              return;
-          }
+    signInWithEmailAndPassword(auth, email, pass)
+    .then(async (cred) => {
+        const user = cred.user;
 
-          // ----- Secure Device Enforcement -----
-          const deviceID = getDeviceID();
-          const userRef  = doc(db, "activeDevices", user.uid);
-          const snap     = await getDoc(userRef);
+        if (!user.emailVerified) {
+            status.innerHTML = "Verify your email first.";
+            await signOut(auth);
+            return;
+        }
 
-          if (!snap.exists()) {
-              // No device linked yet — claim this device
-              await setDoc(userRef, { deviceID });
-              document.getElementById("status").innerHTML =
-                  "Login successful!";
-          } 
-          else {
-              const saved = snap.data().deviceID;
+        const deviceID = getDeviceID();
+        const ref = doc(db, "activeDevices", user.uid);
+        const snap = await getDoc(ref);
 
-              if (saved !== deviceID) {
-                  // Another device already logged in
-                  document.getElementById("status").innerHTML =
-                      "This account is already logged in on another device.";
-                  await signOut(auth);
-                  return;
-              }
+        if (!snap.exists()) {
+            await setDoc(ref, { deviceID });
+        } else {
+            if (snap.data().deviceID !== deviceID) {
+                status.innerHTML = "Already logged in on another device.";
+                await signOut(auth);
+                return;
+            }
+        }
 
-              // Same device allowed
-              document.getElementById("status").innerHTML =
-                  "Login successful!";
-          }
-      })
-      .catch((error) => {
-          document.getElementById("status").innerHTML = error.message;
-      });
-  }
+        // Redirect to dashboard
+        window.location.href = "dashboard.html";
+    })
+    .catch(err => status.innerHTML = err.message);
+};
 
-  // ----------------------------
-  // LOGOUT (recommended)
-  // ----------------------------
-  window.logout = async function() {
-      const user = auth.currentUser;
-      if (user) {
-          await deleteDoc(doc(db, "activeDevices", user.uid));
-      }
-      await signOut(auth);
-      localStorage.removeItem("device_id");
-      document.getElementById("status").innerHTML = "Logged out.";
-  }
 </script>
+</body>
+</html>
