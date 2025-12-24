@@ -1,123 +1,179 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <title>Login Page</title>
-    <style>
-        body { font-family: Arial; padding: 40px; max-width: 500px; margin: auto; }
-        input, button { width: 100%; padding: 10px; margin: 5px 0; }
-        #status { margin-top: 15px; padding: 15px; background: #f0f0f0; }
-    </style>
+<meta charset="UTF-8">
+<title>Login / Register</title>
+
+<style>
+    body {
+        margin: 0;
+        background: #000;
+        font-family: Arial;
+        color: #fff;
+        display: flex;
+        height: 100vh;
+        justify-content: center;
+        align-items: center;
+    }
+    .card {
+        width: 380px;
+        padding: 30px;
+        background: rgba(0, 0, 0, 0.5);
+        border: 1px solid #0ff;
+        box-shadow: 0 0 20px #0ff;
+        border-radius: 10px;
+    }
+    input {
+        width: 100%;
+        padding: 12px;
+        margin: 8px 0;
+        border-radius: 6px;
+        border: 1px solid #0ff;
+        background: #000;
+        color: #0ff;
+        box-shadow: 0 0 10px #0ff inset;
+    }
+    button {
+        width: 100%;
+        padding: 12px;
+        background: #0ff;
+        border: none;
+        border-radius: 6px;
+        font-size: 16px;
+        cursor: pointer;
+        margin-top: 10px;
+        color: #000;
+        font-weight: bold;
+        box-shadow: 0 0 20px #0ff;
+    }
+    button:hover {
+        background: #00cccc;
+        box-shadow: 0 0 30px #0ff;
+    }
+    .link {
+        color: #0ff;
+        display: block;
+        margin-top: 10px;
+        text-align: center;
+        cursor: pointer;
+    }
+    #status {
+        color: #0ff;
+        text-align: center;
+        margin-top: 12px;
+    }
+</style>
 </head>
 <body>
 
-<h2>Register</h2>
-<input id="reg_email" type="email" placeholder="Email">
-<input id="reg_pass" type="password" placeholder="Password">
-<button onclick="register()">Register</button>
+<div class="card">
+    <h2 style="text-align:center;">Neon Login</h2>
 
-<h2>Login</h2>
-<input id="log_email" type="email" placeholder="Email">
-<input id="log_pass" type="password" placeholder="Password">
-<button onclick="login()">Login</button>
+    <input id="email" type="email" placeholder="Email">
+    <input id="pass" type="password" placeholder="Password">
 
-<div id="status"></div>
+    <button onclick="login()">Login</button>
+    <button onclick="register()">Register</button>
+
+    <a class="link" href="reset.html">Forgot Password?</a>
+
+    <div id="status"></div>
+</div>
 
 <script type="module">
 
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import {
-  getAuth,
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  sendEmailVerification,
-  signOut
+import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    sendEmailVerification,
+    signInWithEmailAndPassword,
+    sendPasswordResetEmail,
+    signOut
 } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
 import {
-  getFirestore,
-  doc,
-  getDoc,
-  setDoc
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+    getDatabase,
+    ref,
+    set,
+    get
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-    authDomain: "test-eb5e7.firebaseapp.com",
-    databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-    projectId: "test-eb5e7",
-    storageBucket: "test-eb5e7.appspot.com",
-    messagingSenderId: "366282855653",
-    appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-    measurementId: "G-ECKCTBLQJ8"
+  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+  authDomain: "test-eb5e7.firebaseapp.com",
+  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+  projectId: "test-eb5e7",
+  storageBucket: "test-eb5e7.appspot.com",
+  messagingSenderId: "366282855653",
+  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+  measurementId: "G-ECKCTBLQJ8"
 };
 
 const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
+const auth = getAuth();
+const db = getDatabase();
 
-// -------------------------------------------------------------
 // Device ID
-// -------------------------------------------------------------
+
 function getDeviceID() {
-    let id = localStorage.getItem("device_id");
+    let id = localStorage.getItem("deviceID");
     if (!id) {
         id = crypto.randomUUID();
-        localStorage.setItem("device_id", id);
+        localStorage.setItem("deviceID", id);
     }
     return id;
 }
 
-// -------------------------------------------------------------
 // REGISTER
-// -------------------------------------------------------------
+
 window.register = function() {
-    const email = reg_email.value;
-    const pass  = reg_pass.value;
+    const email = document.getElementById("email").value;
+    const pass  = document.getElementById("pass").value;
 
     createUserWithEmailAndPassword(auth, email, pass)
-    .then((cred) => {
-        sendEmailVerification(cred.user);
-        status.innerHTML = "Registered! Please verify your email.";
+    .then(async (u) => {
+        await sendEmailVerification(u.user);
+        status.innerHTML = "Verification link sent to your email.";
     })
-    .catch(err => status.innerHTML = err.message);
+    .catch(e => status.innerHTML = e.message);
 };
 
-// -------------------------------------------------------------
-// LOGIN + REDIRECT
-// -------------------------------------------------------------
-window.login = function() {
-    const email = log_email.value;
-    const pass  = log_pass.value;
+// LOGIN
+
+window.login = async function() {
+    const email = document.getElementById("email").value;
+    const pass  = document.getElementById("pass").value;
 
     signInWithEmailAndPassword(auth, email, pass)
     .then(async (cred) => {
         const user = cred.user;
 
         if (!user.emailVerified) {
-            status.innerHTML = "Verify your email first.";
+            status.innerHTML = "Please verify your email.";
             await signOut(auth);
             return;
         }
 
+        // One-device login check
         const deviceID = getDeviceID();
-        const ref = doc(db, "activeDevices", user.uid);
-        const snap = await getDoc(ref);
+        const userRef = ref(db, "activeDevices/" + user.uid);
 
-        if (!snap.exists()) {
-            await setDoc(ref, { deviceID });
-        } else {
-            if (snap.data().deviceID !== deviceID) {
-                status.innerHTML = "Already logged in on another device.";
+        const snap = await get(userRef);
+        if (snap.exists()) {
+            if (snap.val().deviceID !== deviceID) {
+                status.innerHTML = "Account already logged in on another device.";
                 await signOut(auth);
                 return;
             }
         }
 
-        // Redirect to dashboard
-        window.location.href = "dashboard.html";
+        await set(userRef, { deviceID });
+
+        status.innerHTML = "Login successful!";
+        setTimeout(() => window.location.href = "dashboard.html", 800);
     })
-    .catch(err => status.innerHTML = err.message);
+    .catch(() => status.innerHTML = "Login failed.");
 };
 
 </script>
