@@ -1,151 +1,131 @@
-import React, { useState } from "react";
-import { initializeApp } from "firebase/app";
-import {
-  getAuth,
-  signInWithEmailAndPassword,
-  createUserWithEmailAndPassword,
-  sendPasswordResetEmail
-} from "firebase/auth";
+<script type="module">
+  // Firebase imports
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+  import { 
+      getAuth, 
+      createUserWithEmailAndPassword, 
+      signInWithEmailAndPassword,
+      sendEmailVerification,
+      signOut
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-// --- Firebase v10 Modular SDK Config ---
-const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
-};
+  import {
+      getFirestore,
+      doc,
+      getDoc,
+      setDoc,
+      deleteDoc
+  } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-
-export default function AuthApp() {
-  const [mode, setMode] = useState("login"); // login | signup | reset
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
-  const [dark, setDark] = useState(false);
-
-  const handleLogin = async () => {
-    try {
-      await signInWithEmailAndPassword(auth, email, password);
-      setMessage("Logged in successfully!");
-    } catch (err) {
-      setMessage(err.message);
-    }
+  // ----------------------------
+  // YOUR FIREBASE CONFIG
+  // ----------------------------
+  const firebaseConfig = {
+      apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+      authDomain: "test-eb5e7.firebaseapp.com",
+      databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+      projectId: "test-eb5e7",
+      storageBucket: "test-eb5e7.appspot.com",
+      messagingSenderId: "366282855653",
+      appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+      measurementId: "G-ECKCTBLQJ8"
   };
 
-  const handleSignup = async () => {
-    try {
-      await createUserWithEmailAndPassword(auth, email, password);
-      setMessage("Account created successfully!");
-    } catch (err) {
-      setMessage(err.message);
-    }
-  };
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
 
-  const handlePasswordReset = async () => {
-    try {
-      await sendPasswordResetEmail(auth, email);
-      setMessage("Password reset email sent!");
-    } catch (err) {
-      setMessage(err.message);
-    }
-  };
-
-  return (
-    <div
-      className={
-        dark
-          ? "bg-gray-900 text-white min-h-screen flex items-center justify-center"
-          : "bg-gray-100 min-h-screen flex items-center justify-center"
+  // ----------------------------
+  // DEVICE ID
+  // ----------------------------
+  function getDeviceID() {
+      let dev = localStorage.getItem("device_id");
+      if (!dev) {
+          dev = crypto.randomUUID();
+          localStorage.setItem("device_id", dev);
       }
-    >
-      <div className="p-8 bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-96">
+      return dev;
+  }
 
-        <h2 className="text-2xl font-bold text-center mb-6 dark:text-white">
-          {mode === "login" && "Login"}
-          {mode === "signup" && "Create Account"}
-          {mode === "reset" && "Reset Password"}
-        </h2>
+  // ----------------------------
+  // REGISTER (unchanged)
+  // ----------------------------
+  window.register = function() {
+      const email = document.getElementById("reg_email").value;
+      const pass  = document.getElementById("reg_pass").value;
 
-        <input
-          type="email"
-          placeholder="Email"
-          className="w-full p-3 rounded-xl border mb-3 text-black"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
+      createUserWithEmailAndPassword(auth, email, pass)
+      .then((userCredential) => {
+          sendEmailVerification(userCredential.user);
+          document.getElementById("status").innerHTML =
+              "Registered! Verification email sent.";
+      })
+      .catch((error) => {
+          document.getElementById("status").innerHTML = error.message;
+      });
+  }
 
-        {mode !== "reset" && (
-          <input
-            type="password"
-            placeholder="Password"
-            className="w-full p-3 rounded-xl border mb-3 text-black"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-          />
-        )}
+  // ----------------------------
+  // SECURE ONE-DEVICE LOGIN
+  // ----------------------------
+  window.login = function() {
+      const email = document.getElementById("log_email").value;
+      const pass  = document.getElementById("log_pass").value;
 
-        {mode === "login" && (
-          <button
-            className="w-full bg-indigo-600 text-white p-3 rounded-xl"
-            onClick={handleLogin}
-          >
-            Login
-          </button>
-        )}
+      signInWithEmailAndPassword(auth, email, pass)
+      .then(async (userCredential) => {
+          const user = userCredential.user;
 
-        {mode === "signup" && (
-          <button
-            className="w-full bg-green-600 text-white p-3 rounded-xl"
-            onClick={handleSignup}
-          >
-            Sign Up
-          </button>
-        )}
+          // --- Check email verified ---
+          if (!user.emailVerified) {
+              document.getElementById("status").innerHTML =
+                  "Please verify your email before logging in.";
+              await signOut(auth);
+              return;
+          }
 
-        {mode === "reset" && (
-          <button
-            className="w-full bg-yellow-600 text-white p-3 rounded-xl"
-            onClick={handlePasswordReset}
-          >
-            Send Reset Email
-          </button>
-        )}
+          // ----- Secure Device Enforcement -----
+          const deviceID = getDeviceID();
+          const userRef  = doc(db, "activeDevices", user.uid);
+          const snap     = await getDoc(userRef);
 
-        <p className="text-center mt-3 text-red-500">{message}</p>
+          if (!snap.exists()) {
+              // No device linked yet — claim this device
+              await setDoc(userRef, { deviceID });
+              document.getElementById("status").innerHTML =
+                  "Login successful!";
+          } 
+          else {
+              const saved = snap.data().deviceID;
 
-        <div className="text-center mt-4 space-y-2 dark:text-white">
-          {mode !== "login" && (
-            <p className="cursor-pointer underline" onClick={() => setMode("login")}>
-              Back to Login
-            </p>
-          )}
+              if (saved !== deviceID) {
+                  // Another device already logged in
+                  document.getElementById("status").innerHTML =
+                      "This account is already logged in on another device.";
+                  await signOut(auth);
+                  return;
+              }
 
-          {mode !== "signup" && (
-            <p className="cursor-pointer underline" onClick={() => setMode("signup")}>
-              Create an Account
-            </p>
-          )}
+              // Same device allowed
+              document.getElementById("status").innerHTML =
+                  "Login successful!";
+          }
+      })
+      .catch((error) => {
+          document.getElementById("status").innerHTML = error.message;
+      });
+  }
 
-          {mode !== "reset" && (
-            <p className="cursor-pointer underline" onClick={() => setMode("reset")}>
-              Forgot Password?
-            </p>
-          )}
-        </div>
-
-        <div className="mt-6 text-center">
-          <button
-            className="px-4 py-2 bg-gray-300 dark:bg-gray-700 rounded-xl"
-            onClick={() => setDark(!dark)}
-          >
-            Toggle {dark ? "Light" : "Dark"} Mode
-          </button>
-        </div>
-      </div>
-    </div>
-  );
-}
+  // ----------------------------
+  // LOGOUT (recommended)
+  // ----------------------------
+  window.logout = async function() {
+      const user = auth.currentUser;
+      if (user) {
+          await deleteDoc(doc(db, "activeDevices", user.uid));
+      }
+      await signOut(auth);
+      localStorage.removeItem("device_id");
+      document.getElementById("status").innerHTML = "Logged out.";
+  }
+</script>
