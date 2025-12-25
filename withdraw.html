@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Withdraw</title>
+<link rel="stylesheet" href="assets/css/neon.css">
+</head>
+
+<body>
+
+<div class="nav">
+    <a href="dashboard.html">Home</a>
+    <a href="deposit.html">Deposit</a>
+    <a href="withdraw.html">Withdraw</a>
+    <a href="profile.html">Profile</a>
+    <a href="settings.html">Settings</a>
+</div>
+
+<h1>Withdraw</h1>
+
+<div class="card">
+    <input id="wAmt" type="number" placeholder="Enter amount (100 - 1000)">
+    <input id="upi" type="text" placeholder="Your UPI ID">
+    <button onclick="withdraw()">Submit Request</button>
+</div>
+
+<script type="module">
+import { auth, db, generateApiID } from "./assets/js/firebase.js";
+import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+onAuthStateChanged(auth,(u)=>{
+    if(!u) location.href="index.html";
+});
+
+window.withdraw = async function(){
+    const amt = Number(wAmt.value);
+    const upiID = upi.value;
+
+    if (amt < 100 || amt > 1000) { alert("Amount 100-1000"); return; }
+    if (!upiID.includes("@")) { alert("Invalid UPI"); return; }
+
+    const id = generateApiID();
+
+    await set(ref(db, "withdraws/"+id), {
+        uid: auth.currentUser.uid,
+        amount: amt,
+        upi: upiID,
+        status: "PENDING"
+    });
+
+    alert("Request submitted");
+};
+</script>
+
+</body>
+</html>
