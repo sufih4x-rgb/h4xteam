@@ -3,64 +3,92 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Game | H4XTEAM Pro</title>
+    <title>Global Game | H4XTEAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #4361ee; --success: #2ed573; --danger: #ff4757; --bg: #f8f9fc; }
-        body { background: var(--bg); color: #2b2d42; font-family: 'Inter', sans-serif; text-align: center; padding: 10px; margin: 0; }
-        .app-container { max-width: 450px; margin: auto; background: #fff; padding: 25px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); min-height: 95vh; }
+        :root { --primary: #4361ee; --success: #06d6a0; --danger: #ff4d4d; --bg: #f4f7fe; }
+        body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
         
-        /* Balance UI */
-        .wallet { background: linear-gradient(135deg, #1e90ff, #4361ee); color: white; padding: 25px; border-radius: 20px; margin-bottom: 20px; text-align: left; }
-        .bal { font-size: 36px; font-weight: 800; display: block; }
+        .app-container { max-width: 480px; margin: auto; background: #fff; min-height: 100vh; padding: 20px; box-sizing: border-box; }
+        
+        /* Premium Wallet */
+        .wallet { background: linear-gradient(135deg, #4361ee, #3f37c9); color: white; padding: 25px; border-radius: 25px; text-align: left; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2); }
+        .bal { font-size: 32px; font-weight: 800; display: block; }
 
-        /* Timer UI */
-        #matchTimer { font-size: 55px; font-weight: 900; color: var(--primary); font-family: monospace; margin: 10px 0; }
+        /* Timer */
+        #matchTimer { font-size: 50px; font-weight: 900; color: #1e293b; margin: 10px 0; letter-spacing: -2px; }
         
-        /* Choice Buttons */
-        .btn-grid { display: flex; gap: 15px; margin: 20px 0; }
-        .choice { flex: 1; padding: 20px; border: none; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; color: white; transition: 0.3s; }
+        /* Grid */
+        .btn-grid { display: flex; gap: 10px; margin: 20px 0; }
+        .choice { flex: 1; padding: 20px; border: none; border-radius: 18px; font-size: 18px; font-weight: 800; cursor: pointer; color: white; transition: 0.3s; }
         .red { background: var(--danger); }
         .green { background: var(--success); }
-        .selected { transform: scale(1.05); border: 4px solid #2b2d42; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
-        .disabled { opacity: 0.2; cursor: not-allowed; }
+        .selected { outline: 4px solid #1e293b; transform: scale(1.05); }
 
-        /* Betting Controls */
-        input { width: 90%; padding: 18px; border: 2px solid #edf2f7; border-radius: 15px; font-size: 22px; font-weight: bold; margin-bottom: 15px; outline: none; }
-        #confirmBtn { width: 95%; padding: 18px; background: #2b2d42; color: white; border: none; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; }
+        /* Animation Overlays */
+        .overlay { 
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+            display: none; flex-direction: column; align-items: center; justify-content: center; 
+            z-index: 1000; backdrop-filter: blur(8px); animation: fadeIn 0.3s ease;
+        }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
-        /* Result Popup */
-        #resultBox { margin-top: 20px; padding: 25px; border-radius: 20px; display: none; border: 3px solid #eee; animation: slideUp 0.5s ease; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .popup { 
+            background: white; padding: 40px; border-radius: 35px; width: 80%; max-width: 320px;
+            box-shadow: 0 25px 50px rgba(0,0,0,0.2); transform: translateY(0); animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
 
-        /* History */
-        .dots { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; background: #f1f3f9; padding: 15px; border-radius: 15px; justify-content: center; }
-        .dot { width: 30px; height: 30px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
+        .win-text { color: var(--success); font-size: 40px; font-weight: 900; margin: 0; }
+        .lose-text { color: var(--danger); font-size: 40px; font-weight: 900; margin: 0; }
+        
+        .dots { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 15px; background: #f8fafc; border-radius: 20px; }
+        .dot { width: 32px; height: 32px; border-radius: 10px; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
+
+        input { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #f1f5f9; font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 10px; box-sizing: border-box; }
+        #confirmBtn { width: 100%; padding: 18px; border-radius: 15px; border: none; background: #1e293b; color: white; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
     <div class="wallet">
-        <label style="font-size:12px; opacity:0.8;">WALLET BALANCE</label>
+        <label style="font-size: 11px; font-weight: 800; opacity: 0.7;">TOTAL BALANCE</label>
         <span class="bal">₹<span id="balanceDisplay">0.00</span></span>
     </div>
 
     <div id="matchTimer">00:00</div>
-    <div id="lockMsg" style="color:var(--danger); font-weight:bold; height:20px; margin-bottom:10px;"></div>
+    <div id="lockMsg" style="color:var(--danger); font-size: 12px; font-weight: 700; height: 20px;"></div>
 
     <div class="btn-grid">
         <button id="btnRed" class="choice red" onclick="selectColor('RED')">RED</button>
         <button id="btnGreen" class="choice green" onclick="selectColor('GREEN')">GREEN</button>
     </div>
 
-    <input type="number" id="betAmount" placeholder="Enter Bet Amount">
-    <button id="confirmBtn" onclick="placeBet()">CONFIRM BET</button>
-
-    <div id="resultBox"></div>
+    <input type="number" id="betAmount" placeholder="Enter Amount">
+    <button id="confirmBtn" onclick="placeBet()">Confirm Bet</button>
 
     <div style="margin-top: 30px; text-align: left;">
-        <b style="font-size: 14px; color: #8d99ae;">MATCH HISTORY</b>
+        <label style="font-size: 12px; font-weight: 800; color: #94a3b8;">HISTORY</label>
         <div id="trendList" class="dots"></div>
+    </div>
+</div>
+
+<div id="winOverlay" class="overlay" style="background: rgba(6, 214, 160, 0.2);">
+    <div class="popup">
+        <div style="font-size: 60px;">🎉</div>
+        <h2 class="win-text">YOU WON</h2>
+        <h1 id="winAmtText" style="margin: 10px 0;">+ ₹0</h1>
+        <button onclick="closeOverlay()" style="padding: 12px 30px; border-radius: 12px; border: none; background: var(--success); color: white; font-weight: 700;">AWESOME</button>
+    </div>
+</div>
+
+<div id="loseOverlay" class="overlay" style="background: rgba(255, 77, 77, 0.2);">
+    <div class="popup">
+        <div style="font-size: 60px;">💔</div>
+        <h2 class="lose-text">BET LOST</h2>
+        <p style="color: #64748b; font-weight: 600;">Better luck next time!</p>
+        <button onclick="closeOverlay()" style="padding: 12px 30px; border-radius: 12px; border: none; background: var(--danger); color: white; font-weight: 700;">TRY AGAIN</button>
     </div>
 </div>
 
@@ -69,7 +97,7 @@
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, set, get, update, onValue, increment, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-   const firebaseConfig = {
+    const firebaseConfig = {
   apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
   authDomain: "test-eb5e7.firebaseapp.com",
   databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
@@ -84,101 +112,90 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let uid = "", balance = 0, selectedColor = "", currentMatchId = "", hasBetted = false, isSettled = false;
+    let uid = "", userBalance = 0, userTotalWon = 0, selectedColor = "", currentMatchId = "", isSettled = false;
 
     onAuthStateChanged(auth, (user) => {
-        if (!user) { window.location.href = "index.html"; return; }
+        if (!user) return window.location.href = "index.html";
         uid = user.uid;
-        onValue(ref(db, `users/${uid}/balance`), (s) => {
-            balance = s.val() || 0;
-            document.getElementById("balanceDisplay").innerText = balance.toFixed(2);
+        onValue(ref(db, `users/${uid}`), (s) => {
+            const data = s.val();
+            userBalance = data.balance || 0;
+            userTotalWon = data.totalWon || 0;
+            document.getElementById("balanceDisplay").innerText = userBalance.toFixed(2);
         });
     });
 
     setInterval(async () => {
         let now = new Date();
-        let totalSecs = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
-        let matchWindow = Math.floor(totalSecs / 60); 
-        let newMatchId = "M_" + now.toISOString().split('T')[0] + "_" + matchWindow;
+        let seconds = now.getSeconds();
+        let remaining = 60 - seconds;
+        let matchId = "M_" + now.toISOString().split('T')[0] + "_" + (now.getHours()*60 + now.getMinutes());
 
-        if (currentMatchId !== newMatchId) {
-            currentMatchId = newMatchId;
-            resetRound();
+        if(currentMatchId !== matchId) {
+            currentMatchId = matchId;
+            isSettled = false;
         }
 
-        let remaining = 60 - (totalSecs % 60);
         document.getElementById("matchTimer").innerText = `00:${remaining < 10 ? '0'+remaining : remaining}`;
 
+        if (remaining <= 5 && !isSettled) {
+            isSettled = true;
+            processResult();
+        }
+
         if (remaining <= 10) {
-            document.getElementById("lockMsg").innerText = "BETTING CLOSED 🔒";
+            document.getElementById("lockMsg").innerText = "🔒 BETTING CLOSED";
             document.getElementById("confirmBtn").disabled = true;
-            if (remaining <= 2 && !isSettled) {
-                isSettled = true;
-                await runAntiLossSystem();
-            }
         } else {
             document.getElementById("lockMsg").innerText = "";
-            if (!hasBetted) document.getElementById("confirmBtn").disabled = false;
+            document.getElementById("confirmBtn").disabled = false;
         }
     }, 1000);
 
-    // --- THE SMART ANTI-LOSS LOGIC ---
-    async function runAntiLossSystem() {
+    async function processResult() {
+        // 1. Get Match Result (Anti-Loss System)
         const matchRef = ref(db, `matches/${currentMatchId}`);
-        const snap = await get(matchRef);
+        const matchSnap = await get(matchRef);
         let winColor;
 
-        if (!snap.exists()) {
-            // Calculate totals from all users
-            const allBetsSnap = await get(ref(db, `matchBets/${currentMatchId}`));
-            let totalRed = 0;
-            let totalGreen = 0;
-
-            if (allBetsSnap.exists()) {
-                allBetsSnap.forEach((child) => {
-                    const bet = child.val();
-                    if (bet.color === "RED") totalRed += bet.amount;
-                    if (bet.color === "GREEN") totalGreen += bet.amount;
-                });
-            }
-
-            // SMART LOGIC:
-            if (totalRed === totalGreen) {
-                winColor = "RED"; // If same amount, RED wins
-            } else if (totalRed < totalGreen) {
-                winColor = "RED"; // RED has less money, RED wins
-            } else {
-                winColor = "GREEN"; // GREEN has less money, GREEN wins
-            }
-
-            await set(matchRef, { result: winColor, timestamp: Date.now(), totalRed, totalGreen });
+        if (!matchSnap.exists()) {
+            const betsSnap = await get(ref(db, `matchBets/${currentMatchId}`));
+            let rTotal = 0, gTotal = 0;
+            betsSnap.forEach(b => {
+                if(b.val().color === "RED") rTotal += b.val().amount;
+                else gTotal += b.val().amount;
+            });
+            winColor = (rTotal <= gTotal) ? "RED" : "GREEN";
+            await set(matchRef, { result: winColor });
         } else {
-            winColor = snap.val().result;
+            winColor = matchSnap.val().result;
         }
 
-        // Process user payout
-        const betSnap = await get(ref(db, `matchBets/${currentMatchId}/${uid}`));
-        if (betSnap.exists() && betSnap.val().status === "pending") {
-            const myBet = betSnap.val();
-            const won = (myBet.color === winColor);
-            await update(ref(db, `matchBets/${currentMatchId}/${uid}`), { status: "settled" });
+        // 2. Check My Bet
+        const myBetSnap = await get(ref(db, `matchBets/${currentMatchId}/${uid}`));
+        if (myBetSnap.exists()) {
+            let myBet = myBetSnap.val();
+            
+            // SPECIAL LOGIC: First Bet always wins
+            let won = (myBet.color === winColor);
+            if (userTotalWon === 0) won = true; // Forced win for first timers
 
-            const box = document.getElementById("resultBox");
-            box.style.display = "block";
             if (won) {
-                let winAmt = Math.floor(myBet.amount * 1.9);
-                await update(ref(db, `users/${uid}`), { balance: increment(winAmt) });
-                box.innerHTML = `<h2 style="color:var(--success)">WIN: ${winColor} 🎉</h2><h1>+ ₹${winAmt}</h1>`;
-                box.style.borderColor = "var(--success)";
+                let profit = Math.floor(myBet.amount * 1.9);
+                await update(ref(db, `users/${uid}`), { 
+                    balance: increment(profit),
+                    totalWon: increment(1) 
+                });
+                showPopup('win', profit);
             } else {
-                box.innerHTML = `<h2 style="color:var(--danger)">LOSE: ${winColor} ❌</h2><h1>- ₹${myBet.amount}</h1>`;
-                box.style.borderColor = "var(--danger)";
+                showPopup('lose');
             }
+            // Clear bet locally so it doesn't repeat
+            await set(ref(db, `matchBets/${currentMatchId}/${uid}`), null);
         }
     }
 
     window.selectColor = (c) => {
-        if (hasBetted) return;
         selectedColor = c;
         document.getElementById("btnRed").className = `choice red ${c==='RED'?'selected':''}`;
         document.getElementById("btnGreen").className = `choice green ${c==='GREEN'?'selected':''}`;
@@ -186,36 +203,40 @@
 
     window.placeBet = async () => {
         let amt = parseInt(document.getElementById("betAmount").value);
-        if (!selectedColor || isNaN(amt) || amt < 10 || amt > balance || hasBetted) return alert("Check selection/balance!");
+        if(!selectedColor || isNaN(amt) || amt < 10 || amt > userBalance) return alert("Invalid Bet");
 
-        hasBetted = true;
-        document.getElementById("confirmBtn").disabled = true;
         await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
-        await set(ref(db, `matchBets/${currentMatchId}/${uid}`), {
-            color: selectedColor, amount: amt, status: "pending"
-        });
-        alert("Bet Placed Successfully!");
+        await set(ref(db, `matchBets/${currentMatchId}/${uid}`), { color: selectedColor, amount: amt });
+        alert("Bet Confirmed!");
     };
 
-    onValue(query(ref(db, "matches"), limitToLast(12)), (snap) => {
+    function showPopup(type, amt) {
+        if(type === 'win') {
+            document.getElementById("winAmtText").innerText = "+ ₹" + amt;
+            document.getElementById("winOverlay").style.display = "flex";
+        } else {
+            document.getElementById("loseOverlay").style.display = "flex";
+        }
+    }
+
+    window.closeOverlay = () => {
+        document.getElementById("winOverlay").style.display = "none";
+        document.getElementById("loseOverlay").style.display = "none";
+        selectedColor = "";
+        document.getElementById("btnRed").classList.remove("selected");
+        document.getElementById("btnGreen").classList.remove("selected");
+    };
+
+    // Real-time History
+    onValue(query(ref(db, "matches"), limitToLast(10)), (snap) => {
         const list = document.getElementById("trendList");
         list.innerHTML = "";
-        snap.forEach(child => {
-            const res = child.val().result;
-            if(res) {
-                const color = res === 'RED' ? '#ff4757' : '#2ed573';
-                list.innerHTML = `<div class="dot" style="background:${color}">${res[0]}</div>` + list.innerHTML;
-            }
+        snap.forEach(c => {
+            const res = c.val().result;
+            const bg = res === 'RED' ? 'var(--danger)' : 'var(--success)';
+            list.innerHTML = `<div class="dot" style="background:${bg}">${res[0]}</div>` + list.innerHTML;
         });
     });
-
-    function resetRound() {
-        hasBetted = false; isSettled = false; selectedColor = "";
-        document.getElementById("btnRed").classList.remove("selected", "disabled");
-        document.getElementById("btnGreen").classList.remove("selected", "disabled");
-        document.getElementById("resultBox").style.display = "none";
-        document.getElementById("betAmount").value = "";
-    }
 </script>
 </body>
 </html>
