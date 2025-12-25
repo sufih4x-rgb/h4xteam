@@ -1,108 +1,222 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Profile - H4XTEAM</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile | H4XTEAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --success: #06d6a0;
+            --danger: #ff4d4d;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
 
-<style>
-    body{
-        background:black;
-        color:#00eaff;
-        font-family:Arial;
-        text-align:center;
-        padding:20px;
-    }
+        body {
+            background-color: var(--bg);
+            color: var(--text-dark);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+        }
 
-    h1{
-        font-size:34px;
-        color:#00eaff;
-        text-shadow:0 0 12px #00eaff;
-    }
+        .profile-wrapper {
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            padding-bottom: 50px;
+        }
 
-    .card{
-        margin-top:20px;
-        padding:20px;
-        background:#0a0a0a;
-        border:1px solid #00eaff;
-        border-radius:12px;
-        box-shadow:0 0 12px #00eaff;
-        text-align:left;
-        width:90%;
-        max-width:400px;
-        margin-left:auto;
-        margin-right:auto;
-    }
+        /* Premium Header */
+        .profile-header {
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            padding: 50px 25px 100px;
+            text-align: center;
+            color: white;
+            border-bottom-left-radius: 40px;
+            border-bottom-right-radius: 40px;
+            box-shadow: 0 10px 30px rgba(67, 97, 238, 0.2);
+        }
 
-    .line{
-        border-bottom:1px solid #00eaff;
-        margin:10px 0;
-    }
+        .avatar-container {
+            width: 90px;
+            height: 90px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 30px;
+            margin: 0 auto 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 36px;
+            font-weight: 800;
+            text-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        }
 
-    button{
-        margin-top:20px;
-        padding:15px;
-        width:80%;
-        background:#00eaff;
-        color:black;
-        border:none;
-        border-radius:10px;
-        font-size:18px;
-        font-weight:bold;
-        cursor:pointer;
-        text-shadow:0 0 10px white;
-        box-shadow:0 0 12px #00eaff;
-    }
+        .user-email { font-size: 18px; font-weight: 700; margin-bottom: 5px; }
+        .user-uid { font-size: 11px; opacity: 0.7; letter-spacing: 1px; font-family: monospace; }
 
-    .logout{
-        background:#ff4444;
-        box-shadow:0 0 12px #ff4444;
-    }
-</style>
+        /* Floating Wallet Card */
+        .wallet-card {
+            background: var(--white);
+            margin: -60px 20px 25px;
+            padding: 25px;
+            border-radius: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.06);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,1);
+        }
+
+        .bal-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        .bal-value { font-size: 38px; font-weight: 800; color: var(--text-dark); margin: 10px 0; }
+        
+        .vip-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            background: #fff9e6;
+            color: #d97706;
+            padding: 6px 16px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+            padding: 0 20px;
+        }
+
+        .stat-item {
+            background: var(--white);
+            padding: 20px;
+            border-radius: 24px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+            border: 1px solid #f1f5f9;
+        }
+
+        .stat-name { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
+        .stat-val { font-size: 18px; font-weight: 800; }
+
+        /* Navigation Menu */
+        .menu-section { padding: 30px 20px; }
+        .menu-title { font-size: 14px; font-weight: 800; color: var(--text-muted); margin-bottom: 15px; padding-left: 5px; }
+        
+        .menu-card {
+            background: var(--white);
+            border-radius: 25px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
+            border: 1px solid #f1f5f9;
+        }
+
+        .menu-link {
+            display: flex;
+            align-items: center;
+            padding: 18px 20px;
+            text-decoration: none;
+            color: var(--text-dark);
+            font-weight: 600;
+            border-bottom: 1px solid #f8fafc;
+            transition: 0.2s;
+        }
+
+        .menu-link:last-child { border: none; }
+        .menu-link:active { background: #f1f5f9; }
+
+        .icon-circle {
+            width: 36px;
+            height: 36px;
+            background: #f1f5f9;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            font-size: 18px;
+        }
+
+        .logout-btn {
+            width: calc(100% - 40px);
+            margin: 10px 20px;
+            padding: 18px;
+            background: #fff1f2;
+            color: var(--danger);
+            border: none;
+            border-radius: 20px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .logout-btn:active { transform: scale(0.98); background: #fee2e2; }
+    </style>
 </head>
-
 <body>
 
-<h1>Your Profile</h1>
+<div class="profile-wrapper">
+    <div class="profile-header">
+        <div class="avatar-container" id="avatar">H</div>
+        <div class="user-email" id="email-text">Loading...</div>
+        <div class="user-uid" id="uid-text">UID: 000000000000</div>
+    </div>
 
-<div class="card">
-    <p><b>Email:</b> <span id="email">Loading...</span></p>
-    <div class="line"></div>
+    <div class="wallet-card">
+        <div class="bal-label">Total Balance</div>
+        <div class="bal-value">₹<span id="bal-val">0.00</span></div>
+        <div class="vip-badge">
+            <span>⭐</span> VIP LEVEL <span id="vip-val">0</span>
+        </div>
+    </div>
 
-    <p><b>UID:</b> <span id="uid">Loading...</span></p>
-    <div class="line"></div>
+    <div class="stats-grid">
+        <div class="stat-item">
+            <div class="stat-name">Total Deposits</div>
+            <div class="stat-val" id="dep-val">0</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-name">Lifetime Wins</div>
+            <div class="stat-val" style="color: var(--success);" id="win-val">₹0</div>
+        </div>
+    </div>
 
-    <p><b>Balance:</b> ₹<span id="balance">0</span></p>
-    <div class="line"></div>
+    <div class="menu-section">
+        <div class="menu-title">ACCOUNT MENU</div>
+        <div class="menu-card">
+            <a href="dashboard.html" class="menu-link">
+                <div class="icon-circle">🏠</div> Dashboard
+            </a>
+            <a href="deposit.html" class="menu-link">
+                <div class="icon-circle">💳</div> Deposit Funds
+            </a>
+            <a href="withdraw.html" class="menu-link">
+                <div class="icon-circle">🏦</div> Withdrawal
+            </a>
+            <a href="settings.html" class="menu-link">
+                <div class="icon-circle">⚙️</div> Settings
+            </a>
+        </div>
+    </div>
 
-    <p><b>VIP Level:</b> <span id="vip">0</span></p>
-    <div class="line"></div>
-
-    <p><b>Total Deposits:</b> <span id="deposits">0</span></p>
-    <div class="line"></div>
-
-    <p><b>Lifetime Wins:</b> ₹<span id="lifetimeWins">0</span></p>
+    <button class="logout-btn" onclick="triggerLogout()">Logout Account</button>
 </div>
 
-<button onclick="window.location='settings.html'">Account Settings</button>
-<button class="logout" onclick="logout()">Logout</button>
-
 <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-    getAuth,
-    onAuthStateChanged,
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-
-import { 
-    getDatabase,
-    ref,
-    onValue
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = {
+   const firebaseConfig = {
   apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
   authDomain: "test-eb5e7.firebaseapp.com",
   databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
@@ -112,38 +226,42 @@ const firebaseConfig = {
   appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
   measurementId: "G-ECKCTBLQJ8"
 };
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getDatabase(app);
 
-onAuthStateChanged(auth, user=>{
-    if(!user){
-        window.location="index.html";
-        return;
-    }
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-    document.getElementById("email").textContent = user.email;
-    document.getElementById("uid").textContent   = user.uid;
+    onAuthStateChanged(auth, user => {
+        if (!user) {
+            window.location = "index.html";
+            return;
+        }
 
-    const userRef = ref(db,"users/" + user.uid);
+        // Basic Auth Info
+        document.getElementById("email-text").innerText = user.email;
+        document.getElementById("uid-text").innerText = "UID: " + user.uid.toUpperCase();
+        document.getElementById("avatar").innerText = user.email.charAt(0).toUpperCase();
 
-    onValue(userRef, snap=>{
-        let u = snap.val();
-        if(!u) return;
-
-        document.getElementById("balance").textContent      = u.balance;
-        document.getElementById("vip").textContent          = u.vip;
-        document.getElementById("deposits").textContent     = u.deposits;
-        document.getElementById("lifetimeWins").textContent = u.lifetimeWins;
+        // Real-time Database Stats
+        const userRef = ref(db, "users/" + user.uid);
+        onValue(userRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data) {
+                document.getElementById("bal-val").innerText = (data.balance || 0).toLocaleString('en-IN', {minimumFractionDigits: 2});
+                document.getElementById("vip-val").innerText = data.vip || 0;
+                document.getElementById("dep-val").innerText = data.deposits || 0;
+                document.getElementById("win-val").innerText = "₹" + (data.lifetimeWins || 0).toLocaleString('en-IN');
+            }
+        });
     });
-});
 
-window.logout = function(){
-    signOut(auth).then(()=>{
-        window.location="index.html";
-    });
-}
-
+    window.triggerLogout = function() {
+        if (confirm("Are you sure you want to log out?")) {
+            signOut(auth).then(() => {
+                window.location = "index.html";
+            });
+        }
+    };
 </script>
 
 </body>
