@@ -7,90 +7,74 @@
 <style>
     body {
         background: #000;
-        color: #fff;
+        color: #0affd9;
         font-family: Arial, sans-serif;
         text-align: center;
-        padding: 20px;
+        padding: 25px;
     }
 
     h1 {
-        color: #0aff9d;
-        text-shadow: 0 0 10px #00ffcc;
-        font-size: 38px;
+        color: #00ffaa;
+        text-shadow: 0 0 12px #00ffcc;
+        font-size: 34px;
     }
 
-    .container {
-        margin-top: 40px;
+    .box {
+        padding: 20px;
+        background: #050505;
+        border: 1px solid #00eaff;
+        border-radius: 10px;
+        box-shadow: 0 0 20px #00eaff;
+        margin-top: 25px;
     }
 
     input {
-        padding: 10px;
-        width: 200px;
+        padding: 12px;
+        width: 220px;
         font-size: 18px;
-        border: 2px solid #0aff9d;
-        background: black;
-        color: white;
+        background: #000;
+        border: 2px solid #00ffa5;
+        color: #00ffa5;
         border-radius: 8px;
-        box-shadow: 0 0 10px #00ffcc;
+        margin-top: 10px;
     }
 
     button {
+        padding: 12px 30px;
         margin-top: 20px;
-        padding: 12px 28px;
         font-size: 20px;
-        background: #0aff9d;
-        border: none;
         border-radius: 8px;
-        cursor: pointer;
-        color: black;
+        background: #00ffa5;
+        color: #000;
         font-weight: bold;
-        text-shadow: 0 0 10px white;
-        box-shadow: 0 0 15px #00ffcc;
+        cursor: pointer;
+        box-shadow: 0 0 20px #00ffa5;
     }
 
-    #resultBox {
-        margin-top: 30px;
-        padding: 20px;
+    #result {
         display: none;
+        margin-top: 25px;
+        padding: 20px;
+        border: 2px solid #00eaff;
+        border-radius: 10px;
+        box-shadow: 0 0 15px #00eaff;
         font-size: 22px;
-        border: 2px solid #0aff9d;
-        border-radius: 12px;
-        box-shadow: 0 0 20px #00ffcc;
     }
 
-    .loading {
-        color: #00aaff;
-        text-shadow: 0 0 10px #00aaff;
-        margin-top: 10px;
+    #timer {
         font-size: 22px;
+        color: #00aaff;
+        margin-top: 15px;
+        text-shadow: 0 0 10px #00aaff;
     }
 </style>
 
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
-
-</head>
-<body>
-
-<h1>H4XTEAM colour GAME</h1>
-
-<div class="container">
-    <h2>Balance: ₹<span id="balance">0</span></h2>
-    <h3>Total Won: ₹<span id="totalWon">0</span></h3>
-    <h4>Win Limit: ₹<span id="maxWin">0</span></h4>
-
-    <input type="number" id="bet" placeholder="Enter Bet (5 - 1000)">
-    <br>
-    <button onclick="play()">Play</button>
-
-    <div id="status" class="loading"></div>
-
-    <div id="resultBox"></div>
-</div>
-
 <script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-// ------------------ FIREBASE SETUP --------------------
+// ---------------- FIREBASE CONFIG -----------------
 const firebaseConfig = {
     apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
     authDomain: "test-eb5e7.firebaseapp.com",
@@ -98,121 +82,137 @@ const firebaseConfig = {
     projectId: "test-eb5e7",
     storageBucket: "test-eb5e7.appspot.com",
     messagingSenderId: "366282855653",
-    appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-    measurementId: "G-ECKCTBLQJ8"
+    appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
 };
 
-const app = firebase.initializeApp(firebaseConfig);
-const db = firebase.database();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-let userId = "USER001";  
-let maxWin = 0;
-let winMultiplier = 1.9;
+let uid = "";
+let balance = 0;
+let totalWon = 0;
+let winLimit = 0;
+let multiplier = 1.9;
 
-// ------------------ LOAD USER DATA --------------------
-firebase.database().ref("users/" + userId).once("value").then(snap => {
-    let data = snap.val();
+// ---------------- LOAD USER -----------------
+onAuthStateChanged(auth, async (user) => {
+    if (!user) location.href = "index.html";
+    uid = user.uid;
 
-    if (!data) {
-        alert("User not found in database.");
-        return;
-    }
+    const snap = await get(ref(db, "users/" + uid));
+    if (!snap.exists()) return;
 
-    let balance = data.balance;
-    let deposits = data.deposits;
-    let totalWon = data.totalWon || 0;
+    let u = snap.val();
 
-    if (deposits === 1) maxWin = 200;
-    else if (deposits >= 5) maxWin = 500;
-    else maxWin = 0;
+    balance = u.balance || 0;
+    totalWon = u.totalWon || 0;
+
+    if (u.deposits === 1) winLimit = 200;
+    else if (u.deposits >= 5) winLimit = 500;
+    else winLimit = 0;
 
     document.getElementById("balance").innerText = balance;
     document.getElementById("totalWon").innerText = totalWon;
-    document.getElementById("maxWin").innerText = maxWin;
+    document.getElementById("maxWin").innerText = winLimit;
 });
 
-// ------------------ PLAY + COUNTDOWN --------------------
+// ---------------- PLAY GAME -----------------
+window.playGame = function() {
 
-let timer = null;
-
-function play() {
-    let bet = parseInt(document.getElementById("bet").value);
-    let balance = parseInt(document.getElementById("balance").innerText);
-    let totalWon = parseInt(document.getElementById("totalWon").innerText);
+    let bet = Number(document.getElementById("bet").value);
 
     if (bet < 5) return alert("Minimum bet is ₹5");
     if (bet > 1000) return alert("Maximum bet is ₹1000");
     if (bet > balance) return alert("Insufficient balance");
-    if (totalWon >= maxWin) return alert("Your win limit is reached!");
+    if (totalWon >= winLimit) return alert("Win limit reached!");
 
-    document.getElementById("resultBox").style.display = "none";
+    document.getElementById("result").style.display = "none";
 
-    let sec = 30;
-    document.getElementById("status").innerHTML = `Processing... ${sec}s left ⏳`;
+    // 30 second countdown
+    let timeLeft = 30;
+    let timer = setInterval(() => {
+        document.getElementById("timer").innerText =
+            `Processing... ${timeLeft} seconds remaining ⏳`;
 
-    clearInterval(timer);
+        timeLeft--;
 
-    timer = setInterval(() => {
-        sec--;
-        document.getElementById("status").innerHTML = `Processing... ${sec}s left ⏳`;
-
-        if (sec <= 0) {
+        if (timeLeft < 0) {
             clearInterval(timer);
-            document.getElementById("status").innerHTML = "Result Ready ✔️";
-            runGame(bet, balance, totalWon);
+            runGame(bet);
         }
     }, 1000);
-}
+};
 
-// ------------------ RUN RESULT --------------------
+// ---------------- GAME LOGIC -----------------
+function runGame(bet) {
 
-function runGame(bet, balance, totalWon) {
     let win = Math.random() > 0.5;
     let profit = 0;
 
     if (win) {
-        profit = Math.floor(bet * winMultiplier);
+        profit = Math.floor(bet * multiplier);
 
-        if (totalWon + profit > maxWin) {
-            profit = maxWin - totalWon;
+        if (totalWon + profit > winLimit) {
+            profit = winLimit - totalWon;
         }
 
         balance += profit;
         totalWon += profit;
-
     } else {
-        profit = -bet;
         balance -= bet;
     }
 
-    let box = document.getElementById("resultBox");
-    box.style.display = "block";
-
-    if (win) {
-        box.innerHTML = `
-            <span style="color:#0aff9d; font-size:26px;">YOU WON!</span><br>
-            Profit: ₹${profit}<br>
-            New Balance: ₹${balance}<br>
-            Total Won: ₹${totalWon} / ₹${maxWin}
-        `;
-    } else {
-        box.innerHTML = `
-            <span style="color:#ff4444; font-size:26px;">YOU LOST</span><br>
-            Lost Amount: ₹${bet}<br>
-            New Balance: ₹${balance}<br>
-            Remaining Win Limit: ₹${maxWin - totalWon}
-        `;
-    }
+    update(ref(db, "users/" + uid), {
+        balance: balance,
+        totalWon: totalWon
+    });
 
     document.getElementById("balance").innerText = balance;
     document.getElementById("totalWon").innerText = totalWon;
 
-    firebase.database().ref("users/" + userId).update({
-        balance: balance,
-        totalWon: totalWon
-    });
+    let box = document.getElementById("result");
+    box.style.display = "block";
+
+    if (win) {
+        box.innerHTML = `
+            <span style='color:#00ffaa;font-size:26px;'>YOU WON 🎉</span><br><br>
+            Profit: ₹${profit}<br>
+            New Balance: ₹${balance}<br>
+            Total Won: ₹${totalWon} / ₹${winLimit}
+        `;
+    } else {
+        box.innerHTML = `
+            <span style='color:#ff4444;font-size:26px;'>YOU LOST ❌</span><br><br>
+            Lost: ₹${bet}<br>
+            New Balance: ₹${balance}<br>
+            Remaining Limit: ₹${winLimit - totalWon}
+        `;
+    }
+
+    document.getElementById("timer").innerHTML = "";
 }
+
 </script>
+
+</head>
+
+<body>
+
+<h1>H4XTEAM COLOUR GAME</h1>
+
+<div class="box">
+    <h2>Balance: ₹<span id="balance">0</span></h2>
+    <h3>Total Won: ₹<span id="totalWon">0</span></h3>
+    <h4>Win Limit: ₹<span id="maxWin">0</span></h4>
+
+    <input id="bet" type="number" placeholder="Enter Bet Amount (5 - 1000)">
+    <br>
+    <button onclick="playGame()">PLAY</button>
+
+    <div id="timer"></div>
+    <div id="result"></div>
+</div>
 
 </body>
 </html>
