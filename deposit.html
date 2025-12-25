@@ -2,136 +2,174 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Deposit | H4XTEAM</title>
+<title>Deposit – H4XTEAM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
 <style>
-    body {
-        background: #000;
-        color: #0ff;
-        font-family: Arial;
-        text-align: center;
-        padding: 20px;
-    }
-    h1 { color: #0ff; text-shadow: 0 0 15px #0ff; }
-
-    .box {
-        background: #111;
-        padding: 20px;
-        border-radius: 10px;
-        width: 90%;
-        max-width: 380px;
-        margin: auto;
-        box-shadow: 0 0 15px #0ff;
-    }
-
-    input, button {
-        width: 90%;
-        padding: 12px;
-        margin-top: 10px;
-        border: none;
-        border-radius: 8px;
-        font-size: 16px;
-    }
-
-    input {
-        background: #000;
-        color: #0ff;
-        border: 1px solid #0ff;
-    }
-
-    button {
-        background: #0ff;
-        color: #000;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 0 10px #0ff;
-    }
-    
-    #qrBox img {
-        width: 200px;
-        margin-top: 15px;
-        box-shadow: 0 0 15px #0ff;
-    }
-</style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
-</head>
-<body>
-
-<h1>Deposit Money</h1>
-
-<div class="box">
-    <h3>Enter Amount</h3>
-
-    <input id="amount" type="number" placeholder="Min 50 — Max 500">
-
-    <button onclick="generateDeposit()">Generate QR</button>
-
-    <div id="feeBox" style="margin-top:10px; color:#fff;"></div>
-    <div id="qrBox"></div>
-
-    <button onclick="saveDeposit()" style="margin-top:15px;">Submit Deposit</button>
-
-    <p id="msg" style="color:#0f0; margin-top:10px;"></p>
-
-    <a href="dashboard.html" style="color:#0ff;">⬅ Back to Dashboard</a>
-</div>
-
-<script>
-// ------------------------
-// QR + FEE CALCULATION
-// ------------------------
-function generateDeposit() {
-    let amount = Number(document.getElementById("amount").value);
-    let msg = document.getElementById("msg");
-
-    if (amount < 50 || amount > 500) {
-        msg.innerHTML = "Amount must be between ₹50 and ₹500";
-        msg.style.color = "red";
-        return;
-    }
-
-    let finalPay = amount * 1.05; // +5% fee
-    finalPay = finalPay.toFixed(2);
-
-    document.getElementById("feeBox").innerHTML =
-        `You must pay: <b>₹${finalPay}</b>`;
-
-    // Generate QR
-    let qr = new QRious({
-        element: document.createElement("img"),
-        value: `upi://pay?pa=9561998301@amazonpay&pn=H4XTEAM&am=${finalPay}&cu=INR`,
-        size: 200
-    });
-
-    let qrBox = document.getElementById("qrBox");
-    qrBox.innerHTML = "";
-    qrBox.appendChild(qr.element);
-
-    msg.innerHTML = "";
+body {
+    margin: 0;
+    background: #000;
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+}
+.container {
+    width: 92%;
+    margin: 25px auto;
+    padding: 20px;
+    background: rgba(20,20,20,0.75);
+    border-radius: 12px;
+    box-shadow: 0 0 20px #00eaff;
 }
 
-// ------------------------
-// SAVE DEPOSIT REQUEST
-// ------------------------
-function saveDeposit() {
-    let amount = Number(document.getElementById("amount").value);
+/* Inputs + buttons */
+input, button {
+    width: 100%;
+    padding: 12px;
+    font-size: 17px;
+    border-radius: 10px;
+    margin: 10px 0;
+    outline: none;
+}
+input {
+    background: #111;
+    border: 2px solid #00eaff;
+    color: #fff;
+}
+button {
+    background: #00eaff;
+    color: #000;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 0 20px #00eaff;
+}
+button:hover { box-shadow: 0 0 30px #00eaff; }
 
-    if (!amount || amount < 50) {
-        alert("Enter a valid amount first.");
+#qrBox {
+    text-align:center;
+    margin-top: 20px;
+    display:none;
+}
+#qrBox img {
+    width: 250px;
+    height: 250px;
+    border: 3px solid #00eaff;
+    border-radius: 10px;
+    box-shadow: 0 0 20px #00eaff;
+}
+.backBtn {
+    margin-top: 20px;
+    background: red;
+    color:#fff;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+    <h2 style="text-align:center;">Deposit</h2>
+
+    <label>Enter Amount (Min 50 / Max 500)</label>
+    <input type="number" id="amount" placeholder="Enter deposit amount">
+
+    <p><b>You will Pay (with Fee):</b> ₹ <span id="finalAmount">0</span></p>
+
+    <button onclick="makeQR()">Generate QR</button>
+
+    <div id="qrBox">
+        <h3>Scan & Pay</h3>
+        <img id="qrImg" src="">
+        <p style="margin-top:10px;">After payment, your deposit will be verified.</p>
+        <button onclick="confirmDeposit()">I Have Paid</button>
+    </div>
+
+    <button class="backBtn" onclick="window.location='dashboard.html'">Back</button>
+
+    <p id="msg" style="text-align:center;color:red;"></p>
+</div>
+
+<!-- QR API -->
+<script src="https://api.qrserver.com/v1/create-qr-code/?size=250x250&data="></script>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
+
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+  authDomain: "test-eb5e7.firebaseapp.com",
+  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+  projectId: "test-eb5e7",
+  storageBucket: "test-eb5e7.appspot.com",
+  messagingSenderId: "366282855653",
+  appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+};
+
+const app = firebase.initializeApp(firebaseConfig);
+const auth = firebase.getAuth();
+const db = firebase.getDatabase();
+
+const UPI_ID = "9561998301@amazonpay";
+
+function makeQR() {
+    let amt = Number(amount.value);
+
+    if (amt < 50 || amt > 500) {
+        msg.innerHTML = "Amount must be between 50 and 500!";
         return;
     }
 
-    let deposits = JSON.parse(localStorage.getItem("deposits") || "[]");
+    // Fee: +10%
+    let finalAmt = Math.floor(amt * 1.10);
+    finalAmount.innerHTML = finalAmt;
 
-    deposits.push({
-        amount: amount,
-        status: "Pending",
-        time: new Date().toLocaleString()
+    let upiStr = `upi://pay?pa=${UPI_ID}&pn=H4XTEAM&am=${finalAmt}&cu=INR`;
+
+    qrImg.src = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(upiStr);
+
+    qrBox.style.display = "block";
+}
+
+// CONFIRM DEPOSIT
+async function confirmDeposit() {
+    firebase.onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            msg.innerHTML = "You are not logged in!";
+            return;
+        }
+
+        const uid = user.uid;
+
+        let amt = Number(amount.value);
+        let finalAmt = Math.floor(amt * 1.10);
+
+        let depId = "dep_" + Date.now();
+
+        await firebase.set(firebase.ref(db, "deposits/" + depId), {
+            depositId: depId,
+            uid: uid,
+            amount: amt,
+            feeAmount: finalAmt,
+            status: "pending",
+            timestamp: Date.now()
+        });
+
+        // increase user's deposit count
+        const snap = await firebase.get(firebase.ref(db, "users/" + uid));
+        let info = snap.val();
+
+        await firebase.update(firebase.ref(db, "users/" + uid), {
+            depositCount: (info.depositCount || 0) + 1
+        });
+
+        window.location = "processing.html?type=deposit&id=" + depId;
     });
-
-    localStorage.setItem("deposits", JSON.stringify(deposits));
-
-    document.getElementById("msg").innerHTML =
-        "Deposit submitted! Waiting for admin approval.";
 }
 </script>
 
