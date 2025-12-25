@@ -1,67 +1,41 @@
-<!DOCTYPE html>
-<html>
-<head>
-<title>Deposit</title>
-<link rel="stylesheet" href="assets/css/neon.css">
-</head>
+<script>
+// ======= USER BALANCE SYSTEM =======
+let userBalance = parseFloat(localStorage.getItem("balance")) || 0;
+const balEl = document.getElementById("balanceDisplay");
+balEl.innerText = userBalance.toFixed(2);
 
-<body>
+// Update balance everywhere
+function updateBalance(amount) {
+    userBalance += amount;
+    localStorage.setItem("balance", userBalance);
+    balEl.innerText = userBalance.toFixed(2);
+}
 
-<div class="nav">
-    <a href="dashboard.html">Home</a>
-    <a href="deposit.html">Deposit</a>
-    <a href="withdraw.html">Withdraw</a>
-    <a href="profile.html">Profile</a>
-    <a href="settings.html">Settings</a>
-</div>
+// ======= GAME LOGIC =======
+function playGame(choice) {
+    let bet = parseFloat(document.getElementById("betAmount").value);
 
-<h1>Deposit</h1>
+    // Validate rules
+    if (bet < 5) return alert("Minimum bet is ₹5");
+    if (bet > 1000) return alert("Maximum bet is ₹1000");
+    if (bet > userBalance) return alert("You do not have enough balance!");
 
-<div class="card">
-    <input id="amount" type="number" placeholder="Enter amount (50-500)">
-    <button onclick="makeDeposit()">Generate QR</button>
-</div>
+    updateBalance(-bet); // Deduct bet first
 
-<div class="card" id="qrBox" style="display:none;">
-    <h2>Scan to Pay</h2>
-    <img id="qr" width="220">
-    <p id="finalAmount"></p>
-</div>
+    // Random winner color
+    let colors = ["red", "green"];
+    let result = colors[Math.floor(Math.random() * 2)];
 
-<script type="module">
-import { auth, db, generateUPI, generateApiID } from "./assets/js/firebase.js";
-import { onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { ref, set, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    const resultBox = document.getElementById("resultBox");
 
-onAuthStateChanged(auth,(u)=>{
-    if(!u) location.href="index.html";
-});
-
-window.makeDeposit = async function() {
-    const amt = Number(amount.value);
-    if (amt < 50 || amt > 500) { alert("Enter 50 to 500"); return; }
-
-    const upi = generateUPI(amt);
-    const id = generateApiID();
-
-    qr.src = "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=" + encodeURIComponent(upi);
-    qrBox.style.display = "block";
-    finalAmount.innerHTML = "You will pay: " + (amt*1.10).toFixed(2);
-
-    await set(ref(db, "deposits/"+id), {
-        uid: auth.currentUser.uid,
-        amount: amt,
-        feeAmount: (amt*1.10),
-        qrData: upi,
-        status: "PENDING"
-    });
-
-    const uref = ref(db, "users/" + auth.currentUser.uid);
-    update(uref, {
-        depositCount: (auth.currentUser.depositCount||0) + 1
-    });
-};
+    if (choice === result) {
+        let winAmount = bet * 1.9;
+        updateBalance(winAmount);
+        resultBox.innerHTML = `🎉 You WIN!<br> You get ₹${winAmount.toFixed(2)} <br> Result: ${result.toUpperCase()}`;
+        resultBox.style.color = "lime";
+    } else {
+        resultBox.innerHTML = `❌ You LOST!<br> Lost: ₹${bet.toFixed(2)} <br> Result: ${result.toUpperCase()}`;
+        resultBox.style.color = "red";
+    }
+}
 </script>
-
-</body>
-</html>
