@@ -23,32 +23,34 @@
         /* Top Nav */
         .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         .nav-right { display: flex; gap: 10px; align-items: center; }
-        .icon-btn { background: #f1f3f9; border: none; padding: 8px; border-radius: 12px; cursor: pointer; font-size: 18px; transition: 0.2s; }
-        .icon-btn:active { transform: scale(0.9); }
+        .icon-btn { background: #f1f3f9; border: none; padding: 8px; border-radius: 12px; cursor: pointer; font-size: 18px; }
 
         /* Wallet Card */
         .wallet-card { margin: 10px 20px; padding: 30px 25px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 24px; color: white; box-shadow: 0 15px 30px rgba(67, 97, 238, 0.3); }
         .balance-val { font-size: 42px; font-weight: 800; margin: 8px 0; display: block; }
 
-        /* Action Grid */
+        /* Action Grid (Simplified to 4 essential buttons) */
         .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 25px 20px; }
         .action-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; text-decoration: none; }
         .icon-circle { width: 55px; height: 55px; background: #fff; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
         .action-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
 
-        /* Game Card */
-        .game-card { margin: 10px 20px; padding: 20px; background: #fff; border: 2px solid #f0f2f5; border-radius: 20px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: inherit; margin-bottom: 12px; }
-        
-        /* Transaction Modal */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: flex-end; }
-        .modal-content { background: white; width: 100%; max-width: 480px; border-radius: 30px 30px 0 0; padding: 25px; max-height: 80vh; overflow-y: auto; }
-        .trans-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
-        .trans-type { font-weight: 700; font-size: 14px; }
-        .trans-date { font-size: 11px; color: var(--text-muted); }
-        .amt-pos { color: var(--success); font-weight: 800; }
-        .amt-neg { color: var(--danger); font-weight: 800; }
+        /* Game List Styling */
+        .game-list-container { padding: 0 20px; }
+        .game-card { 
+            width: 100%; padding: 20px; background: #fff; border: 2px solid #f0f2f5; 
+            border-radius: 20px; display: flex; align-items: center; justify-content: space-between; 
+            text-decoration: none; color: inherit; margin-bottom: 12px; box-sizing: border-box;
+            transition: 0.2s;
+        }
+        .game-card:active { transform: scale(0.98); background: #fafbfc; }
+        .game-card h3 { margin: 0; font-size: 17px; font-weight: 800; }
+        .game-card p { margin: 4px 0 0; font-size: 12px; color: var(--text-muted); }
 
-        .close-bar { width: 50px; height: 5px; background: #e2e8f0; border-radius: 10px; margin: 0 auto 20px; cursor: pointer; }
+        /* Modal */
+        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: flex-end; }
+        .modal-content { background: white; width: 100%; max-width: 480px; border-radius: 30px 30px 0 0; padding: 25px; max-height: 70vh; overflow-y: auto; }
+        .trans-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
     </style>
 </head>
 <body>
@@ -57,59 +59,72 @@
     <div class="top-nav">
         <div style="font-weight: 900; font-size: 20px;">H4X<span style="color:var(--primary)">TEAM</span></div>
         <div class="nav-right">
-            <button class="icon-btn" onclick="openTransactions()" title="Transactions">📜</button>
-            <div class="profile-pill" style="background:#f1f3f9; padding:6px 12px; border-radius:20px; font-size:12px; font-weight:700;" id="userEmail">User</div>
+            <button class="icon-btn" onclick="openTransactions()">📜 History</button>
         </div>
     </div>
 
-    <div id="mainContent">
-        <div class="wallet-card">
-            <span style="font-size: 13px; opacity: 0.8;">AVAILABLE BALANCE</span>
-            <span class="balance-val">₹<span id="balanceDisplay">0.00</span></span>
-            <div style="background:rgba(255,255,255,0.2); padding:4px 12px; border-radius:10px; font-size:12px; display:inline-block;">
-                ⭐ <span id="vipLevel">VIP 1</span>
+    <div class="wallet-card">
+        <span style="font-size: 13px; opacity: 0.8;">ACCOUNT BALANCE</span>
+        <span class="balance-val">₹<span id="balanceDisplay">0.00</span></span>
+        <div style="background:rgba(255,255,255,0.2); padding:4px 12px; border-radius:10px; font-size:11px;">
+            VIP MEMBER ID: <span id="userIdDisplay">...</span>
+        </div>
+    </div>
+
+    <div class="action-grid">
+        <a href="deposit.html" class="action-item">
+            <div class="icon-circle" style="color:#4cc9f0">📥</div>
+            <span class="action-label">Deposit</span>
+        </a>
+        <a href="recharge.html" class="action-item">
+            <div class="icon-circle" style="color:#4361ee">⚡</div>
+            <span class="action-label">Recharge</span>
+        </a>
+        <a href="withdraw.html" class="action-item">
+            <div class="icon-circle" style="color:#f72585">📤</div>
+            <span class="action-label">Withdraw</span>
+        </a>
+        <div class="action-item" onclick="copyRef()">
+            <div class="icon-circle" style="color:#ff9f1c">🔗</div>
+            <span class="action-label">Invite</span>
+        </div>
+    </div>
+
+    <div class="game-list-container">
+        <h2 style="font-size:16px; margin: 10px 0 15px;">🔥 Premium Games</h2>
+
+        <a href="game.html" class="game-card" style="border-left: 6px solid var(--primary);">
+            <div>
+                <h3>Color Prediction</h3>
+                <p>Global Market • 1 Min Result • 1.9x</p>
             </div>
-        </div>
-
-        <div class="action-grid">
-            <a href="deposit.html" class="action-item">
-                <div class="icon-circle" style="color:#4cc9f0">📥</div>
-                <span class="action-label">Deposit</span>
-            </a>
-            <a href="recharge.html" class="action-item">
-                <div class="icon-circle" style="color:#4361ee">⚡</div>
-                <span class="action-label">Recharge</span>
-            </a>
-            <a href="withdraw.html" class="action-item">
-                <div class="icon-circle" style="color:#f72585">📤</div>
-                <span class="action-label">Withdraw</span>
-            </a>
-            <a href="chick.html" class="action-item">
-                <div class="icon-circle" style="color:#ff4d4d">🍗</div>
-                <span class="action-label">Chicken</span>
-            </a>
-        </div>
-
-        <div style="padding: 0 20px 10px;"><h2 style="font-size:16px;">Fast Play</h2></div>
-
-        <a href="mines.html" class="game-card" style="border-left: 5px solid #ffd166;">
-            <div><h3>Mines Master</h3><p>Avoid 💣 • Win Big</p></div>
-            <div style="font-size: 24px;">💣</div>
+            <div style="font-size: 26px;">📈</div>
         </a>
 
-        <a href="game.html" class="game-card" style="border-left: 5px solid var(--primary);">
-            <div><h3>Prediction</h3><p>Analyze Chart • 1.9x</p></div>
-            <div style="font-size: 24px;">📈</div>
+        <a href="mines.html" class="game-card" style="border-left: 6px solid #ffd166;">
+            <div>
+                <h3>Mines Master</h3>
+                <p>Find Diamonds • Avoid 💣 • Up to 15x</p>
+            </div>
+            <div style="font-size: 26px;">💣</div>
+        </a>
+
+        <a href="chick.html" class="game-card" style="border-left: 6px solid #ff4d4d;">
+            <div>
+                <h3>Chicken Legend</h3>
+                <p>Classic dome hunt • High Multiplier</p>
+            </div>
+            <div style="font-size: 26px;">🍗</div>
         </a>
     </div>
 </div>
 
 <div id="transModal" class="modal-overlay">
     <div class="modal-content">
-        <div class="close-bar" onclick="closeTransactions()"></div>
-        <h2 style="margin-top:0; font-size:20px;">History</h2>
+        <div style="width:40px; height:4px; background:#ddd; margin:0 auto 20px; border-radius:10px;" onclick="closeTransactions()"></div>
+        <h2 style="margin:0 0 20px; font-size:20px;">Recent Activity</h2>
         <div id="transList">
-            <p style="text-align:center; color:var(--text-muted);">No transactions found.</p>
+            <p style="text-align:center; color:#999;">No transactions yet.</p>
         </div>
     </div>
 </div>
@@ -119,7 +134,7 @@
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-   const firebaseConfig = {
+const firebaseConfig = {
   apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
   authDomain: "test-eb5e7.firebaseapp.com",
   databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
@@ -129,38 +144,32 @@
   appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
   measurementId: "G-ECKCTBLQJ8"
 };
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
     onAuthStateChanged(auth, (user) => {
         if (!user) return;
-        
-        const userRef = ref(db, "users/" + user.uid);
-        document.getElementById("userEmail").innerText = user.email.split('@')[0].toUpperCase();
+        document.getElementById("userIdDisplay").innerText = user.uid.substring(0,8).toUpperCase();
 
-        onValue(userRef, (snapshot) => {
-            if (snapshot.exists()) {
-                const data = snapshot.val();
+        onValue(ref(db, "users/" + user.uid), (snap) => {
+            if (snap.exists()) {
+                const data = snap.val();
                 document.getElementById("balanceDisplay").innerText = (data.balance || 0).toFixed(2);
-                document.getElementById("vipLevel").innerText = "VIP LEVEL " + (data.vip || 0);
-
-                // Load Transactions
+                
+                // Update History
                 if (data.transactions) {
                     const list = document.getElementById("transList");
                     list.innerHTML = "";
                     Object.values(data.transactions).reverse().forEach(t => {
-                        const item = document.createElement("div");
-                        item.className = "trans-item";
-                        const isPos = t.type === 'deposit' || t.type === 'win';
-                        item.innerHTML = `
-                            <div>
-                                <div class="trans-type">${t.type.toUpperCase()}</div>
-                                <div class="trans-date">${t.date}</div>
-                            </div>
-                            <div class="${isPos ? 'amt-pos' : 'amt-neg'}">${isPos ? '+' : '-'}₹${t.amount}</div>
+                        const div = document.createElement("div");
+                        div.className = "trans-item";
+                        div.innerHTML = `
+                            <div><b>${t.type.toUpperCase()}</b><br><small>${t.date}</small></div>
+                            <div style="color:${t.type=='deposit'?'#06d6a0':'#ef476f'}"><b>₹${t.amount}</b></div>
                         `;
-                        list.appendChild(item);
+                        list.appendChild(div);
                     });
                 }
             }
@@ -169,6 +178,7 @@
 
     window.openTransactions = () => document.getElementById("transModal").style.display = "flex";
     window.closeTransactions = () => document.getElementById("transModal").style.display = "none";
+    window.copyRef = () => { alert("Referral Link Copied!"); };
 </script>
 
 </body>
