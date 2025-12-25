@@ -3,236 +3,282 @@
 <head>
 <meta charset="UTF-8">
 <title>H4XTEAM – Login / Register</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
+
 body {
-    margin: 0;
     background: #000;
-    font-family: 'Poppins', sans-serif;
-    color: #fff;
-}
-
-/* Card */
-.container {
-    width: 90%;
-    max-width: 400px;
-    margin: 60px auto;
-    background: rgba(25, 25, 25, 0.7);
-    padding: 25px;
-    border-radius: 12px;
-    box-shadow: 0 0 20px #00f2ff;
-}
-
-/* Neon Inputs */
-input {
-    width: 100%;
-    padding: 12px;
-    background: #111;
-    border: 2px solid #00eaff;
+    font-family: Arial;
     color: white;
-    border-radius: 8px;
-    margin: 10px 0;
-    outline: none;
+    text-align: center;
+    padding: 20px;
 }
 
-/* Neon Buttons */
-button {
-    width: 100%;
+h1 {
+    color: #00eaff;
+    text-shadow: 0 0 10px #00eaff;
+}
+
+.box {
+    background: #0d0d0d;
+    width: 90%;
+    margin: auto;
+    padding: 20px;
+    border-radius: 15px;
+    border: 1px solid #00eaff33;
+}
+
+input {
+    width: 85%;
     padding: 12px;
+    margin-top: 10px;
+    background: #1b1b1b;
     border: none;
-    border-radius: 8px;
+    color: white;
+    border-radius: 10px;
     font-size: 16px;
+}
+
+button {
+    width: 90%;
+    padding: 12px;
+    margin-top: 12px;
     background: #00eaff;
-    color: #000;
-    font-weight: 600;
+    color: black;
+    border: none;
+    border-radius: 10px;
+    font-weight: bold;
+    font-size: 18px;
     cursor: pointer;
-    box-shadow: 0 0 15px #00eaff;
+}
+
+a {
+    color: #00eaff;
+    display: block;
     margin-top: 10px;
 }
 
-button:hover {
-    box-shadow: 0 0 25px #00eaff;
+#status {
+    margin-top: 20px;
+    font-size: 16px;
 }
 
-/* Toggle links */
-.link {
-    color: #00eaff;
-    cursor: pointer;
-    text-align: center;
-    display: block;
-    margin-top: 12px;
+.toggle-btn {
+    background: #ff00ff;
+    margin-top: 20px;
 }
+
+.hidden { display: none; }
 </style>
-</head>
 
+</head>
 <body>
 
-<div class="container" id="loginBox">
-    <h2 style="text-align:center;">LOGIN</h2>
-    <input type="email" id="loginEmail" placeholder="Email">
-    <input type="password" id="loginPassword" placeholder="Password">
-    <button onclick="login()">Login</button>
+<h1>H4XTEAM</h1>
 
-    <div class="link" onclick="showRegister()">Create Account</div>
-    <div class="link" onclick="showReset()">Forgot Password?</div>
+<div class="box">
 
-    <p id="loginMsg" style="color:red;text-align:center;"></p>
+    <!-- LOGIN -->
+    <div id="loginBox">
+        <h2>Login</h2>
+        <input id="log_email" type="email" placeholder="Email">
+        <input id="log_pass" type="password" placeholder="Password">
+        <button onclick="login()">Login</button>
+        <a onclick="showForgot()">Forgot Password?</a>
+        <a onclick="showRegister()">Create Account</a>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="registerBox" class="hidden">
+        <h2>Register</h2>
+        <input id="reg_email" type="email" placeholder="Email">
+        <input id="reg_pass" type="password" placeholder="Password">
+        <button onclick="register()">Register</button>
+        <a onclick="showLogin()">Already have an account?</a>
+    </div>
+
+    <!-- FORGOT PASSWORD -->
+    <div id="forgotBox" class="hidden">
+        <h2>Reset Password</h2>
+        <input id="forgot_email" type="email" placeholder="Enter Email">
+        <button onclick="resetPassword()">Send Reset Link</button>
+        <a onclick="showLogin()">Back to Login</a>
+    </div>
+
 </div>
 
-<div class="container" id="registerBox" style="display:none;">
-    <h2 style="text-align:center;">REGISTER</h2>
-    <input type="email" id="regEmail" placeholder="Email">
-    <input type="password" id="regPassword" placeholder="Password">
-    <button onclick="register()">Register</button>
+<p id="status"></p>
 
-    <div class="link" onclick="showLogin()">Already have account?</div>
+<script type="module">
+// Firebase Imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { 
+    getAuth, 
+    createUserWithEmailAndPassword, 
+    sendEmailVerification,
+    signInWithEmailAndPassword,
+    sendPasswordResetEmail,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-    <p id="regMsg" style="color:red;text-align:center;"></p>
-</div>
+import { 
+    getDatabase, 
+    ref, 
+    set,
+    get,
+    update
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
-<div class="container" id="resetBox" style="display:none;">
-    <h2 style="text-align:center;">RESET PASSWORD</h2>
-    <input type="email" id="resetEmail" placeholder="Enter your email">
-    <button onclick="resetPass()">Send Reset Link</button>
-
-    <div class="link" onclick="showLogin()">Back to Login</div>
-
-    <p id="resetMsg" style="color:red;text-align:center;"></p>
-</div>
-
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
-
-<script>
-// YOUR FIREBASE CONFIG
+// Your Firebase Config
 const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
+    apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+    authDomain: "test-eb5e7.firebaseapp.com",
+    databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+    projectId: "test-eb5e7",
+    storageBucket: "test-eb5e7.appspot.com",
+    messagingSenderId: "366282855653",
+    appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+    measurementId: "G-ECKCTBLQJ8"
 };
 
-// INIT
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.getAuth();
-const db = firebase.getDatabase();
+// Init Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-function deviceId() {
-    return "dev-" + Math.random().toString(36).substring(2);
+// -----------------------
+// UI Switching Functions
+// -----------------------
+window.showLogin = function() {
+    loginBox.classList.remove("hidden");
+    registerBox.classList.add("hidden");
+    forgotBox.classList.add("hidden");
 }
 
-// ---------------- UI Control ----------------
-function showRegister() {
-    loginBox.style.display = "none";
-    registerBox.style.display = "block";
-    resetBox.style.display = "none";
-}
-function showLogin() {
-    loginBox.style.display = "block";
-    registerBox.style.display = "none";
-    resetBox.style.display = "none";
-}
-function showReset() {
-    loginBox.style.display = "none";
-    registerBox.style.display = "none";
-    resetBox.style.display = "block";
+window.showRegister = function() {
+    loginBox.classList.add("hidden");
+    registerBox.classList.remove("hidden");
+    forgotBox.classList.add("hidden");
 }
 
-// ---------------- REGISTER ----------------
-async function register() {
-    let email = regEmail.value;
-    let pass = regPassword.value;
+window.showForgot = function() {
+    loginBox.classList.add("hidden");
+    registerBox.classList.add("hidden");
+    forgotBox.classList.remove("hidden");
+}
 
-    try {
-        const userCred = await firebase.createUserWithEmailAndPassword(auth, email, pass);
-        const user = userCred.user;
+// -----------------------
+// Device ID Generator
+// -----------------------
+function getDeviceID() {
+    let dev = localStorage.getItem("device_id");
+    if (!dev) {
+        dev = crypto.randomUUID();
+        localStorage.setItem("device_id", dev);
+    }
+    return dev;
+}
 
-        await firebase.sendEmailVerification(user);
+// -----------------------
+// REGISTER
+// -----------------------
+window.register = function() {
+    const email = reg_email.value;
+    const pass  = reg_pass.value;
 
-        const uid = user.uid;
-        const dev = deviceId();
+    createUserWithEmailAndPassword(auth, email, pass)
+        .then(async (userCredential) => {
 
-        await firebase.set(firebase.ref(db, "users/" + uid), {
-            email: email,
-            balance: 0,
-            totalDeposits: 0,
-            totalWithdrawals: 0,
-            totalWins: 0,
-            vipLevel: 0,
-            depositCount: 0,
-            deviceId: dev,
-            createdAt: Date.now()
+            const user = userCredential.user;
+
+            await sendEmailVerification(user);
+
+            // Save user in DB
+            await set(ref(db, "users/" + user.uid), {
+                email: email,
+                balance: 0,
+                totalDeposits: 0,
+                depositCount: 0,
+                totalWithdrawals: 0,
+                totalWins: 0,
+                vipLevel: 0,
+                deviceId: "",
+                createdAt: Date.now()
+            });
+
+            status.innerHTML = "<span style='color:#00ff99;'>Verification email sent! Check inbox.</span>";
+        })
+        .catch(error => {
+            status.innerHTML = "<span style='color:red;'>" + error.message + "</span>";
         });
+};
 
-        regMsg.style.color = "lime";
-        regMsg.innerHTML = "Verification link sent to email!";
-    }
-    catch (e) {
-        regMsg.innerHTML = e.message;
-    }
-}
+// -----------------------
+// LOGIN
+// -----------------------
+window.login = function() {
+    const email = log_email.value;
+    const pass  = log_pass.value;
 
-// ---------------- LOGIN ----------------
-async function login() {
-    let email = loginEmail.value;
-    let pass = loginPassword.value;
+    signInWithEmailAndPassword(auth, email, pass)
+        .then(async (userCredential) => {
 
-    try {
-        const cred = await firebase.signInWithEmailAndPassword(auth, email, pass);
-        const user = cred.user;
+            const user = userCredential.user;
 
-        if (!user.emailVerified) {
-            loginMsg.innerHTML = "Verify your email first!";
-            return;
-        }
+            // Email Verification Check
+            if (!user.emailVerified) {
+                status.innerHTML = "<span style='color:red;'>Verify your email first.</span>";
+                await signOut(auth);
+                return;
+            }
 
-        // Check device
-        const snap = await firebase.get(firebase.ref(db, "users/" + user.uid));
-        let data = snap.val();
+            // One Device Lock
+            const deviceID = getDeviceID();
+            const userRef = ref(db, "users/" + user.uid);
+            const snap = await get(userRef);
 
-        const dev = localStorage.getItem("deviceId") || deviceId();
-        localStorage.setItem("deviceId", dev);
+            if (snap.exists()) {
+                const savedDev = snap.val().deviceId;
 
-        if (data.deviceId !== dev) {
-            loginMsg.innerHTML = "Another device already logged in!";
-            firebase.signOut(auth);
-            return;
-        }
+                // If already logged in on another device
+                if (savedDev && savedDev !== deviceID) {
+                    status.innerHTML = "<span style='color:red;'>Account already active on another device.</span>";
+                    await signOut(auth);
+                    return;
+                }
 
-        // Save this device
-        await firebase.update(firebase.ref(db, "users/" + user.uid), {
-            deviceId: dev
+                // Save new device
+                await update(userRef, { deviceId: deviceID });
+            }
+
+            status.innerHTML = "<span style='color:#00ff99;'>Login Successful!</span>";
+
+            setTimeout(() => {
+                window.location.href = "dashboard.html";
+            }, 800);
+
+        })
+        .catch(error => {
+            status.innerHTML = "<span style='color:red;'>" + error.message + "</span>";
         });
+};
 
-        window.location = "dashboard.html";
+// -----------------------
+// RESET PASSWORD
+// -----------------------
+window.resetPassword = function() {
+    const email = forgot_email.value;
 
-    } catch (e) {
-        loginMsg.innerHTML = e.message;
-    }
-}
+    sendPasswordResetEmail(auth, email)
+        .then(() => {
+            status.innerHTML = "<span style='color:#00ff99;'>Password reset email sent!</span>";
+        })
+        .catch(error => {
+            status.innerHTML = "<span style='color:red;'>" + error.message + "</span>";
+        });
+};
 
-// ---------------- RESET PASSWORD ----------------
-async function resetPass() {
-    let email = resetEmail.value;
-
-    try {
-        await firebase.sendPasswordResetEmail(auth, email);
-        resetMsg.style.color = "lime";
-        resetMsg.innerHTML = "Password reset link sent!";
-    }
-    catch (e) {
-        resetMsg.innerHTML = e.message;
-    }
-}
 </script>
 
 </body>
