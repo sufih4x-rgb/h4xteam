@@ -6,73 +6,44 @@
 
 <style>
     body {
-        background: #000;
-        color: #fff;
-        font-family: Arial, sans-serif;
-        text-align: center;
-        padding: 20px;
+        background:#000;
+        color:#fff;
+        font-family:Arial;
+        text-align:center;
+        padding:20px;
     }
-
-    h1 {
-        color: #00ffcc;
-        text-shadow: 0 0 10px #00ffcc;
-        margin-bottom: 20px;
-    }
-
+    h1 { color:#00ffcc; text-shadow:0 0 10px #00ffcc; }
     .btn {
-        width: 140px;
-        padding: 15px;
-        font-size: 20px;
-        font-weight: bold;
-        border: none;
-        border-radius: 10px;
-        cursor: pointer;
-        margin: 10px;
-        box-shadow: 0 0 15px #00ffcc;
+        width:160px; padding:15px; margin:10px;
+        border:none; border-radius:10px; font-size:20px;
+        cursor:pointer; font-weight:bold;
+        box-shadow:0 0 15px #00ffcc;
     }
-
-    .red { background: #ff0000; }
-    .green { background: #00ff00; color:#000; }
-
+    .red { background:#ff0000; }
+    .green { background:#00ff00; color:#000; }
     input {
-        width: 60%;
-        padding: 12px;
-        margin-top: 15px;
-        border-radius: 8px;
-        border: 2px solid #00ffcc;
-        background: #000;
-        color: #fff;
-        font-size: 18px;
+        width:60%; padding:12px; margin-top:15px;
+        background:#000; color:#fff; font-size:20px;
+        border-radius:8px; border:2px solid #00ffcc;
         text-align:center;
     }
-
-    #timer {
-        font-size: 22px;
-        margin-top: 20px;
-        color: #00aaff;
-        text-shadow: 0 0 10px #00aaff;
-    }
-
+    #matchTimer { margin-top:15px; font-size:24px; color:#00aaff; }
+    #lockMsg { margin-top:10px; font-size:20px; color:#ff4444; }
     #resultBox {
-        margin-top: 25px;
-        font-size: 22px;
-        padding: 20px;
-        display: none;
-        border-radius: 12px;
-        border: 2px solid #00ffcc;
-        box-shadow: 0 0 15px #00ffcc;
+        margin-top:25px; padding:20px;
+        border:2px solid #00ffcc; border-radius:12px;
+        display:none; font-size:22px;
+        box-shadow:0 0 15px #00ffcc;
     }
 </style>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
-
 </head>
 <body>
 
-<h1>RED – GREEN COLOUR GAME</h1>
+<h1>RED – GREEN GAME</h1>
 
 <h2>Balance: ₹<span id="balance">0</span></h2>
 
@@ -81,20 +52,21 @@
     <button class="btn green" onclick="selectColor('GREEN')">GREEN</button>
 </div>
 
-<input type="number" id="betAmount" placeholder="Enter Bet Amount (5 - 1000)">
+<input type="number" id="betAmount" placeholder="Enter Bet Amount">
 
-<h3 id="chosenColor" style="margin-top:20px;"></h3>
+<h3 id="chosenColor"></h3>
 
-<button class="btn" style="background:#00eeff;" onclick="startGame()">PLAY</button>
+<button class="btn" style="background:#00eeff;" onclick="placeBet()">PLACE BET</button>
 
-<div id="timer"></div>
+<h2 id="matchTimer"></h2>
+<h3 id="lockMsg"></h3>
 
 <div id="resultBox"></div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, get, set, update, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, set, push, get, update, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -115,83 +87,138 @@ let uid = "";
 let balance = 0;
 let selectedColor = "";
 
-onAuthStateChanged(auth, async (user) => {
+onAuthStateChanged(auth, async user => {
     if (!user) window.location = "index.html";
     uid = user.uid;
 
-    let snap = await get(ref(db, "users/" + uid + "/balance"));
-    if (snap.exists()) balance = snap.val();
-
+    let balSnap = await get(ref(db, "users/" + uid + "/balance"));
+    if (balSnap.exists()) balance = balSnap.val();
     document.getElementById("balance").innerText = balance;
 });
 
 window.selectColor = function(color){
     selectedColor = color;
     document.getElementById("chosenColor").innerHTML =
-        "Selected: <b style='color:"+ (color==='RED'?'#ff0000':'#00ff00') +"'>" + color + "</b>";
+        "Selected: <b style='color:"+ (color==="RED"?"#ff0000":"#00ff00") +"'>" + color + "</b>";
 };
 
-window.startGame = function(){
+
+// ------------------------- MATCH SYSTEM ---------------------------
+
+let MATCH_DURATION = 60;   // total 60s
+let LOCK_TIME = 10;        // last 10 seconds locked
+let timer = MATCH_DURATION;
+let matchId = "";
+
+function startMatchLoop(){
+
+    setInterval(async ()=>{
+
+        if (timer === MATCH_DURATION){
+            matchId = "MATCH_" + Date.now();
+            await set(ref(db, "matches/" + matchId), {
+                start: Date.now(),
+                result: "PENDING"
+            });
+        }
+
+        // update UI timer
+        document.getElementById("matchTimer").innerHTML = "Next Result in: " + timer + "s";
+
+        // LOCK betting
+        if (timer <= LOCK_TIME){
+            document.getElementById("lockMsg").innerHTML = "Betting Locked! Wait for next match ⏳";
+        } else {
+            document.getElementById("lockMsg").innerHTML = "";
+        }
+
+        // TIME OVER -> SHOW RESULT
+        if (timer === 0){
+            await generateResult();
+            timer = MATCH_DURATION;
+        } else {
+            timer--;
+        }
+
+    }, 1000);
+}
+
+startMatchLoop();
+
+// -------------------------- PLACE BET ------------------------------
+window.placeBet = async function(){
+
     let bet = Number(document.getElementById("betAmount").value);
 
-    if (selectedColor === "") return alert("Choose RED or GREEN first!");
+    if (!selectedColor) return alert("Select RED or GREEN!");
     if (bet < 5 || bet > 1000) return alert("Bet must be between 5 and 1000");
-    if (bet > balance) return alert("Insufficient balance!");
+    if (bet > balance) return alert("Insufficient balance");
 
-    let sec = 30;
-    document.getElementById("timer").innerHTML = "Processing... " + sec + "s";
+    if (timer <= LOCK_TIME){
+        return alert("MATCH LOCKED ⚠️ WAIT FOR NEXT MATCH");
+    }
 
-    let countdown = setInterval(() => {
-        sec--;
-        document.getElementById("timer").innerHTML = "Processing... " + sec + "s";
+    let betId = push(ref(db, "matchBets/" + matchId + "/" + uid)).key;
 
-        if (sec === 0) {
-            clearInterval(countdown);
-            revealResult(bet);
-        }
-    }, 1000);
+    await set(ref(db, "matchBets/" + matchId + "/" + uid + "/" + betId), {
+        user: uid,
+        color: selectedColor,
+        bet: bet,
+        time: Date.now()
+    });
+
+    alert("Bet Placed Successfully!");
 };
 
-async function revealResult(bet){
+// --------------------------- RESULT GENERATION ----------------------
 
+async function generateResult(){
     let winner = Math.random() > 0.5 ? "RED" : "GREEN";
-    let win = (selectedColor === winner);
-    let profit = win ? Math.floor(bet * 2) : -bet;
 
-    balance += profit;
-    document.getElementById("balance").innerText = balance;
+    await update(ref(db, "matches/" + matchId), { result: winner });
 
-    await update(ref(db, "users/" + uid), { balance: balance });
+    // get all bets of this match
+    let betsSnap = await get(ref(db, "matchBets/" + matchId));
+    if (!betsSnap.exists()) return;
 
-    let gameRecord = {
-        user: uid,
-        bet: bet,
-        chosen: selectedColor,
-        winner: winner,
-        win: win,
-        profit: profit,
-        time: Date.now()
-    };
+    let bets = betsSnap.val();
 
-    await push(ref(db, "games/" + uid), gameRecord);
+    for (let userKey in bets){
+        for (let betKey in bets[userKey]){
 
-    let box = document.getElementById("resultBox");
-    box.style.display = "block";
+            let b = bets[userKey][betKey];
+            let won = (b.color === winner);
+            let profit = won ? b.bet * 2 : -b.bet;
 
-    if (win){
-        box.innerHTML = `
-            <span style="color:#00ff99; font-size:26px;">YOU WON 🎉</span><br>
-            Winner: <b>${winner}</b><br>
-            Profit: ₹${profit}<br>
-            New Balance: ₹${balance}
-        `;
-    } else {
-        box.innerHTML = `
-            <span style="color:#ff4444; font-size:26px;">YOU LOST ❌</span><br>
-            Winner: <b>${winner}</b><br>
-            Lost: ₹${bet}<br>
-            New Balance: ₹${balance}
-        `;
+            let userBalSnap = await get(ref(db, "users/" + userKey + "/balance"));
+            let userBal = userBalSnap.exists() ? userBalSnap.val() : 0;
+            let newBalance = userBal + profit;
+
+            await update(ref(db, "users/" + userKey), { balance: newBalance });
+
+            if (uid === userKey){  // show result ONLY for current user
+                document.getElementById("balance").innerText = newBalance;
+
+                let box = document.getElementById("resultBox");
+                box.style.display = "block";
+
+                if (won){
+                    box.innerHTML = `
+                        <span style='color:#00ff99;font-size:26px;'>YOU WON 🎉</span><br>
+                        Winner: ${winner}<br>
+                        Profit: ₹${profit}<br>
+                        New Balance: ₹${newBalance}
+                    `;
+                } else {
+                    box.innerHTML = `
+                        <span style='color:#ff4444;font-size:26px;'>YOU LOST ❌</span><br>
+                        Winner: ${winner}<br>
+                        Lost: ₹${b.bet}<br>
+                        New Balance: ₹${newBalance}
+                    `;
+                }
+            }
+        }
     }
 }
 </script>
