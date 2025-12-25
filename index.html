@@ -1,285 +1,62 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
 <meta charset="UTF-8">
-<title>H4XTEAM – Login / Register</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
+<title>H4XTEAM - Login</title>
 <style>
-
-body {
-    background: #000;
-    font-family: Arial;
-    color: white;
-    text-align: center;
-    padding: 20px;
-}
-
-h1 {
-    color: #00eaff;
-    text-shadow: 0 0 10px #00eaff;
-}
-
-.box {
-    background: #0d0d0d;
-    width: 90%;
-    margin: auto;
-    padding: 20px;
-    border-radius: 15px;
-    border: 1px solid #00eaff33;
-}
-
-input {
-    width: 85%;
-    padding: 12px;
-    margin-top: 10px;
-    background: #1b1b1b;
-    border: none;
-    color: white;
-    border-radius: 10px;
-    font-size: 16px;
-}
-
-button {
-    width: 90%;
-    padding: 12px;
-    margin-top: 12px;
-    background: #00eaff;
-    color: black;
-    border: none;
-    border-radius: 10px;
-    font-weight: bold;
-    font-size: 18px;
-    cursor: pointer;
-}
-
-a {
-    color: #00eaff;
-    display: block;
-    margin-top: 10px;
-}
-
-#status {
-    margin-top: 20px;
-    font-size: 16px;
-}
-
-.toggle-btn {
-    background: #ff00ff;
-    margin-top: 20px;
-}
-
-.hidden { display: none; }
+body{background:#000;font-family:Arial;color:#0affff;text-align:center;padding-top:50px}
+input,button{width:80%;padding:12px;margin:10px;border:none;border-radius:8px;font-size:16px}
+input{background:#111;color:#0affff;border:1px solid #0affff}
+button{background:#0affff;color:#000;font-weight:bold;cursor:pointer;box-shadow:0 0 10px #0affff}
+a{color:#0affff}
 </style>
-
 </head>
 <body>
 
-<h1>H4XTEAM</h1>
+<h1>H4XTEAM LOGIN</h1>
 
-<div class="box">
+<input id="email" type="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
 
-    <!-- LOGIN -->
-    <div id="loginBox">
-        <h2>Login</h2>
-        <input id="log_email" type="email" placeholder="Email">
-        <input id="log_pass" type="password" placeholder="Password">
-        <button onclick="login()">Login</button>
-        <a onclick="showForgot()">Forgot Password?</a>
-        <a onclick="showRegister()">Create Account</a>
-    </div>
+<button onclick="login()">Login</button>
 
-    <!-- REGISTER -->
-    <div id="registerBox" class="hidden">
-        <h2>Register</h2>
-        <input id="reg_email" type="email" placeholder="Email">
-        <input id="reg_pass" type="password" placeholder="Password">
-        <button onclick="register()">Register</button>
-        <a onclick="showLogin()">Already have an account?</a>
-    </div>
-
-    <!-- FORGOT PASSWORD -->
-    <div id="forgotBox" class="hidden">
-        <h2>Reset Password</h2>
-        <input id="forgot_email" type="email" placeholder="Enter Email">
-        <button onclick="resetPassword()">Send Reset Link</button>
-        <a onclick="showLogin()">Back to Login</a>
-    </div>
-
-</div>
-
-<p id="status"></p>
+<br>
+<a href="register.html">Create Account</a><br>
+<a href="reset.html">Forgot Password?</a>
 
 <script type="module">
-// Firebase Imports
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { 
-    getAuth, 
-    createUserWithEmailAndPassword, 
-    sendEmailVerification,
-    signInWithEmailAndPassword,
-    sendPasswordResetEmail,
-    signOut
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-import { 
-    getDatabase, 
-    ref, 
-    set,
-    get,
-    update
-} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-
-// Your Firebase Config
-const firebaseConfig = {
-    apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-    authDomain: "test-eb5e7.firebaseapp.com",
-    databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-    projectId: "test-eb5e7",
-    storageBucket: "test-eb5e7.appspot.com",
-    messagingSenderId: "366282855653",
-    appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-    measurementId: "G-ECKCTBLQJ8"
+const firebaseConfig={
+ apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+ authDomain:"test-eb5e7.firebaseapp.com",
+ databaseURL:"https://test-eb5e7-default-rtdb.firebaseio.com",
+ projectId:"test-eb5e7",
+ storageBucket:"test-eb5e7.appspot.com",
+ messagingSenderId:"366282855653",
+ appId:"1:366282855653:web:dca7e000f5a22fb11f300c",
+ measurementId:"G-ECKCTBLQJ8"
 };
 
-// Init Firebase
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getDatabase(app);
 
-// -----------------------
-// UI Switching Functions
-// -----------------------
-window.showLogin = function() {
-    loginBox.classList.remove("hidden");
-    registerBox.classList.add("hidden");
-    forgotBox.classList.add("hidden");
+window.login=function(){
+ let email=document.getElementById("email").value;
+ let pass=document.getElementById("password").value;
+
+ signInWithEmailAndPassword(auth,email,pass)
+ .then(async (user)=>{
+   let uid=user.user.uid;
+   let deviceID = navigator.userAgent;
+   await update(ref(db,"users/"+uid),{ device:deviceID });
+   window.location="dashboard.html";
+ })
+ .catch(e=>alert("Login Failed: "+e.message));
 }
-
-window.showRegister = function() {
-    loginBox.classList.add("hidden");
-    registerBox.classList.remove("hidden");
-    forgotBox.classList.add("hidden");
-}
-
-window.showForgot = function() {
-    loginBox.classList.add("hidden");
-    registerBox.classList.add("hidden");
-    forgotBox.classList.remove("hidden");
-}
-
-// -----------------------
-// Device ID Generator
-// -----------------------
-function getDeviceID() {
-    let dev = localStorage.getItem("device_id");
-    if (!dev) {
-        dev = crypto.randomUUID();
-        localStorage.setItem("device_id", dev);
-    }
-    return dev;
-}
-
-// -----------------------
-// REGISTER
-// -----------------------
-window.register = function() {
-    const email = reg_email.value;
-    const pass  = reg_pass.value;
-
-    createUserWithEmailAndPassword(auth, email, pass)
-        .then(async (userCredential) => {
-
-            const user = userCredential.user;
-
-            await sendEmailVerification(user);
-
-            // Save user in DB
-            await set(ref(db, "users/" + user.uid), {
-                email: email,
-                balance: 0,
-                totalDeposits: 0,
-                depositCount: 0,
-                totalWithdrawals: 0,
-                totalWins: 0,
-                vipLevel: 0,
-                deviceId: "",
-                createdAt: Date.now()
-            });
-
-            status.innerHTML = "<span style='color:#00ff99;'>Verification email sent! Check inbox.</span>";
-        })
-        .catch(error => {
-            status.innerHTML = "<span style='color:red;'>" + error.message + "</span>";
-        });
-};
-
-// -----------------------
-// LOGIN
-// -----------------------
-window.login = function() {
-    const email = log_email.value;
-    const pass  = log_pass.value;
-
-    signInWithEmailAndPassword(auth, email, pass)
-        .then(async (userCredential) => {
-
-            const user = userCredential.user;
-
-            // Email Verification Check
-            if (!user.emailVerified) {
-                status.innerHTML = "<span style='color:red;'>Verify your email first.</span>";
-                await signOut(auth);
-                return;
-            }
-
-            // One Device Lock
-            const deviceID = getDeviceID();
-            const userRef = ref(db, "users/" + user.uid);
-            const snap = await get(userRef);
-
-            if (snap.exists()) {
-                const savedDev = snap.val().deviceId;
-
-                // If already logged in on another device
-                if (savedDev && savedDev !== deviceID) {
-                    status.innerHTML = "<span style='color:red;'>Account already active on another device.</span>";
-                    await signOut(auth);
-                    return;
-                }
-
-                // Save new device
-                await update(userRef, { deviceId: deviceID });
-            }
-
-            status.innerHTML = "<span style='color:#00ff99;'>Login Successful!</span>";
-
-            setTimeout(() => {
-                window.location.href = "dashboard.html";
-            }, 800);
-
-        })
-        .catch(error => {
-            status.innerHTML = "<span style='color:red;'>" + error.message + "</span>";
-        });
-};
-
-// -----------------------
-// RESET PASSWORD
-// -----------------------
-window.resetPassword = function() {
-    const email = forgot_email.value;
-
-    sendPasswordResetEmail(auth, email)
-        .then(() => {
-            status.innerHTML = "<span style='color:#00ff99;'>Password reset email sent!</span>";
-        })
-        .catch(error => {
-            status.innerHTML = "<span style='color:red;'>" + error.message + "</span>";
-        });
-};
-
 </script>
-
 </body>
 </html>
