@@ -1,149 +1,172 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Settings - H4X TEAM</title>
+<meta charset="UTF-8">
+<title>Settings - H4XTEAM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <style>
-        body {
-            margin: 0;
-            background: #050505;
-            color: #fff;
-            font-family: Arial, sans-serif;
-        }
+<style>
+    body{
+        background:#000;
+        color:#00eaff;
+        font-family:Arial;
+        text-align:center;
+        padding:20px;
+    }
 
-        .header {
-            padding: 18px;
-            background: #0c0c0c;
-            text-align: center;
-            font-size: 22px;
-            font-weight: bold;
-            color: #00ffc8;
-            text-shadow: 0 0 10px #00ffc8;
-            border-bottom: 1px solid rgba(0, 255, 200, 0.3);
-        }
+    h1{
+        text-shadow:0 0 12px #00eaff;
+        margin-bottom:30px;
+    }
 
-        .container {
-            padding: 20px;
-        }
+    .box{
+        background:#0a0a0a;
+        padding:20px;
+        border-radius:12px;
+        border:1px solid #00eaff;
+        box-shadow:0 0 12px #00eaff;
+        margin-bottom:25px;
+    }
 
-        .section {
-            margin-bottom: 25px;
-            padding: 15px;
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(0,255,200,0.4);
-            border-radius: 10px;
-            box-shadow: 0 0 12px rgba(0,255,200,0.3);
-        }
+    input{
+        width:90%;
+        padding:12px;
+        margin-top:10px;
+        border-radius:10px;
+        background:#111;
+        border:1px solid #00eaff;
+        color:#00eaff;
+        box-shadow:0 0 8px #00eaff;
+    }
 
-        .section h3 {
-            margin: 0 0 10px;
-            color: #00ffc8;
-        }
+    button{
+        width:90%;
+        padding:14px;
+        margin-top:20px;
+        background:#00eaff;
+        color:#000;
+        border:none;
+        border-radius:10px;
+        font-weight:bold;
+        font-size:16px;
+        text-shadow:0 0 8px #fff;
+        box-shadow:0 0 15px #00eaff;
+    }
 
-        label {
-            display: block;
-            margin: 10px 0 5px;
-            color: #00e7ff;
-        }
+    button:hover{
+        opacity:0.8;
+    }
 
-        input, select {
-            width: 100%;
-            padding: 12px;
-            background: #0d0d0d;
-            border: 1px solid rgba(0,255,200,0.3);
-            color: #fff;
-            border-radius: 6px;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            background: #00ffc8;
-            border: none;
-            color: #000;
-            font-weight: bold;
-            border-radius: 6px;
-            margin-top: 15px;
-            cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 0 12px #00ffc8;
-        }
-
-        button:hover {
-            opacity: 0.8;
-        }
-
-        .back {
-            text-align: center;
-            margin-top: 20px;
-        }
-
-        .back a {
-            text-decoration: none;
-            color: #00e7ff;
-        }
-
-        .back a:hover {
-            text-shadow: 0 0 10px #00e7ff;
-        }
-    </style>
+    .danger{
+        background:#ff4444 !important;
+        box-shadow:0 0 12px #ff0000 !important;
+        color:#fff !important;
+    }
+</style>
 </head>
-
 <body>
 
-    <div class="header">SETTINGS</div>
+<h1>Account Settings</h1>
 
-    <div class="container">
+<!-- CHANGE PASSWORD -->
+<div class="box">
+    <h2>Change Password</h2>
+    <input type="password" id="newpass" placeholder="Enter New Password">
+    <button onclick="changePass()">Update Password</button>
+</div>
 
-        <div class="section">
-            <h3>Change Username</h3>
-            <label>New Username</label>
-            <input type="text" id="username" placeholder="Enter new username">
-            <button onclick="saveUsername()">Save Username</button>
-        </div>
+<!-- DELETE ACCOUNT -->
+<div class="box">
+    <h2>Delete Account</h2>
+    <button class="danger" onclick="deleteAcc()">Delete My Account</button>
+</div>
 
-        <div class="section">
-            <h3>Change Password</h3>
-            <label>Old Password</label>
-            <input type="password" id="oldPass" placeholder="Old password">
+<!-- LOGOUT -->
+<button onclick="logout()">Logout</button><br><br>
+<button onclick="window.location='dashboard.html'">Back</button>
 
-            <label>New Password</label>
-            <input type="password" id="newPass" placeholder="New password">
+<script type="module">
 
-            <button onclick="savePassword()">Save Password</button>
-        </div>
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+    getAuth, 
+    onAuthStateChanged, 
+    updatePassword, 
+    deleteUser, 
+    signOut 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { 
+    getDatabase, 
+    ref, 
+    remove 
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        <div class="section">
-            <h3>Two-Factor Authentication</h3>
-            <label>Enable / Disable</label>
-            <select id="twoFactor">
-                <option value="off">OFF</option>
-                <option value="on">ON</option>
-            </select>
-            <button onclick="save2FA()">Save 2FA Settings</button>
-        </div>
+const firebaseConfig = {
+    apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+    authDomain:"test-eb5e7.firebaseapp.com",
+    databaseURL:"https://test-eb5e7-default-rtdb.firebaseio.com",
+    projectId:"test-eb5e7",
+    storageBucket:"test-eb5e7.appspot.com",
+    messagingSenderId:"366282855653",
+    appId:"1:366282855653:web:dca7e000f5a22fb11f300c",
+    measurementId:"G-ECKCTBLQJ8"
+};
 
-        <div class="back">
-            <a href="dashboard.html">⬅ Back to Dashboard</a>
-        </div>
-    </div>
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
 
-    <script>
-        function saveUsername() {
-            alert("Username updated successfully!");
-        }
+let currentUser = null;
 
-        function savePassword() {
-            alert("Password changed successfully!");
-        }
+onAuthStateChanged(auth, user => {
+    if (!user) return window.location="index.html";
+    currentUser = user;
+});
 
-        function save2FA() {
-            const mode = document.getElementById("twoFactor").value;
-            alert("2FA " + (mode === "on" ? "Enabled" : "Disabled"));
-        }
-    </script>
+// CHANGE PASSWORD
+window.changePass = async function(){
+    let newPass = document.getElementById("newpass").value;
+
+    if(newPass.length < 6){
+        alert("Password must be at least 6 characters.");
+        return;
+    }
+
+    try{
+        await updatePassword(currentUser, newPass);
+        alert("Password updated successfully!");
+    } catch(err){
+        alert("Error: " + err.message);
+    }
+};
+
+// DELETE ACCOUNT
+window.deleteAcc = async function(){
+    if(!confirm("Are you sure you want to delete your account?")) return;
+
+    try{
+        // Remove database user data
+        await remove(ref(db, "users/" + currentUser.uid));
+        await remove(ref(db, "transactions/deposits/" + currentUser.uid));
+        await remove(ref(db, "transactions/withdraw/" + currentUser.uid));
+
+        await deleteUser(currentUser);
+
+        alert("Account deleted permanently.");
+        window.location="index.html";
+
+    } catch(err){
+        alert("Error deleting account: " + err.message);
+    }
+};
+
+// LOGOUT
+window.logout = async function(){
+    await signOut(auth);
+    window.location="index.html";
+};
+
+</script>
 
 </body>
 </html>
