@@ -1,86 +1,106 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
 <title>Withdraw - H4XTEAM</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <style>
     body{
         background:#000;
-        color:#00eaff;
+        color:#0affff;
         font-family:Arial;
         text-align:center;
-        padding:20px;
+        padding-top:40px;
     }
-
-    h1{
-        font-size:30px;
-        text-shadow:0 0 12px #00eaff;
-        margin-bottom:20px;
-    }
-
-    .box{
-        background:#0a0a0a;
-        padding:20px;
-        border-radius:12px;
-        border:1px solid #00eaff;
-        box-shadow:0 0 12px #00eaff;
-        margin-bottom:25px;
-    }
-
     input{
-        width:90%;
-        padding:14px;
-        margin-top:10px;
-        border-radius:10px;
+        width:80%;
+        padding:12px;
         background:#111;
-        border:1px solid #00eaff;
-        color:#00eaff;
-        box-shadow:0 0 8px #00eaff;
-        font-size:16px;
+        border:1px solid #0affff;
+        color:#0affff;
+        border-radius:8px;
+        margin-top:10px;
     }
-
     button{
-        width:90%;
         padding:15px;
+        width:80%;
         margin-top:20px;
-        background:#00eaff;
+        background:#0affff;
         color:#000;
         border:none;
-        border-radius:10px;
-        font-size:16px;
+        border-radius:8px;
         font-weight:bold;
-        text-shadow:0 0 8px #fff;
-        box-shadow:0 0 15px #00eaff;
-        cursor:pointer;
-    }
-
-    button:hover{
-        opacity:0.9;
+        font-size:16px;
     }
 </style>
 </head>
 <body>
 
-<h1>Withdraw Money</h1>
+<h1>Withdraw</h1>
 
-<div class="box">
-    <h2>Balance: ₹<span id="balance">0</span></h2>
-    <input id="amount" type="number" placeholder="Enter Amount (100 - 10,000)">
-    <input id="upi" type="text" placeholder="Enter UPI ID (example@upi)">
-    <button onclick="requestWithdraw()">Send Withdraw Request</button>
-</div>
+<input id="amount" type="number" placeholder="Enter Withdraw Amount (100 - 10,000)">
+<input id="upi" type="text" placeholder="Enter Your UPI ID">
 
+<button onclick="requestWithdraw()">Request Withdraw</button>
 <button onclick="window.location='dashboard.html'">Back</button>
 
+<div id="msg" style="margin-top:25px;"></div>
+
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-    getAuth,
-    onAuthStateChanged
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-import {
-    getDatabase
+const firebaseConfig = {
+ apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+ authDomain:"test-eb5e7.firebaseapp.com",
+ databaseURL:"https://test-eb5e7-default-rtdb.firebaseio.com",
+ projectId:"test-eb5e7",
+ storageBucket:"test-eb5e7.appspot.com",
+ messagingSenderId:"366282855653",
+ appId:"1:366282855653:web:dca7e000f5a22fb11f300c"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getDatabase(app);
+
+let uid = "";
+
+onAuthStateChanged(auth, user => {
+    if (!user) window.location = "index.html";
+    uid = user.uid;
+});
+
+window.requestWithdraw = async function() {
+
+    let amt = Number(document.getElementById("amount").value);
+    let upi = document.getElementById("upi").value.trim();
+
+    if (amt < 100 || amt > 10000) {
+        alert("Withdraw amount must be between ₹100 - ₹10,000");
+        return;
+    }
+
+    if (upi.length < 5 || !upi.includes("@")) {
+        alert("Enter a valid UPI ID");
+        return;
+    }
+
+    let txid = "WD" + Math.floor(Math.random() * 9999999);
+
+    await set(ref(db, "transactions/withdraws/" + uid + "/" + txid), {
+        amount: amt,
+        upi: upi,
+        status: "pending",
+        time: Date.now()
+    });
+
+    document.getElementById("msg").innerHTML =
+        `<p>Your withdraw request of <b>₹${amt}</b> has been submitted.</p>
+         <p>Status: <b>PENDING</b></p>`;
+
+    alert("Withdraw Request Submitted!");
+};
+</script>
+
+</body>
+</html>
