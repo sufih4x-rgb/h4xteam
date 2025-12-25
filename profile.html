@@ -6,119 +6,144 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-    body {
-        background:#000;
-        color:#00ffe5;
-        font-family: Arial;
+    body{
+        background:black;
+        color:#00eaff;
+        font-family:Arial;
         text-align:center;
         padding:20px;
     }
 
-    h1 {
-        text-shadow:0 0 12px #00ffe5;
+    h1{
+        font-size:34px;
+        color:#00eaff;
+        text-shadow:0 0 12px #00eaff;
     }
 
-    .card {
-        background:#0a0a0a;
+    .card{
+        margin-top:20px;
         padding:20px;
+        background:#0a0a0a;
+        border:1px solid #00eaff;
         border-radius:12px;
-        border:1px solid #00ffe5;
-        box-shadow:0 0 12px #00ffe5;
-        margin-top:20px;
+        box-shadow:0 0 12px #00eaff;
         text-align:left;
+        width:90%;
+        max-width:400px;
+        margin-left:auto;
+        margin-right:auto;
     }
 
-    .card p {
-        font-size:16px;
-        margin:8px 0;
+    .line{
+        border-bottom:1px solid #00eaff;
+        margin:10px 0;
     }
 
-    button {
-        width:100%;
-        padding:12px;
+    button{
         margin-top:20px;
-        background:#00ffe5;
+        padding:15px;
+        width:80%;
+        background:#00eaff;
+        color:black;
         border:none;
         border-radius:10px;
-        color:#000;
+        font-size:18px;
         font-weight:bold;
-        box-shadow:0 0 12px #00ffe5;
+        cursor:pointer;
+        text-shadow:0 0 10px white;
+        box-shadow:0 0 12px #00eaff;
     }
 
-    button:hover {
-        opacity:0.8;
+    .logout{
+        background:#ff4444;
+        box-shadow:0 0 12px #ff4444;
     }
 </style>
 </head>
+
 <body>
 
 <h1>Your Profile</h1>
 
 <div class="card">
-    <p><b>User ID:</b> <span id="uid">Loading...</span></p>
     <p><b>Email:</b> <span id="email">Loading...</span></p>
+    <div class="line"></div>
+
+    <p><b>UID:</b> <span id="uid">Loading...</span></p>
+    <div class="line"></div>
+
     <p><b>Balance:</b> ₹<span id="balance">0</span></p>
-    <p><b>Total Deposits:</b> ₹<span id="total_deposit">0</span></p>
-    <p><b>Total Withdrawals:</b> ₹<span id="total_withdraw">0</span></p>
+    <div class="line"></div>
+
+    <p><b>VIP Level:</b> <span id="vip">0</span></p>
+    <div class="line"></div>
+
+    <p><b>Total Deposits:</b> <span id="deposits">0</span></p>
+    <div class="line"></div>
+
+    <p><b>Lifetime Wins:</b> ₹<span id="lifetimeWins">0</span></p>
 </div>
 
-<button onclick="window.location='dashboard.html'">BACK</button>
+<button onclick="window.location='settings.html'">Account Settings</button>
+<button class="logout" onclick="logout()">Logout</button>
 
 <script type="module">
 
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, get, child } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { 
+    getAuth,
+    onAuthStateChanged,
+    signOut
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-        authDomain: "test-eb5e7.firebaseapp.com",
-        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-        projectId: "test-eb5e7",
-        storageBucket: "test-eb5e7.appspot.com",
-        messagingSenderId: "366282855653",
-        appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-        measurementId: "G-ECKCTBLQJ8"
-    };
+import { 
+    getDatabase,
+    ref,
+    onValue
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
+const firebaseConfig={
+ apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+ authDomain:"test-eb5e7.firebaseapp.com",
+ databaseURL:"https://test-eb5e7-default-rtdb.firebaseio.com",
+ projectId:"test-eb5e7",
+ storageBucket:"test-eb5e7.appspot.com",
+ messagingSenderId:"366282855653",
+ appId:"1:366282855653:web:dca7e000f5a22fb11f300c",
+ measurementId:"G-ECKCTBLQJ8"
+};
 
-    onAuthStateChanged(auth, async (user) => {
-        if (!user) return window.location = "index.html";
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db   = getDatabase(app);
 
-        const uid = user.uid;
+onAuthStateChanged(auth, user=>{
+    if(!user){
+        window.location="index.html";
+        return;
+    }
 
-        document.getElementById("uid").innerText = uid;
-        document.getElementById("email").innerText = user.email;
+    document.getElementById("email").textContent = user.email;
+    document.getElementById("uid").textContent   = user.uid;
 
-        // BALANCE
-        let balSnap = await get(child(ref(db), "users/" + uid + "/balance"));
-        if (balSnap.exists()) {
-            document.getElementById("balance").innerText = balSnap.val();
-        }
+    const userRef = ref(db,"users/" + user.uid);
 
-        // TOTAL DEPOSITS
-        let depSnap = await get(child(ref(db), "transactions/deposits/" + uid));
-        let totalDeposit = 0;
-        if (depSnap.exists()) {
-            Object.values(depSnap.val()).forEach(t => {
-                if (t.status === "approved") totalDeposit += t.amount;
-            });
-        }
-        document.getElementById("total_deposit").innerText = totalDeposit;
+    onValue(userRef, snap=>{
+        let u = snap.val();
+        if(!u) return;
 
-        // TOTAL WITHDRAWALS
-        let wdSnap = await get(child(ref(db), "transactions/withdraw/" + uid));
-        let totalWithdraw = 0;
-        if (wdSnap.exists()) {
-            Object.values(wdSnap.val()).forEach(t => {
-                if (t.status === "approved") totalWithdraw += t.amount;
-            });
-        }
-        document.getElementById("total_withdraw").innerText = totalWithdraw;
+        document.getElementById("balance").textContent      = u.balance;
+        document.getElementById("vip").textContent          = u.vip;
+        document.getElementById("deposits").textContent     = u.deposits;
+        document.getElementById("lifetimeWins").textContent = u.lifetimeWins;
     });
+});
+
+window.logout = function(){
+    signOut(auth).then(()=>{
+        window.location="index.html";
+    });
+}
 
 </script>
 
