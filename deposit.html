@@ -1,123 +1,155 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+<meta charset="UTF-8">
 <title>Deposit - H4XTEAM</title>
+
 <style>
 body{
     background:#000;
-    color:#0affff;
+    color:#00f6ff;
     font-family:Arial;
     text-align:center;
-    padding-top:40px;
+    padding:30px;
+}
+h1{
+    color:#00f6ff;
+    text-shadow:0 0 15px #00f6ff;
 }
 input{
     width:80%;
     padding:12px;
-    background:#111;
-    border:1px solid #0affff;
-    color:#0affff;
-    border-radius:8px;
+    background:#0a0a0a;
+    border:1px solid #00f6ff;
+    color:#00f6ff;
+    border-radius:10px;
+    margin-top:20px;
+    font-size:17px;
 }
 button{
-    padding:15px;
     width:80%;
-    margin-top:20px;
-    background:#0affff;
+    padding:14px;
+    background:#00f6ff;
     color:#000;
-    border:none;
-    border-radius:8px;
     font-weight:bold;
-}
-img{
-    margin-top:20px;
-    border:2px solid #0affff;
+    font-size:18px;
+    border:none;
     border-radius:10px;
+    margin-top:25px;
+    box-shadow:0 0 10px #00f6ff;
 }
-.box{
+#qr{
     margin-top:20px;
-    color:#0affff;
+    display:none;
+    border:2px solid #00f6ff;
+    border-radius:12px;
+}
+.message{
+    margin-top:15px;
     font-size:18px;
 }
 </style>
 </head>
+
 <body>
 
 <h1>Deposit</h1>
 
-<input id="amount" type="number" placeholder="Enter Deposit Amount (50 - 500)">
-<button onclick="generateDeposit()">Generate QR</button>
+<input id="amount" type="number" placeholder="Enter Amount (50 - 500)">
+<input id="utr" type="text" placeholder="Enter UTR Number">
 
-<div id="info" class="box"></div>
-<img id="qr" width="250" style="display:none">
+<button onclick="generateQR()">Generate QR</button>
+
+<img id="qr" width="250">
+<div id="details" class="message"></div>
+
+<button onclick="submitDeposit()">Submit Deposit</button>
 
 <button onclick="window.location='dashboard.html'">Back</button>
 
 <script type="module">
+
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain:"test-eb5e7.firebaseapp.com",
-  databaseURL:"https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId:"test-eb5e7",
-  storageBucket:"test-eb5e7.appspot.com",
-  messagingSenderId:"366282855653",
-  appId:"1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId:"G-ECKCTBLQJ8"
+ apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+ authDomain:"test-eb5e7.firebaseapp.com",
+ databaseURL:"https://test-eb5e7-default-rtdb.firebaseio.com",
+ projectId:"test-eb5e7",
+ storageBucket:"test-eb5e7.appspot.com",
+ messagingSenderId:"366282855653",
+ appId:"1:366282855653:web:dca7e000f5a22fb11f300c",
+ measurementId:"G-ECKCTBLQJ8"
 };
 
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
-let uid = "";
+let UID = "";
 
-onAuthStateChanged(auth, u => {
-    if (!u) window.location = "index.html";
-    uid = u.uid;
+onAuthStateChanged(auth, (u)=>{
+    if(!u){ window.location="index.html"; return; }
+    UID = u.uid;
 });
 
-window.generateDeposit = async function() {
-
+// ----------------------------------------
+// GENERATE QR
+// ----------------------------------------
+window.generateQR = function(){
     let amt = Number(document.getElementById("amount").value);
-    if (amt < 50 || amt > 500) {
-        alert("Deposit amount must be between ₹50 to ₹500");
+
+    if(amt < 50 || amt > 500){
+        alert("Amount must be between ₹50 - ₹500");
         return;
     }
 
-    let payAmount = amt + (amt * 0.10); // 10% extra
-    let txid = "TX" + Math.floor(Math.random() * 9999999);
-    let depositID = "DP" + Math.floor(Math.random() * 99999999);
+    let finalPay = amt + (amt * 0.10); // 10% charge
+    finalPay = Math.floor(finalPay);
 
-    // Show details
-    document.getElementById("info").innerHTML = `
-        <p>Deposit Amount: <b>₹${amt}</b></p>
-        <p>Pay Amount (10% extra): <b>₹${payAmount}</b></p>
-        <p>UPI ID: <b>9561998301@amazonpay</b></p>
-        <p>Transaction ID: <b>${txid}</b></p>
-    `;
+    let qrURL = 
+      "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=9561998301@amazonpay&am="+finalPay;
 
-    // Generate QR
-    document.getElementById("qr").src =
-        "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=9561998301@amazonpay&am=" + payAmount;
-
+    document.getElementById("qr").src = qrURL;
     document.getElementById("qr").style.display = "block";
 
-    // Save deposit request for admin
-    await set(ref(db, "pendingDeposits/" + depositID), {
-        uid: uid,
+    document.getElementById("details").innerHTML =
+        `<br>Payable Amount: <b>₹${finalPay}</b><br>
+         UPI ID: <b>9561998301@amazonpay</b>`;
+};
+
+// ----------------------------------------
+// SUBMIT DEPOSIT
+// ----------------------------------------
+window.submitDeposit = async function(){
+
+    let amt = Number(document.getElementById("amount").value);
+    let utr = document.getElementById("utr").value.trim();
+
+    if(amt < 50 || amt > 500){
+        alert("Enter valid amount between ₹50 - ₹500");
+        return;
+    }
+    if(utr.length < 6){
+        alert("Enter valid UTR number");
+        return;
+    }
+
+    let txID = "DP" + Math.floor(Math.random()*99999999);
+
+    await set(ref(db, "transactions/deposits/"+UID+"/"+txID), {
         amount: amt,
-        payAmount: payAmount,
-        txid: txid,
+        utr: utr,
         status: "pending",
-        timestamp: Date.now()
+        time: Date.now()
     });
 
-    alert("Deposit request created. Complete payment and wait for admin approval.");
+    alert("Deposit Submitted! Wait for approval.");
+    window.location = "processing.html";
 };
-</script>
 
+</script>
 </body>
 </html>
