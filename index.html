@@ -1,101 +1,213 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Login - H4XTEAM</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | H4XTEAM Global</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-soft: #eef2ff;
+            --bg: #f4f7fe;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
 
-<style>
-body{
-    background:#000;
-    color:#0affff;
-    font-family:Arial;
-    text-align:center;
-    padding-top:40px;
-}
+        body {
+            background-color: var(--bg);
+            color: var(--text-dark);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+        }
 
-.box{
-    width:85%;
-    max-width:420px;
-    background:#0a0a0a;
-    border:1px solid #00eaff;
-    box-shadow:0 0 20px #00eaff;
-    margin:auto;
-    padding:25px;
-    border-radius:15px;
-}
+        .login-wrapper {
+            width: 100%;
+            max-width: 400px;
+            padding: 20px;
+        }
 
-input{
-    width:90%;
-    padding:12px;
-    margin-top:12px;
-    background:#111;
-    border:1px solid #0affff;
-    border-radius:8px;
-    color:#0affff;
-}
+        .login-card {
+            background: var(--white);
+            padding: 45px 35px;
+            border-radius: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.04);
+            text-align: center;
+            border: 1px solid rgba(255,255,255,1);
+        }
 
-button{
-    width:90%;
-    padding:14px;
-    margin-top:20px;
-    background:#00eaff;
-    color:#000;
-    font-weight:bold;
-    border:none;
-    border-radius:8px;
-    font-size:18px;
-    box-shadow:0 0 15px #00eaff;
-}
-a{color:#0affff;text-decoration:none;font-size:15px;}
-</style>
+        .brand-logo {
+            width: 70px;
+            height: 70px;
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            color: white;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            font-weight: 800;
+            margin: 0 auto 25px;
+            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3);
+        }
+
+        h1 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            color: var(--text-dark);
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 14px;
+            color: var(--text-muted);
+            margin-bottom: 35px;
+        }
+
+        .input-box {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        label {
+            font-size: 11px;
+            font-weight: 800;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-left: 5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        input {
+            width: 100%;
+            padding: 16px 20px;
+            background: #f8fafc;
+            border: 2px solid #f1f5f9;
+            border-radius: 18px;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: inherit;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s ease;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 8px 15px rgba(67, 97, 238, 0.05);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 18px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.25);
+            transition: 0.3s;
+            margin-top: 10px;
+        }
+
+        .login-btn:active {
+            transform: scale(0.97);
+        }
+
+        .links-area {
+            margin-top: 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .link-item {
+            font-size: 14px;
+            text-decoration: none;
+            font-weight: 700;
+            color: var(--primary);
+            transition: 0.2s;
+        }
+
+        .link-secondary {
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+    </style>
 </head>
-
 <body>
 
-<h1 style="color:#00eaff;text-shadow:0 0 15px #00eaff;">H4XTEAM LOGIN</h1>
+<div class="login-wrapper">
+    <div class="login-card">
+        <div class="brand-logo">H</div>
+        <h1>Welcome Back</h1>
+        <p class="subtitle">Enter your credentials to continue</p>
 
-<div class="box">
-    <input id="email" type="email" placeholder="Email">
-    <input id="pass" type="password" placeholder="Password">
+        <div class="input-box">
+            <label>Email Address</label>
+            <input id="email" type="email" placeholder="name@example.com">
+        </div>
 
-    <button onclick="login()">LOGIN</button>
+        <div class="input-box">
+            <label>Password</label>
+            <input id="pass" type="password" placeholder="••••••••">
+        </div>
 
-    <br><br>
-    <a href="register.html">Create Account</a><br><br>
-    <a href="reset.html">Forgot Password?</a>
+        <button class="login-btn" onclick="login()">Sign In</button>
+
+        <div class="links-area">
+            <a href="register.html" class="link-item">Create an account</a>
+            <a href="reset.html" class="link-item link-secondary">Forgot password?</a>
+        </div>
+    </div>
 </div>
 
 <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-
-const firebaseConfig = {
-  apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain:"test-eb5e7.firebaseapp.com",
-  databaseURL:"https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId:"test-eb5e7",
-  storageBucket:"test-eb5e7.appspot.com",
-  messagingSenderId:"366282855653",
-  appId:"1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId:"G-ECKCTBLQJ8"
+    const firebaseConfig = {
+  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+  authDomain: "test-eb5e7.firebaseapp.com",
+  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+  projectId: "test-eb5e7",
+  storageBucket: "test-eb5e7.appspot.com",
+  messagingSenderId: "366282855653",
+  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+  measurementId: "G-ECKCTBLQJ8"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
 
-window.login = function(){
-    let email = document.getElementById("email").value;
-    let pass  = document.getElementById("pass").value;
+    window.login = function() {
+        let email = document.getElementById("email").value;
+        let pass = document.getElementById("pass").value;
 
-    signInWithEmailAndPassword(auth,email,pass)
-    .then(()=>{
-        window.location = "dashboard.html";
-    })
-    .catch(e=> alert(e.message));
-}
+        if(!email || !pass) {
+            alert("Please enter both email and password");
+            return;
+        }
 
+        signInWithEmailAndPassword(auth, email, pass)
+        .then(() => {
+            window.location = "dashboard.html";
+        })
+        .catch(e => {
+            alert("Login Failed: " + e.message);
+        });
+    }
 </script>
 </body>
 </html>
