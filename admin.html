@@ -1,112 +1,60 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>H4XTEAM ADMIN PANEL</title>
-
-<style>
-body {
-    background:#000;
-    color:#0aff9d;
-    font-family:Arial;
-    padding:20px;
-}
-h1 {
-    text-align:center;
-    color:#00ffdd;
-    text-shadow:0 0 15px #00ffff;
-}
-.section {
-    margin-top:30px;
-    padding:20px;
-    border:2px solid #00ffaa;
-    border-radius:10px;
-    box-shadow:0 0 15px #00ffaa;
-}
-button {
-    background:#00ffaa;
-    border:none;
-    color:#000;
-    padding:8px 18px;
-    border-radius:6px;
-    font-weight:bold;
-    cursor:pointer;
-}
-table {
-    width:100%;
-    margin-top:15px;
-    border-collapse:collapse;
-}
-th, td {
-    border:1px solid #00ffaa;
-    padding:10px;
-    text-align:center;
-}
-input {
-    background:#000;
-    color:#0aff9d;
-    border:1px solid #00ffaa;
-    padding:6px;
-    border-radius:5px;
-}
-.action-btn {
-    padding:6px 12px;
-    margin:2px;
-}
-.green { background:#00ff99; }
-.red { background:#ff4444; color:#fff; }
-</style>
+    <meta charset="UTF-8">
+    <title>H4XTEAM ADMIN PANEL</title>
+    <style>
+        body { background:#000; color:#0aff9d; font-family: 'Courier New', monospace; padding:20px; }
+        h1 { text-align:center; color:#00ffdd; text-shadow:0 0 15px #00ffff; }
+        .section { margin-top:30px; padding:20px; border:2px solid #00ffaa; border-radius:10px; background: rgba(0,255,170,0.05); }
+        table { width:100%; margin-top:15px; border-collapse:collapse; background: #111; }
+        th, td { border:1px solid #333; padding:12px; text-align:center; }
+        th { background: #00ffaa; color: #000; }
+        input { background:#111; color:#0aff9d; border:1px solid #00ffaa; padding:8px; border-radius:5px; width: 80px; }
+        button { padding:8px 15px; border-radius:5px; font-weight:bold; cursor:pointer; border: none; transition: 0.3s; }
+        .green { background:#00ff99; color: #000; }
+        .green:hover { background: #00cc77; }
+        .red { background:#ff4444; color:#fff; }
+        .red:hover { background: #cc3333; }
+        #loginOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:9999; }
+    </style>
 </head>
-
 <body>
 
-<h1>⚡ H4XTEAM ADMIN PANEL ⚡</h1>
+<div id="loginOverlay">
+    <h1>ADMIN ACCESS REQUIRED</h1>
+    <input type="password" id="adminPass" placeholder="Enter Password" style="width:200px; margin-bottom:10px;">
+    <button class="green" onclick="checkAuth()">UNLOCK PANEL</button>
+</div>
+
+<h1>⚡ H4XTEAM ADMIN SYSTEM ⚡</h1>
 
 <div class="section">
-    <h2>All Users</h2>
+    <h2>User Management</h2>
     <table id="userTable">
-        <tr>
-            <th>UID</th>
-            <th>Balance</th>
-            <th>Total Won</th>
-            <th>Deposits</th>
-            <th>Action</th>
-        </tr>
+        <tr><th>UID</th><th>Balance</th><th>Total Won</th><th>Action</th></tr>
     </table>
 </div>
 
 <div class="section">
     <h2>Pending Deposits</h2>
     <table id="depositTable">
-        <tr>
-            <th>UID</th>
-            <th>Amount</th>
-            <th>Pay</th>
-            <th>TXID</th>
-            <th>Action</th>
-        </tr>
+        <tr><th>UID</th><th>Amount</th><th>TXID</th><th>Action</th></tr>
     </table>
 </div>
 
 <div class="section">
     <h2>Pending Withdrawals</h2>
     <table id="withdrawTable">
-        <tr>
-            <th>UID</th>
-            <th>Amount</th>
-            <th>WID</th>
-            <th>Action</th>
-        </tr>
+        <tr><th>UID</th><th>Amount</th><th>WID</th><th>Action</th></tr>
     </table>
 </div>
 
 <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// Firebase Import
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-// Firebase Config
-const firebaseConfig = {
+    const firebaseConfig = {
   apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
   authDomain: "test-eb5e7.firebaseapp.com",
   databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
@@ -117,169 +65,114 @@ const firebaseConfig = {
   measurementId: "G-ECKCTBLQJ8"
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
 
-// ---------------- USERS SECTION ------------------
-function loadUsers() {
-    onValue(ref(db, "users/"), snapshot => {
-        let table = document.getElementById("userTable");
-        table.innerHTML = `
-            <tr>
-                <th>UID</th>
-                <th>Balance</th>
-                <th>Total Won</th>
-                <th>Deposits</th>
-                <th>Action</th>
-            </tr>
-        `;
+    // --- AUTH CHECK ---
+    window.checkAuth = function() {
+        const pass = document.getElementById("adminPass").value;
+        if(pass === "admin123") { // CHANGE THIS PASSWORD
+            document.getElementById("loginOverlay").style.display = "none";
+            loadAllData();
+        } else {
+            alert("Access Denied");
+        }
+    };
 
-        snapshot.forEach(user => {
-            let uid = user.key;
-            let data = user.val();
-
-            let row = `
+    function loadAllData() {
+        // Load Users
+        onValue(ref(db, "users/"), snap => {
+            let table = document.getElementById("userTable");
+            table.innerHTML = `<tr><th>UID</th><th>Balance</th><th>Total Won</th><th>Manual Adjust</th></tr>`;
+            snap.forEach(user => {
+                let d = user.val();
+                table.innerHTML += `
                 <tr>
-                    <td>${uid}</td>
-                    <td>₹${data.balance || 0}</td>
-                    <td>${data.totalWon || 0}</td>
-                    <td>${data.deposits || 0}</td>
+                    <td>${user.key}</td>
+                    <td>₹${d.balance || 0}</td>
+                    <td>${d.totalWon || 0}</td>
                     <td>
-                        <input id="add_${uid}" type="number" placeholder="Amount">
-                        <button class="green action-btn" onclick="addBalance('${uid}')">Add</button>
-                        <button class="red action-btn" onclick="minusBalance('${uid}')">Minus</button>
+                        <input id="amt_${user.key}" type="number" placeholder="Amt">
+                        <button class="green" onclick="adjustBalance('${user.key}', 'add')">+</button>
+                        <button class="red" onclick="adjustBalance('${user.key}', 'sub')">-</button>
                     </td>
-                </tr>
-            `;
-
-            table.innerHTML += row;
-        });
-    });
-}
-
-window.addBalance = function(uid){
-    let amt = Number(document.getElementById("add_"+uid).value);
-    if(!amt) return alert("Enter amount");
-
-    update(ref(db,"users/"+uid), { balance: (Math.floor(Math.random()*1)+amt) }, { merge:true});
-    alert("Balance Updated");
-};
-
-window.minusBalance = function(uid){
-    let amt = Number(document.getElementById("add_"+uid).value);
-    if(!amt) return alert("Enter amount");
-
-    update(ref(db,"users/"+uid), { balance: -amt }, { merge:true});
-    alert("Balance Deducted");
-};
-
-
-// ---------------- DEPOSITS SECTION ------------------
-function loadDeposits(){
-    onValue(ref(db,"transactions/deposits/"), snapshot => {
-        let table = document.getElementById("depositTable");
-        table.innerHTML = `
-            <tr>
-                <th>UID</th>
-                <th>Amount</th>
-                <th>Pay</th>
-                <th>TXID</th>
-                <th>Action</th>
-            </tr>
-        `;
-
-        snapshot.forEach(user => {
-            let uid = user.key;
-
-            user.forEach(tx => {
-                let d = tx.val();
-                if(d.status === "pending"){
-                    let row = `
-                        <tr>
-                            <td>${uid}</td>
-                            <td>₹${d.amount}</td>
-                            <td>₹${d.pay}</td>
-                            <td>${tx.key}</td>
-                            <td>
-                                <button class="green action-btn" onclick="approveDeposit('${uid}','${tx.key}',${d.amount})">Approve</button>
-                                <button class="red action-btn" onclick="rejectDeposit('${uid}','${tx.key}')">Reject</button>
-                            </td>
-                        </tr>
-                    `;
-                    table.innerHTML += row;
-                }
+                </tr>`;
             });
         });
-    });
-}
 
-window.approveDeposit = function(uid, txid, amount){
-    update(ref(db,"users/"+uid), { balance: amount }, { merge:true});
-    update(ref(db,"transactions/deposits/"+uid+"/"+txid), { status:"approved" });
-    alert("Deposit Approved");
-};
-
-window.rejectDeposit = function(uid, txid){
-    update(ref(db,"transactions/deposits/"+uid+"/"+txid), { status:"rejected" });
-    alert("Deposit Rejected");
-};
-
-
-// ---------------- WITHDRAWALS SECTION ------------------
-function loadWithdraw(){
-    onValue(ref(db,"transactions/withdrawals/"), snapshot => {
-        let table = document.getElementById("withdrawTable");
-        table.innerHTML = `
-            <tr>
-                <th>UID</th>
-                <th>Amount</th>
-                <th>WID</th>
-                <th>Action</th>
-            </tr>
-        `;
-
-        snapshot.forEach(user => {
-            let uid = user.key;
-
-            user.forEach(wd => {
-                let d = wd.val();
-                if(d.status === "pending"){
-                    let row = `
+        // Load Deposits
+        onValue(ref(db, "transactions/deposits/"), snap => {
+            let table = document.getElementById("depositTable");
+            table.innerHTML = `<tr><th>UID</th><th>Amount</th><th>TXID</th><th>Action</th></tr>`;
+            snap.forEach(userNode => {
+                userNode.forEach(tx => {
+                    let d = tx.val();
+                    if(d.status === "pending") {
+                        table.innerHTML += `
                         <tr>
-                            <td>${uid}</td>
+                            <td>${userNode.key}</td>
+                            <td>₹${d.amount}</td>
+                            <td>${tx.key}</td>
+                            <td>
+                                <button class="green" onclick="handleDeposit('${userNode.key}','${tx.key}',${d.amount},'approved')">Approve</button>
+                                <button class="red" onclick="handleDeposit('${userNode.key}','${tx.key}',0,'rejected')">Reject</button>
+                            </td>
+                        </tr>`;
+                    }
+                });
+            });
+        });
+
+        // Load Withdrawals
+        onValue(ref(db, "transactions/withdrawals/"), snap => {
+            let table = document.getElementById("withdrawTable");
+            table.innerHTML = `<tr><th>UID</th><th>Amount</th><th>WID</th><th>Action</th></tr>`;
+            snap.forEach(userNode => {
+                userNode.forEach(wd => {
+                    let d = wd.val();
+                    if(d.status === "pending") {
+                        table.innerHTML += `
+                        <tr>
+                            <td>${userNode.key}</td>
                             <td>₹${d.amount}</td>
                             <td>${wd.key}</td>
                             <td>
-                                <button class="green action-btn" onclick="approveWithdraw('${uid}','${wd.key}',${d.amount})">Approve</button>
-                                <button class="red action-btn" onclick="rejectWithdraw('${uid}','${wd.key}')">Reject</button>
+                                <button class="green" onclick="handleWithdraw('${userNode.key}','${wd.key}',${d.amount},'approved')">Confirm Pay</button>
+                                <button class="red" onclick="handleWithdraw('${userNode.key}','${wd.key}',${d.amount},'rejected')">Reject (Refund)</button>
                             </td>
-                        </tr>
-                    `;
-                    table.innerHTML += row;
-                }
+                        </tr>`;
+                    }
+                });
             });
         });
-    });
-}
+    }
 
-window.approveWithdraw = function(uid, wid, amount){
-    update(ref(db,"users/"+uid), { balance: -amount }, { merge:true});
-    update(ref(db,"transactions/withdrawals/"+uid+"/"+wid), { status:"approved" });
-    alert("Withdrawal Approved");
-};
+    // --- LOGIC FUNCTIONS ---
 
-window.rejectWithdraw = function(uid, wid){
-    update(ref(db,"transactions/withdrawals/"+uid+"/"+wid), { status:"rejected" });
-    alert("Withdrawal Rejected");
-};
+    window.adjustBalance = function(uid, type) {
+        let val = Number(document.getElementById("amt_"+uid).value);
+        if(!val) return alert("Enter amount");
+        let finalAmt = type === 'add' ? val : -val;
+        update(ref(db, `users/${uid}`), { balance: increment(finalAmt) });
+        alert("Success");
+    };
 
+    window.handleDeposit = function(uid, txid, amount, status) {
+        if(status === 'approved') {
+            update(ref(db, `users/${uid}`), { balance: increment(amount) });
+        }
+        update(ref(db, `transactions/deposits/${uid}/${txid}`), { status: status });
+    };
 
-// Start loading everything
-loadUsers();
-loadDeposits();
-loadWithdraw();
+    window.handleWithdraw = function(uid, wid, amount, status) {
+        if(status === 'rejected') {
+            // Refund the balance if rejected
+            update(ref(db, `users/${uid}`), { balance: increment(amount) });
+        }
+        // If approved, we don't subtract again because it's usually subtracted when user requests it
+        update(ref(db, `transactions/withdrawals/${uid}/${wid}`), { status: status });
+    };
 
 </script>
-
 </body>
 </html>
