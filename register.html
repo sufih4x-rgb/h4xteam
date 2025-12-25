@@ -63,16 +63,8 @@
         text-decoration: none;
     }
 
-    .success {
-        color: #0f0;
-        font-size: 14px;
-        margin-top: 10px;
-    }
-    .error {
-        color: #f00;
-        font-size: 14px;
-        margin-top: 10px;
-    }
+    .success { color: #0f0; font-size: 14px; margin-top: 10px; }
+    .error { color: #f00; font-size: 14px; margin-top: 10px; }
 </style>
 </head>
 
@@ -84,7 +76,7 @@
     <input type="email" id="email" placeholder="Email">
     <input type="password" id="password" placeholder="Password">
 
-    <button onclick="register()">Register</button>
+    <button onclick="registerUser()">Register</button>
 
     <p style="margin-top:15px;">
         <a href="index.html">Already have an account?</a>
@@ -94,23 +86,24 @@
 </div>
 
 <script>
-function register() {
-    let email = document.getElementById("email").value.trim();
-    let pass = document.getElementById("password").value.trim();
-    let msg = document.getElementById("msg");
+function registerUser() {
+    const email = document.getElementById("email").value.trim();
+    const pass  = document.getElementById("password").value.trim();
+    const msg   = document.getElementById("msg");
 
-    if (email === "" || pass === "") {
-        msg.innerHTML = `<span class="error">Fill all fields.</span>`;
+    if (!email || !pass) {
+        msg.innerHTML = "<div class='error'>Fill all fields.</div>";
         return;
     }
 
-    let users = JSON.parse(localStorage.getItem("users")) || {};
+    let users = JSON.parse(localStorage.getItem("users") || "{}");
 
     if (users[email]) {
-        msg.innerHTML = `<span class="error">Email already registered.</span>`;
+        msg.innerHTML = "<div class='error'>Email already registered.</div>";
         return;
     }
 
+    // Create user
     users[email] = {
         password: pass,
         verified: false,
@@ -121,12 +114,16 @@ function register() {
     };
 
     localStorage.setItem("users", JSON.stringify(users));
+    msg.innerHTML = "<div class='success'>Verification link sent! Please wait...</div>";
 
-    msg.innerHTML = `<span class="success">Verification link sent to email!</span>`;
-
+    // Auto verify after 2 sec
     setTimeout(() => {
-        users[email].verified = true;
-        localStorage.setItem("users", JSON.stringify(users));
+        let users2 = JSON.parse(localStorage.getItem("users") || "{}");
+        if (users2[email]) {
+            users2[email].verified = true;
+            localStorage.setItem("users", JSON.stringify(users2));
+        }
+
         window.location.href = "index.html";
     }, 2000);
 }
