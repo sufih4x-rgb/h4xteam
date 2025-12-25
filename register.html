@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>H4XTEAM - Register</title>
+
+<style>
+    body {
+        margin: 0;
+        font-family: Arial, sans-serif;
+        background: #000;
+        color: #fff;
+        text-align: center;
+    }
+
+    .title {
+        margin-top: 40px;
+        font-size: 32px;
+        font-weight: bold;
+        color: #0ff;
+        text-shadow: 0 0 15px #0ff;
+    }
+
+    .box {
+        width: 90%;
+        max-width: 400px;
+        margin: 40px auto;
+        background: #111;
+        padding: 25px;
+        border-radius: 12px;
+        box-shadow: 0 0 20px #0ff;
+    }
+
+    input {
+        width: 90%;
+        padding: 12px;
+        margin: 10px 0;
+        border: none;
+        border-radius: 8px;
+        outline: none;
+        background: #222;
+        color: #0ff;
+        box-shadow: 0 0 10px #0ff;
+    }
+
+    button {
+        width: 95%;
+        padding: 12px;
+        margin-top: 15px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        background: #0ff;
+        color: #000;
+        cursor: pointer;
+        font-weight: bold;
+        box-shadow: 0 0 15px #0ff;
+    }
+
+    a {
+        color: #0ff;
+        text-decoration: none;
+    }
+
+    .success {
+        color: #0f0;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+    .error {
+        color: #f00;
+        font-size: 14px;
+        margin-top: 10px;
+    }
+</style>
+</head>
+
+<body>
+
+<div class="title">REGISTER</div>
+
+<div class="box">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
+
+    <button onclick="register()">Register</button>
+
+    <p style="margin-top:15px;">
+        <a href="index.html">Already have an account?</a>
+    </p>
+
+    <div id="msg"></div>
+</div>
+
+<script>
+function register() {
+    let email = document.getElementById("email").value.trim();
+    let pass = document.getElementById("password").value.trim();
+    let msg = document.getElementById("msg");
+
+    if (email === "" || pass === "") {
+        msg.innerHTML = `<span class="error">Fill all fields.</span>`;
+        return;
+    }
+
+    let users = JSON.parse(localStorage.getItem("users")) || {};
+
+    if (users[email]) {
+        msg.innerHTML = `<span class="error">Email already registered.</span>`;
+        return;
+    }
+
+    users[email] = {
+        password: pass,
+        verified: false,
+        balance: 0,
+        deposits: 0,
+        wins: 0,
+        vip: 0
+    };
+
+    localStorage.setItem("users", JSON.stringify(users));
+
+    msg.innerHTML = `<span class="success">Verification link sent to email!</span>`;
+
+    setTimeout(() => {
+        users[email].verified = true;
+        localStorage.setItem("users", JSON.stringify(users));
+        window.location.href = "index.html";
+    }, 2000);
+}
+</script>
+
+</body>
+</html>
