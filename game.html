@@ -1,32 +1,219 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Red Green Betting Game</title>
+<meta charset="UTF-8">
+<title>Color Game - H4XTEAM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body {
+    background: #000;
+    color: white;
+    font-family: Arial;
+    text-align: center;
+    padding: 20px;
+}
 
-    <style>
-        body {
-            margin: 0;
-            background: #000;
-            font-family: Arial, sans-serif;
-            color: #fff;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
+h1 {
+    color: #00eaff;
+    margin-bottom: 20px;
+}
+
+.box {
+    background: #0d0d0d;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    margin: auto;
+    border: 1px solid #00eaff33;
+}
+
+.balance {
+    font-size: 22px;
+    margin-bottom: 20px;
+}
+
+.color-btn {
+    width: 45%;
+    padding: 20px;
+    border-radius: 10px;
+    font-size: 22px;
+    color: white;
+    border: none;
+    margin: 10px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+#redBtn { background: #ff0033; }
+#greenBtn { background: #00cc44; }
+
+input {
+    width: 90%;
+    padding: 12px;
+    background: #1b1b1b;
+    border: none;
+    color: white;
+    font-size: 18px;
+    border-radius: 10px;
+    margin-top: 10px;
+}
+
+button#betBtn {
+    width: 90%;
+    padding: 15px;
+    background: #00eaff;
+    border: none;
+    border-radius: 10px;
+    margin-top: 15px;
+    font-weight: bold;
+    font-size: 22px;
+    cursor: pointer;
+}
+
+#result {
+    margin-top: 20px;
+    font-size: 22px;
+}
+</style>
+</head>
+
+<body>
+
+<h1>RED / GREEN Game</h1>
+
+<div class="box">
+    <p class="balance">Balance: ₹<span id="balance">0</span></p>
+
+    <p style="font-size:20px;">Choose a color:</p>
+
+    <button class="color-btn" id="redBtn" onclick="selectColor('RED')">RED</button>
+    <button class="color-btn" id="greenBtn" onclick="selectColor('GREEN')">GREEN</button>
+
+    <p style="margin-top:20px;">Enter Bet Amount (Min 5, Max 1000):</p>
+    <input type="number" id="betAmt" min="5" max="1000">
+
+    <button id="betBtn" onclick="playGame()">PLAY</button>
+
+    <p id="result"></p>
+</div>
+
+<a href="dashboard.html" style="color:#00eaff; display:block; margin-top:25px;">⬅ Back to Dashboard</a>
+
+
+<script type="module">
+// Firebase Imports
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getDatabase, ref, get, update, push } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+
+// Your Firebase Config
+const firebaseConfig = {
+    apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+    authDomain: "test-eb5e7.firebaseapp.com",
+    databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+    projectId: "test-eb5e7",
+    storageBucket: "test-eb5e7.appspot.com",
+    messagingSenderId: "366282855653",
+    appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+    measurementId: "G-ECKCTBLQJ8"
+};
+
+// Init
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+let selectedColor = null;
+let currentBalance = 0;
+
+// Load balance
+onAuthStateChanged(auth, (user) => {
+    if (!user) {
+        window.location.href = "index.html";
+        return;
+    }
+
+    const userRef = ref(db, "users/" + user.uid);
+
+    get(userRef).then(snap => {
+        if (snap.exists()) {
+            currentBalance = snap.val().balance || 0;
+            document.getElementById("balance").innerText = currentBalance;
         }
+    });
+});
 
-        .game-box {
-            width: 100%;
-            max-width: 400px;
-            background: #111;
-            padding: 20px;
-            border-radius: 12px;
-            text-align: center;
-            box-shadow: 0 0 15px rgba(255,255,255,0.1);
-        }
+// Select color
+window.selectColor = function (color) {
+    selectedColor = color;
 
-        h2 {
-            margin-top: 0;
-            color: #
+    document.getElementById("redBtn").style.opacity = color === "RED" ? "0.5" : "1";
+    document.getElementById("greenBtn").style.opacity = color === "GREEN" ? "0.5" : "1";
+};
+
+
+// Play Game
+window.playGame = function () {
+
+    const betAmount = Number(document.getElementById("betAmt").value);
+    const resultBox = document.getElementById("result");
+    const user = auth.currentUser;
+
+    if (!selectedColor) {
+        resultBox.innerHTML = "<span style='color:red;'>Select RED or GREEN first!</span>";
+        return;
+    }
+    if (!betAmount || betAmount < 5 || betAmount > 1000) {
+        resultBox.innerHTML = "<span style='color:red;'>Bet must be between 5 and 1000</span>";
+        return;
+    }
+    if (betAmount > currentBalance) {
+        resultBox.innerHTML = "<span style='color:red;'>Not enough balance</span>";
+        return;
+    }
+
+    const userRef = ref(db, "users/" + user.uid);
+    const newBalance = currentBalance - betAmount;
+
+    update(userRef, { balance: newBalance });
+
+    const colors = ["RED", "GREEN"];
+    const winningColor = colors[Math.floor(Math.random() * 2)];
+
+    let win = false;
+    let winAmount = 0;
+
+    if (selectedColor === winningColor) {
+        win = true;
+        winAmount = Math.floor(betAmount * 1.9);
+
+        update(userRef, { balance: newBalance + winAmount });
+        currentBalance = newBalance + winAmount;
+
+        resultBox.innerHTML =
+            `<span style='color:#00ff99;'>You WIN! Winning Color: ${winningColor} <br> Received: ₹${winAmount}</span>`;
+    } else {
+        currentBalance = newBalance;
+        resultBox.innerHTML =
+            `<span style='color:#ff0033;'>You LOST! Winning Color: ${winningColor}</span>`;
+    }
+
+    document.getElementById("balance").innerText = currentBalance;
+
+    // Save Game Result
+    const gameRef = ref(db, "games/");
+    push(gameRef, {
+        uid: user.uid,
+        betAmount: betAmount,
+        colorChosen: selectedColor,
+        resultColor: winningColor,
+        win: win,
+        winAmount: winAmount,
+        newBalance: currentBalance,
+        timestamp: Date.now()
+    });
+};
+</script>
+
+</body>
+</html>
