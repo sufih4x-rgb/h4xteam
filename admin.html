@@ -3,71 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin Panel - Financial Control</title>
+    <title>Master Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .action-btn { transition: all 0.2s; }
-        .action-btn:hover { transform: scale(1.05); }
+        .stat-card { transition: transform 0.2s; }
+        .stat-card:hover { transform: translateY(-5px); }
     </style>
 </head>
-<body class="bg-slate-50 font-sans">
+<body class="bg-gray-50 font-sans">
 
     <div class="flex flex-col md:flex-row min-h-screen">
         <div class="bg-slate-900 text-white w-full md:w-64 flex-shrink-0">
-            <div class="p-6 text-2xl font-bold border-b border-slate-700">Admin Panel</div>
+            <div class="p-6 text-xl font-bold border-b border-slate-700 flex items-center">
+                <i class="fas fa-shield-alt mr-2 text-blue-500"></i> ADMIN CORE
+            </div>
             <nav class="mt-4">
-                <a href="#" onclick="showTab('users-tab')" class="block py-3 px-6 hover:bg-slate-800 border-l-4 border-transparent hover:border-blue-500"><i class="fas fa-users mr-3"></i> Users</a>
-                <a href="#" onclick="showTab('withdraw-tab')" class="block py-3 px-6 hover:bg-slate-800 border-l-4 border-transparent hover:border-blue-500"><i class="fas fa-money-bill-wave mr-3"></i> Withdraw Requests</a>
-                <a href="#" onclick="showTab('deposit-tab')" class="block py-3 px-6 hover:bg-slate-800 border-l-4 border-transparent hover:border-blue-500"><i class="fas fa-plus-circle mr-3"></i> Deposit Requests</a>
-                <a href="#" onclick="showTab('recharge-tab')" class="block py-3 px-6 hover:bg-slate-800 border-l-4 border-transparent hover:border-blue-500"><i class="fas fa-mobile-alt mr-3"></i> SIM Recharge</a>
+                <a href="#" onclick="showTab('dashboard-tab')" class="block py-3 px-6 hover:bg-slate-800 border-l-4 border-blue-500 bg-slate-800"><i class="fas fa-tachometer-alt mr-3"></i> Dashboard</a>
+                <a href="#" onclick="showTab('users-tab')" class="block py-3 px-6 hover:bg-slate-800 border-l-4 border-transparent hover:border-blue-500"><i class="fas fa-users mr-3"></i> Manage Users</a>
+                <a href="#" onclick="showTab('withdraw-tab')" class="block py-3 px-6 hover:bg-slate-800 border-l-4 border-transparent hover:border-blue-500"><i class="fas fa-wallet mr-3"></i> Withdrawals</a>
+                <a href="#" onclick="showTab('deposit-tab')" class="block py-3 px-6 hover:bg-slate-800 border-l-4 border-transparent hover:border-blue-500"><i class="fas fa-university mr-3"></i> Deposits</a>
+                <a href="#" onclick="showTab('recharge-tab')" class="block py-3 px-6 hover:bg-slate-800 border-l-4 border-transparent hover:border-blue-500"><i class="fas fa-sim-card mr-3"></i> Recharges</a>
             </nav>
         </div>
 
-        <div class="flex-1 p-4 md:p-8">
+        <div class="flex-1 p-6 md:p-10">
             
-            <div id="withdraw-tab" class="tab-content active">
-                <h2 class="text-3xl font-bold text-slate-800 mb-6">Withdrawal Requests</h2>
-                <div class="bg-white rounded-xl shadow-sm overflow-hidden border border-slate-200">
+            <div id="dashboard-tab" class="tab-content active">
+                <h2 class="text-3xl font-bold text-gray-800 mb-8">System Overview</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
+                        <p class="text-sm text-gray-500 font-bold uppercase">Total Users</p>
+                        <h3 id="stat-total-users" class="text-3xl font-black text-gray-800">0</h3>
+                    </div>
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-orange-500">
+                        <p class="text-sm text-gray-500 font-bold uppercase">Pending Withdraws</p>
+                        <h3 id="stat-withdraws" class="text-3xl font-black text-gray-800">0</h3>
+                    </div>
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
+                        <p class="text-sm text-gray-500 font-bold uppercase">Pending Deposits</p>
+                        <h3 id="stat-deposits" class="text-3xl font-black text-gray-800">0</h3>
+                    </div>
+                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
+                        <p class="text-sm text-gray-500 font-bold uppercase">Recharge Req</p>
+                        <h3 id="stat-recharges" class="text-3xl font-black text-gray-800">0</h3>
+                    </div>
+                </div>
+
+                <h3 class="text-xl font-bold text-gray-700 mb-4">Registered User List</h3>
+                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
                     <table class="w-full text-left">
-                        <thead class="bg-slate-100 border-b border-slate-200">
+                        <thead class="bg-gray-100">
                             <tr>
-                                <th class="px-6 py-4 text-sm font-semibold text-slate-600">User UID</th>
-                                <th class="px-6 py-4 text-sm font-semibold text-slate-600">Amount</th>
-                                <th class="px-6 py-4 text-sm font-semibold text-slate-600 text-blue-600">UPI ID / Method</th>
-                                <th class="px-6 py-4 text-sm font-semibold text-slate-600">Action</th>
+                                <th class="p-4 text-sm font-bold">UID</th>
+                                <th class="p-4 text-sm font-bold">Name</th>
+                                <th class="p-4 text-sm font-bold">Balance</th>
+                                <th class="p-4 text-sm font-bold">Status</th>
                             </tr>
                         </thead>
-                        <tbody id="withdrawList" class="divide-y divide-slate-100">
+                        <tbody id="fullUserList" class="divide-y">
                             </tbody>
                     </table>
                 </div>
             </div>
 
             <div id="users-tab" class="tab-content">
-                <h2 class="text-3xl font-bold mb-6">Search User</h2>
-                <div class="bg-white p-6 rounded-xl shadow-sm border border-slate-200">
-                    <div class="flex gap-3">
-                        <input id="searchUid" type="text" placeholder="Enter User UID" class="flex-1 border p-3 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none">
-                        <button onclick="searchUser()" class="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700">Search</button>
+                <h2 class="text-3xl font-bold mb-6">User Controls</h2>
+                <div class="bg-white p-8 rounded-xl shadow-md border max-w-2xl">
+                    <div class="flex gap-4">
+                        <input id="searchUid" type="text" placeholder="Paste User UID here..." class="flex-1 border-2 p-3 rounded-lg focus:border-blue-500 outline-none transition">
+                        <button onclick="searchUser()" class="bg-blue-600 text-white px-10 py-3 rounded-lg hover:bg-blue-700 font-bold">SEARCH</button>
                     </div>
-                    <div id="userDetails" class="hidden mt-8 p-6 bg-slate-50 rounded-lg border border-slate-200">
-                        <div class="grid grid-cols-2 gap-4">
-                            <p class="text-slate-600">Name: <span id="uName" class="font-bold text-slate-900">-</span></p>
-                            <p class="text-slate-600">Balance: <span class="font-bold text-green-600">$<span id="uBalance">0</span></span></p>
-                            <p class="text-slate-600">Status: <span id="uStatus" class="px-2 py-1 rounded text-xs uppercase font-bold">-</span></p>
+                    <div id="userDetails" class="hidden mt-10 p-6 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
+                        <div class="grid grid-cols-2 gap-6">
+                            <div><p class="text-gray-500 text-sm">Full Name</p><p id="uName" class="font-bold text-lg">-</p></div>
+                            <div><p class="text-gray-500 text-sm">Wallet Balance</p><p class="text-green-600 font-bold text-lg">$<span id="uBalance">0</span></p></div>
                         </div>
-                        <div class="mt-6 flex items-center gap-4">
-                            <input id="addAmount" type="number" placeholder="Amt" class="w-32 border p-2 rounded-lg">
-                            <button onclick="updateBalance()" class="bg-green-600 text-white px-4 py-2 rounded-lg">Add Balance</button>
-                            <button id="banBtn" onclick="toggleBan()" class="bg-red-600 text-white px-4 py-2 rounded-lg">Ban User</button>
+                        <div class="mt-8 flex items-center gap-4 bg-white p-4 rounded-lg shadow-inner">
+                            <input id="addAmount" type="number" placeholder="Enter Amount" class="w-full border p-2 rounded">
+                            <button onclick="updateBalance()" class="bg-green-500 text-white px-6 py-2 rounded font-bold whitespace-nowrap">ADD BALANCE</button>
+                            <button id="banBtn" onclick="toggleBan()" class="bg-red-500 text-white px-6 py-2 rounded font-bold whitespace-nowrap">BAN USER</button>
                         </div>
                     </div>
                 </div>
             </div>
-            
+
+            <div id="withdraw-tab" class="tab-content">
+                <h2 class="text-3xl font-bold mb-6">Withdrawal Queue</h2>
+                <div class="bg-white rounded-xl shadow overflow-hidden"><table class="w-full"><thead class="bg-slate-800 text-white"><tr><th class="p-4">UID</th><th class="p-4">Amount</th><th class="p-4">UPI/Details</th><th class="p-4">Actions</th></tr></thead><tbody id="withdrawList" class="text-center divide-y"></tbody></table></div>
+            </div>
             </div>
     </div>
 
@@ -89,73 +116,99 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Navigation
+        // UI Tabs
         window.showTab = (id) => {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         };
 
-        // LOAD WITHDRAWALS (With UPI ID support)
-        const loadWithdrawals = () => {
-            const withdrawRef = ref(db, 'withdraws');
-            onValue(withdrawRef, (snapshot) => {
-                const container = document.getElementById('withdrawList');
-                container.innerHTML = "";
-                snapshot.forEach((childSnapshot) => {
-                    const data = childSnapshot.val();
-                    const id = childSnapshot.key;
-                    
-                    // Note: 'data.upi' is where we expect the user's UPI ID
-                    container.innerHTML += `
-                        <tr class="hover:bg-slate-50 transition">
-                            <td class="px-6 py-4 font-mono text-xs text-slate-500">${data.uid}</td>
-                            <td class="px-6 py-4 font-bold text-slate-800">$${data.amount}</td>
-                            <td class="px-6 py-4">
-                                <span class="bg-blue-50 text-blue-700 px-3 py-1 rounded-full text-sm font-medium border border-blue-100">
-                                    ${data.upi || data.method || 'No UPI Provided'}
-                                </span>
-                            </td>
-                            <td class="px-6 py-4 space-x-2">
-                                <button onclick="processReq('withdraws', '${id}', 'Approved')" class="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded shadow-sm text-sm action-btn">Approve</button>
-                                <button onclick="processReq('withdraws', '${id}', 'Rejected')" class="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded shadow-sm text-sm action-btn">Reject</button>
-                            </td>
-                        </tr>
-                    `;
-                });
+        // --- GLOBAL DATA FETCHING ---
+
+        // 1. Get All Registered Users & Stats
+        onValue(ref(db, 'users'), (snapshot) => {
+            const userTable = document.getElementById('fullUserList');
+            const totalUsersLabel = document.getElementById('stat-total-users');
+            userTable.innerHTML = "";
+            let count = 0;
+
+            snapshot.forEach((child) => {
+                const u = child.val();
+                const uid = child.key;
+                count++;
+                userTable.innerHTML += `
+                    <tr>
+                        <td class="p-4 font-mono text-xs text-blue-600">${uid}</td>
+                        <td class="p-4 font-bold">${u.name || 'User'}</td>
+                        <td class="p-4 text-green-600 font-bold">$${u.balance || 0}</td>
+                        <td class="p-4"><span class="px-2 py-1 rounded-full text-xs font-bold ${u.status === 'Banned' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">${u.status || 'Active'}</span></td>
+                    </tr>`;
+            });
+            totalUsersLabel.innerText = count;
+        });
+
+        // 2. Monitor Request Counts
+        const monitorNode = (path, elementId) => {
+            onValue(ref(db, path), (snapshot) => {
+                document.getElementById(elementId).innerText = snapshot.size || 0;
             });
         };
+        monitorNode('withdraws', 'stat-withdraws');
+        monitorNode('deposits', 'stat-deposits');
+        monitorNode('recharges', 'stat-recharges');
 
-        window.processReq = async (path, key, status) => {
-            if(confirm(`Are you sure you want to mark this as ${status}?`)) {
-                // Here you would typically move the record to a 'history' node
-                // For now, we delete it from the active request list
-                await remove(ref(db, `${path}/${key}`));
-                alert(`Request ${status}`);
-            }
-        };
-
-        // User Search Logic
+        // --- USER SEARCH & ACTION ---
         window.searchUser = async () => {
-            const uid = document.getElementById('searchUid').value;
-            if(!uid) return alert("Enter UID");
-            
-            const userRef = ref(db, `users/${uid}`);
-            const snap = await get(userRef);
+            const uid = document.getElementById('searchUid').value.trim();
+            if(!uid) return;
+            const snap = await get(ref(db, `users/${uid}`));
             if(snap.exists()) {
                 const u = snap.val();
                 document.getElementById('userDetails').classList.remove('hidden');
-                document.getElementById('uName').innerText = u.name || "N/A";
+                document.getElementById('uName').innerText = u.name || "Unknown";
                 document.getElementById('uBalance').innerText = u.balance || 0;
-                const statusEl = document.getElementById('uStatus');
-                statusEl.innerText = u.status || "Active";
-                statusEl.className = u.status === 'Banned' ? 'bg-red-100 text-red-700 px-2 py-1 rounded text-xs uppercase font-bold' : 'bg-green-100 text-green-700 px-2 py-1 rounded text-xs uppercase font-bold';
-            } else {
-                alert("User not found");
-            }
+                document.getElementById('banBtn').innerText = u.status === 'Banned' ? 'UNBAN USER' : 'BAN USER';
+            } else { alert("User UID not found in database."); }
         };
 
-        // Initialize
-        loadWithdrawals();
+        window.updateBalance = async () => {
+            const uid = document.getElementById('searchUid').value;
+            const amt = parseFloat(document.getElementById('addAmount').value);
+            if(isNaN(amt)) return;
+            const snap = await get(ref(db, `users/${uid}`));
+            const newBal = (snap.val().balance || 0) + amt;
+            await update(ref(db, `users/${uid}`), { balance: newBal });
+            alert("Balance added!");
+            searchUser();
+        };
+
+        window.toggleBan = async () => {
+            const uid = document.getElementById('searchUid').value;
+            const snap = await get(ref(db, `users/${uid}`));
+            const newStatus = snap.val().status === 'Banned' ? 'Active' : 'Banned';
+            await update(ref(db, `users/${uid}`), { status: newStatus });
+            searchUser();
+        };
+        
+        // Load Withdrawals (Detailed)
+        onValue(ref(db, 'withdraws'), (snapshot) => {
+            const list = document.getElementById('withdrawList');
+            list.innerHTML = "";
+            snapshot.forEach(child => {
+                const d = child.val();
+                list.innerHTML += `
+                    <tr>
+                        <td class="p-4 text-xs font-mono">${d.uid}</td>
+                        <td class="p-4 font-bold">$${d.amount}</td>
+                        <td class="p-4 text-blue-600">${d.upi || 'N/A'}</td>
+                        <td class="p-4 space-x-2">
+                            <button onclick="approveWithdraw('${child.key}', '${d.uid}', ${d.amount})" class="bg-green-500 text-white px-3 py-1 rounded">Approve</button>
+                            <button onclick="removeReq('withdraws', '${child.key}')" class="bg-red-500 text-white px-3 py-1 rounded">Reject</button>
+                        </td>
+                    </tr>`;
+            });
+        });
+
+        window.removeReq = async (path, key) => { await remove(ref(db, `${path}/${key}`)); };
 
     </script>
 </body>
