@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Profile</title>
+<link rel="stylesheet" href="assets/css/neon.css">
+</head>
+
+<body>
+
+<div class="nav">
+    <a href="dashboard.html">Home</a>
+    <a href="deposit.html">Deposit</a>
+    <a href="withdraw.html">Withdraw</a>
+    <a href="profile.html">Profile</a>
+    <a href="settings.html">Settings</a>
+</div>
+
+<h1>Profile</h1>
+
+<div class="card">
+    <p id="email"></p>
+    <p id="vip"></p>
+    <p id="wins"></p>
+    <button onclick="logout()">Logout</button>
+</div>
+
+<script type="module">
+import { auth, db } from "./assets/js/firebase.js";
+import { signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { get, ref } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+
+onAuthStateChanged(auth, async (u)=>{
+    if(!u) location.href="index.html";
+
+    const snap = await get(ref(db, "users/" + u.uid));
+    const d = snap.val();
+
+    email.innerHTML = "Email: " + d.email;
+    vip.innerHTML = "VIP: " + d.vip;
+    wins.innerHTML = "Wins: " + d.wins;
+});
+
+window.logout = function(){
+    signOut(auth).then(()=> location.href="index.html");
+};
+</script>
+
+</body>
+</html>
