@@ -1,154 +1,70 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>H4XTEAM – Dashboard</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
-<!-- Google Fonts -->
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-
+<title>Dashboard - H4XTEAM</title>
 <style>
-body {
-    margin: 0;
-    background: #000;
-    color: #fff;
-    font-family: 'Poppins', sans-serif;
-}
-.container {
-    width: 92%;
-    margin: 20px auto;
-    padding: 20px;
-    background: rgba(20, 20, 20, 0.7);
-    border-radius: 12px;
-    box-shadow: 0 0 20px #00eaff;
-}
-h2 { text-align:center; }
-
-/* Cards */
-.card {
-    background: rgba(30, 30, 30, 0.7);
-    padding: 20px;
-    margin: 15px 0;
-    border-radius: 12px;
-    box-shadow: 0 0 15px #00eaff;
-}
-
-/* Navigation buttons */
-.btn {
-    width: 100%;
-    padding: 15px;
-    background: #00eaff;
-    color: #000;
-    border: none;
-    font-size: 17px;
-    margin: 8px 0;
-    border-radius: 10px;
-    font-weight: 600;
-    cursor: pointer;
-    box-shadow: 0 0 20px #00eaff;
-}
-.btn:hover { box-shadow: 0 0 30px #00eaff; }
-
-/* Logout */
-.logout {
-    width: 100%;
-    padding: 12px;
-    background: red;
-    border: none;
-    border-radius: 10px;
-    color: white;
-    font-size: 16px;
-    margin-top: 20px;
-    cursor: pointer;
-}
+body{background:#000;color:#0affff;font-family:Arial;text-align:center;padding-top:30px}
+button{width:80%;padding:15px;margin:10px;font-size:18px;border-radius:8px;border:none;background:#0affff;color:#000;font-weight:bold}
+#box{padding:20px;border:1px solid #0affff;margin:20px;border-radius:8px}
 </style>
 </head>
 
 <body>
 
-<div class="container">
-    <h2>H4XTEAM Dashboard</h2>
+<h1>Dashboard</h1>
 
-    <div class="card">
-        <p><b>Email:</b> <span id="email"></span></p>
-        <p><b>Balance:</b> ₹<span id="balance"></span></p>
-        <p><b>VIP Level:</b> <span id="vip"></span></p>
-        <p><b>Deposits:</b> <span id="depCount"></span></p>
-    </div>
-
-    <button class="btn" onclick="go('deposit.html')">Deposit</button>
-    <button class="btn" onclick="go('withdraw.html')">Withdraw</button>
-    <button class="btn" onclick="go('game.html')">Play Game (Red / Green)</button>
-    <button class="btn" onclick="go('profile.html')">Profile</button>
-    <button class="btn" onclick="go('settings.html')">Settings</button>
-    <button class="btn" onclick="go('processing.html')">Processing Page</button>
-
-    <button class="logout" onclick="logout()">Logout</button>
+<div id="box">
+  <p id="email"></p>
+  <p>Balance: ₹<span id="balance">0</span></p>
+  <p>VIP Level: <span id="vip">0</span></p>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
+<button onclick="go('game.html')">Play Game</button>
+<button onclick="go('deposit.html')">Deposit</button>
+<button onclick="go('withdraw.html')">Withdraw</button>
+<button onclick="go('profile.html')">Profile</button>
 
-<script>
-// CONFIG
-const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+ authDomain:"test-eb5e7.firebaseapp.com",
+ databaseURL:"https://test-eb5e7-default-rtdb.firebaseio.com",
+ projectId:"test-eb5e7",
+ storageBucket:"test-eb5e7.appspot.com",
+ messagingSenderId:"366282855653",
+ appId:"1:366282855653:web:dca7e000f5a22fb11f300c",
+ measurementId:"G-ECKCTBLQJ8"
 };
 
-// INIT
-const app = firebase.initializeApp(firebaseConfig);
-const auth = firebase.getAuth();
-const db = firebase.getDatabase();
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getDatabase(app);
 
-function go(page){
-    window.location = page;
-}
+window.go = (p)=>window.location=p;
 
-async function loadUser() {
-    firebase.onAuthStateChanged(auth, async (user) => {
-        if (!user) {
-            window.location = "index.html";
-            return;
-        }
+onAuthStateChanged(auth, async user=>{
+ if(!user) return window.location="index.html";
 
-        const uid = user.uid;
+ let snap=await get(ref(db,"users/"+user.uid));
 
-        // Check device
-        const localDev = localStorage.getItem("deviceId");
-        const snap = await firebase.get(firebase.ref(db, "users/" + uid));
-        const data = snap.val();
+ // Auto logout if device mismatch
+ let saved=snap.val().device;
+ let now=navigator.userAgent;
 
-        if (!data) return;
+ if(saved!==now){
+   alert("Logged out because account used on another device");
+   signOut(auth);
+   return;
+ }
 
-        if (data.deviceId !== localDev) {
-            alert("You were logged out because account opened on another device.");
-            firebase.signOut(auth);
-            return;
-        }
-
-        email.innerHTML = data.email;
-        balance.innerHTML = data.balance;
-        vip.innerHTML = data.vipLevel;
-        depCount.innerHTML = data.depositCount;
-    });
-}
-
-loadUser();
-
-function logout() {
-    firebase.signOut(auth).then(()=>{
-        window.location = "index.html";
-    });
-}
+ document.getElementById("email").innerText=user.email;
+ document.getElementById("balance").innerText=snap.val().balance;
+ document.getElementById("vip").innerText=snap.val().vip;
+});
 </script>
 
 </body>
