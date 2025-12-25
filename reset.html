@@ -1,86 +1,116 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Reset Password</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Password Reset - H4X TEAM</title>
 
-<style>
-body {
-    background: #000;
-    color: #0ff;
-    font-family: Arial;
-    height: 100vh;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-.card {
-    background: rgba(0,0,0,0.5);
-    padding: 30px;
-    width: 350px;
-    border: 1px solid #0ff;
-    box-shadow: 0 0 20px #0ff;
-    border-radius: 10px;
-}
-input, button {
-    width: 100%;
-    padding: 12px;
-    margin-top: 10px;
-    border-radius: 6px;
-}
-input {
-    background: #000;
-    border: 1px solid #0ff;
-    color: #0ff;
-    box-shadow: inset 0 0 10px #0ff;
-}
-button {
-    background: #0ff;
-    color: #000;
-    font-weight: bold;
-    box-shadow: 0 0 20px #0ff;
-}
-a {
-    color: #0ff;
-}
-</style>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background: #0a0a0a;
+            color: #fff;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        .container {
+            width: 90%;
+            max-width: 400px;
+            padding: 25px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(0, 255, 200, 0.4);
+            border-radius: 10px;
+            box-shadow: 0 0 12px rgba(0, 255, 200, 0.5);
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 25px;
+            color: #00ffc8;
+            text-shadow: 0 0 10px #00ffc8;
+        }
+
+        label {
+            display: block;
+            margin: 8px 0 5px;
+            color: #00e7ff;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            border-radius: 6px;
+            border: none;
+            background: #0d0d0d;
+            color: #fff;
+            border: 1px solid rgba(0, 255, 200, 0.4);
+            margin-bottom: 15px;
+            font-size: 14px;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            border: none;
+            background: #00ffc8;
+            color: #000;
+            font-weight: bold;
+            font-size: 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: 0.2s;
+            box-shadow: 0 0 10px #00ffc8;
+        }
+
+        button:hover {
+            opacity: 0.8;
+        }
+
+        .back-login {
+            text-align: center;
+            margin-top: 15px;
+        }
+
+        .back-login a {
+            color: #00e7ff;
+            text-decoration: none;
+        }
+
+        .back-login a:hover {
+            text-shadow: 0 0 10px #00e7ff;
+        }
+    </style>
 </head>
+
 <body>
+    <div class="container">
+        <h2>Reset Password</h2>
 
-<div class="card">
-    <h2>Reset Password</h2>
-    <input id="reset_email" type="email" placeholder="Enter your email">
-    <button onclick="resetPass()">Send Reset Link</button>
+        <label>Email Address</label>
+        <input type="email" id="resetEmail" placeholder="Enter your registered email" />
 
-    <a href="index.html">← Back to login</a>
-    <p id="msg"></p>
-</div>
+        <button onclick="sendReset()">SEND RESET LINK</button>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        <div class="back-login">
+            <a href="index.html">Back to Login</a>
+        </div>
+    </div>
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
-};
+    <script>
+        function sendReset() {
+            const email = document.getElementById('resetEmail').value;
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth();
+            if (email.trim() === '') {
+                alert("Please enter your email!");
+                return;
+            }
 
-window.resetPass = function(){
-    const email = reset_email.value;
-
-    sendPasswordResetEmail(auth, email)
-    .then(() => msg.innerHTML = "Reset link sent to your email.")
-    .catch(e => msg.innerHTML = e.message);
-};
-</script>
-
+            alert("If this email is registered, you will receive a reset link.");
+        }
+    </script>
 </body>
 </html>
