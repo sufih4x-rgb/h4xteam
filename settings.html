@@ -1,107 +1,191 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Settings - H4XTEAM</title>
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <title>Security Settings | H4XTEAM</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Plus+Jakarta+Sans:wght@400;600&display=swap" rel="stylesheet">
 
-<style>
-    body{
-        background:#000;
-        color:#00eaff;
-        font-family:Arial;
-        text-align:center;
-        padding:20px;
-    }
+    <style>
+        :root {
+            --neon-blue: #00eaff;
+            --neon-red: #ff0055;
+            --bg-dark: #050505;
+            --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(0, 234, 255, 0.2);
+        }
 
-    h1{
-        text-shadow:0 0 12px #00eaff;
-        margin-bottom:30px;
-    }
+        body {
+            background: var(--bg-dark);
+            background-image: radial-gradient(circle at 50% 50%, #001a1a 0%, #050505 100%);
+            color: #fff;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            min-height: 100vh;
+        }
 
-    .box{
-        background:#0a0a0a;
-        padding:20px;
-        border-radius:12px;
-        border:1px solid #00eaff;
-        box-shadow:0 0 12px #00eaff;
-        margin-bottom:25px;
-    }
+        .settings-container {
+            width: 100%;
+            max-width: 450px;
+            padding: 40px 20px;
+        }
 
-    input{
-        width:90%;
-        padding:12px;
-        margin-top:10px;
-        border-radius:10px;
-        background:#111;
-        border:1px solid #00eaff;
-        color:#00eaff;
-        box-shadow:0 0 8px #00eaff;
-    }
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 28px;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            color: var(--neon-blue);
+            text-shadow: 0 0 15px var(--neon-blue);
+            margin-bottom: 40px;
+        }
 
-    button{
-        width:90%;
-        padding:14px;
-        margin-top:20px;
-        background:#00eaff;
-        color:#000;
-        border:none;
-        border-radius:10px;
-        font-weight:bold;
-        font-size:16px;
-        text-shadow:0 0 8px #fff;
-        box-shadow:0 0 15px #00eaff;
-    }
+        .setting-box {
+            background: var(--glass);
+            backdrop-filter: blur(10px);
+            padding: 25px;
+            border-radius: 20px;
+            border: 1px solid var(--border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            margin-bottom: 25px;
+            text-align: left;
+        }
 
-    button:hover{
-        opacity:0.8;
-    }
+        .setting-box h2 {
+            font-size: 14px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--neon-blue);
+            margin: 0 0 15px 0;
+        }
 
-    .danger{
-        background:#ff4444 !important;
-        box-shadow:0 0 12px #ff0000 !important;
-        color:#fff !important;
-    }
-</style>
+        input {
+            width: 100%;
+            background: rgba(0,0,0,0.5);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 12px;
+            color: var(--neon-blue);
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: 0.3s;
+            outline: none;
+        }
+
+        input:focus {
+            border-color: var(--neon-blue);
+            box-shadow: 0 0 15px rgba(0, 234, 255, 0.2);
+        }
+
+        /* Ultimate Processing Buttons */
+        .btn {
+            width: 100%;
+            padding: 18px;
+            margin-top: 15px;
+            border-radius: 12px;
+            border: none;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 900;
+            font-size: 14px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            transition: 0.4s;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-update {
+            background: var(--neon-blue);
+            color: #000;
+            box-shadow: 0 0 20px rgba(0, 234, 255, 0.4);
+        }
+
+        .btn-danger {
+            background: transparent;
+            color: var(--neon-red);
+            border: 1px solid var(--neon-red);
+            margin-top: 30px;
+        }
+
+        .btn-danger:hover {
+            background: var(--neon-red);
+            color: #fff;
+            box-shadow: 0 0 20px var(--neon-red);
+        }
+
+        .btn-back {
+            background: transparent;
+            color: #666;
+            margin-top: 15px;
+            border: 1px solid #333;
+        }
+
+        /* Button Processing Spinner */
+        .btn.processing {
+            color: transparent !important;
+            pointer-events: none;
+        }
+
+        .btn.processing::after {
+            content: "";
+            position: absolute;
+            width: 22px;
+            height: 22px;
+            top: 50%;
+            left: 50%;
+            margin: -11px 0 0 -11px;
+            border: 3px solid rgba(0,0,0,0.1);
+            border-top-color: #000;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        
+        .btn-danger.processing::after { border-top-color: #fff; }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        .footer-text {
+            font-size: 11px;
+            color: #444;
+            margin-top: 40px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
 </head>
 <body>
 
-<h1>Account Settings</h1>
+<div class="settings-container">
+    <h1>Settings</h1>
 
-<!-- CHANGE PASSWORD -->
-<div class="box">
-    <h2>Change Password</h2>
-    <input type="password" id="newpass" placeholder="Enter New Password">
-    <button onclick="changePass()">Update Password</button>
+    <div class="setting-box">
+        <h2>Change Security Key</h2>
+        <input type="password" id="newpass" placeholder="Enter New Password">
+        <button id="passBtn" class="btn btn-update" onclick="changePass()">Update Key</button>
+    </div>
+
+    <div class="setting-box">
+        <h2>Active Session</h2>
+        <p style="font-size: 12px; color: #666; margin-top: 0;">Logout will clear all local cache.</p>
+        <button id="logoutBtn" class="btn btn-update" onclick="logout()">Terminate Session</button>
+    </div>
+
+    <button id="delBtn" class="btn btn-danger" onclick="deleteAcc()">Wipe My Data</button>
+    
+    <button class="btn btn-back" onclick="window.location='dashboard.html'">Return to Terminal</button>
+
+    <div class="footer-text">H4XTEAM SECURE LAYER V3.0</div>
 </div>
-
-<!-- DELETE ACCOUNT -->
-<div class="box">
-    <h2>Delete Account</h2>
-    <button class="danger" onclick="deleteAcc()">Delete My Account</button>
-</div>
-
-<!-- LOGOUT -->
-<button onclick="logout()">Logout</button><br><br>
-<button onclick="window.location='dashboard.html'">Back</button>
 
 <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, updatePassword, deleteUser, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { 
-    getAuth, 
-    onAuthStateChanged, 
-    updatePassword, 
-    deleteUser, 
-    signOut 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { 
-    getDatabase, 
-    ref, 
-    remove 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = {
+    const firebaseConfig = {
   apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
   authDomain: "test-eb5e7.firebaseapp.com",
   databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
@@ -112,60 +196,71 @@ const firebaseConfig = {
   measurementId: "G-ECKCTBLQJ8"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-let currentUser = null;
+    let user = null;
 
-onAuthStateChanged(auth, user => {
-    if (!user) return window.location="index.html";
-    currentUser = user;
-});
+    onAuthStateChanged(auth, u => {
+        if (!u) window.location = "index.html";
+        user = u;
+    });
 
-// CHANGE PASSWORD
-window.changePass = async function(){
-    let newPass = document.getElementById("newpass").value;
-
-    if(newPass.length < 6){
-        alert("Password must be at least 6 characters.");
-        return;
+    // Universal Processing Logic
+    function startProcessing(id) {
+        document.getElementById(id).classList.add('processing');
+    }
+    function stopProcessing(id) {
+        document.getElementById(id).classList.remove('processing');
     }
 
-    try{
-        await updatePassword(currentUser, newPass);
-        alert("Password updated successfully!");
-    } catch(err){
-        alert("Error: " + err.message);
-    }
-};
+    // UPDATE PASSWORD
+    window.changePass = async function() {
+        const pass = document.getElementById("newpass").value;
+        if(pass.length < 6) return alert("Security Key must be 6+ chars.");
 
-// DELETE ACCOUNT
-window.deleteAcc = async function(){
-    if(!confirm("Are you sure you want to delete your account?")) return;
+        startProcessing("passBtn");
 
-    try{
-        // Remove database user data
-        await remove(ref(db, "users/" + currentUser.uid));
-        await remove(ref(db, "transactions/deposits/" + currentUser.uid));
-        await remove(ref(db, "transactions/withdraw/" + currentUser.uid));
+        try {
+            await updatePassword(user, pass);
+            // Realistic redirect to processing page
+            setTimeout(() => { window.location = "processing.html"; }, 1000);
+        } catch(e) {
+            stopProcessing("passBtn");
+            alert("Security Timeout. Please log out and log back in to change password.");
+        }
+    };
 
-        await deleteUser(currentUser);
+    // TERMINATE SESSION (LOGOUT)
+    window.logout = async function() {
+        startProcessing("logoutBtn");
+        setTimeout(async () => {
+            await signOut(auth);
+            window.location = "index.html";
+        }, 1200);
+    };
 
-        alert("Account deleted permanently.");
-        window.location="index.html";
+    // WIPE DATA (DELETE)
+    window.deleteAcc = async function() {
+        if(!confirm("THIS ACTION CANNOT BE UNDONE. WIPE ALL DATA?")) return;
 
-    } catch(err){
-        alert("Error deleting account: " + err.message);
-    }
-};
+        startProcessing("delBtn");
 
-// LOGOUT
-window.logout = async function(){
-    await signOut(auth);
-    window.location="index.html";
-};
-
+        try {
+            const uid = user.uid;
+            // Clean up Database
+            await remove(ref(db, `users/${uid}`));
+            await remove(ref(db, `transactions/deposits/${uid}`));
+            
+            // Delete Auth Profile
+            await deleteUser(user);
+            window.location = "index.html";
+        } catch(e) {
+            stopProcessing("delBtn");
+            alert("Critical Error: Recent authentication required for data wipe.");
+        }
+    };
 </script>
 
 </body>
