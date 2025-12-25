@@ -3,119 +3,136 @@
 <head>
 <meta charset="UTF-8">
 <title>Withdraw - H4XTEAM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
 <style>
-body{
-    background:#000;
-    color:#00f6ff;
-    font-family:Arial;
-    text-align:center;
-    padding-top:40px;
-}
-input{
-    width:80%;
-    padding:12px;
-    background:#0a0a0a;
-    border:1px solid #00f6ff;
-    color:#00f6ff;
-    border-radius:10px;
-    margin-top:20px;
-}
-button{
-    padding:14px;
-    width:80%;
-    margin-top:25px;
-    background:#00f6ff;
-    color:#000;
-    font-weight:bold;
-    border:none;
-    border-radius:10px;
-    font-size:18px;
-    box-shadow:0 0 10px #00f6ff;
-}
-h1{
-    color:#00f6ff;
-    text-shadow:0 0 15px #00f6ff;
-}
+    body {
+        background:#000;
+        color:#00ffe5;
+        font-family: Arial;
+        text-align:center;
+        padding:20px;
+    }
+
+    h1 {
+        text-shadow:0 0 10px #00ffe5;
+    }
+
+    .box {
+        background:#0a0a0a;
+        padding:20px;
+        border-radius:12px;
+        border:1px solid #00ffe5;
+        box-shadow:0 0 12px #00ffe5;
+        margin-top:20px;
+    }
+
+    input, select {
+        width:100%;
+        padding:12px;
+        margin-top:10px;
+        background:#111;
+        border:1px solid #00ffe5;
+        color:#00ffe5;
+        border-radius:8px;
+    }
+
+    button {
+        width:100%;
+        padding:15px;
+        margin-top:15px;
+        background:#00ffe5;
+        border:none;
+        color:#000;
+        font-weight:bold;
+        border-radius:10px;
+        box-shadow:0 0 12px #00ffe5;
+    }
+
+    button:hover { opacity:0.8; }
 </style>
 </head>
-
 <body>
+
 <h1>Withdraw</h1>
 
-<h3>Your UPI ID: <span id="upiText">Loading...</span></h3>
+<div class="box">
 
-<input id="amount" type="number" placeholder="Enter Withdraw Amount (Min 200)">
-<button onclick="withdraw()">Request Withdraw</button>
+    <h3>Your Balance: <span id="balance">0</span> ₹</h3>
 
-<button onclick="window.location='dashboard.html'">Back</button>
+    <input type="number" id="amount" placeholder="Enter Withdrawal Amount">
+
+    <input type="text" id="upi" placeholder="Enter Your UPI ID">
+
+    <button onclick="sendWithdraw()">Request Withdraw</button>
+
+</div>
+
+<button onclick="window.location='dashboard.html'" style="margin-top:20px;">BACK</button>
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, get, set, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, set, get, child, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const firebaseConfig={
- apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
- authDomain:"test-eb5e7.firebaseapp.com",
- databaseURL:"https://test-eb5e7-default-rtdb.firebaseio.com",
- projectId:"test-eb5e7",
- storageBucket:"test-eb5e7.appspot.com",
- messagingSenderId:"366282855653",
- appId:"1:366282855653:web:dca7e000f5a22fb11f300c",
- measurementId:"G-ECKCTBLQJ8"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        storageBucket: "test-eb5e7.appspot.com",
+        messagingSenderId: "366282855653",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+        measurementId: "G-ECKCTBLQJ8"
+    };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-let UID = "";
-let UPI = "";
-let BAL = 0;
+    let uid = "";
 
-onAuthStateChanged(auth, async user =>{
-    if(!user){ window.location="index.html"; return; }
+    onAuthStateChanged(auth, async (user) => {
+        if (!user) return window.location = "index.html";
+        uid = user.uid;
 
-    UID = user.uid;
+        let snap = await get(child(ref(db), "users/" + uid + "/balance"));
+        if (snap.exists()) {
+            document.getElementById("balance").innerHTML = snap.val();
+        }
+    });
 
-    const snap = await get(ref(db,"users/"+UID));
 
-    if(!snap.exists()){
-        alert("User data missing");
-        return;
+    window.sendWithdraw = async function() {
+
+        let amt = Number(document.getElementById("amount").value);
+        let upi = document.getElementById("upi").value;
+
+        if (amt < 50) return alert("Minimum withdrawal is 50₹");
+        if (!upi.includes("@")) return alert("Enter a valid UPI ID");
+
+        let balSnap = await get(child(ref(db), "users/" + uid + "/balance"));
+        let bal = balSnap.exists() ? balSnap.val() : 0;
+
+        if (amt > bal) return alert("Insufficient Balance!");
+
+        let wid = "WD" + Math.floor(Math.random() * 9999999);
+
+        await set(ref(db, "transactions/withdraw/" + uid + "/" + wid), {
+            amount: amt,
+            upi: upi,
+            status: "pending",
+            time: Date.now()
+        });
+
+        await update(ref(db, "users/" + uid), {
+            balance: bal - amt
+        });
+
+        alert("Withdrawal Sent! Wait for Approval.");
+        window.location = "dashboard.html";
     }
-
-    const data = snap.val();
-    UPI = data.upi || "NOT SET";
-    BAL = data.balance || 0;
-
-    document.getElementById("upiText").innerText = UPI;
-});
-
-window.withdraw = async function(){
-    let amt = Number(document.getElementById("amount").value);
-
-    if(amt < 200){ alert("Minimum withdraw is 200"); return; }
-    if(amt % 100 !== 0){ alert("Amount must be multiple of 100"); return; }
-    if(amt > BAL){ alert("Insufficient balance"); return; }
-
-    let wid = "WD" + Math.floor(Math.random()*99999999);
-
-    await set(ref(db,"transactions/withdrawals/"+UID+"/"+wid),{
-        amount: amt,
-        upi: UPI,
-        status: "pending",
-        time: Date.now()
-    });
-
-    await update(ref(db,"users/"+UID),{
-        balance: BAL - amt
-    });
-
-    window.location = "processing.html";
-}
 
 </script>
 
