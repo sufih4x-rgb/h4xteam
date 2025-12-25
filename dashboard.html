@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Dashboard | H4XTEAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #4361ee;
@@ -23,34 +24,39 @@
         /* Top Nav */
         .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         .nav-right { display: flex; gap: 10px; align-items: center; }
-        .icon-btn { background: #f1f3f9; border: none; padding: 8px; border-radius: 12px; cursor: pointer; font-size: 18px; }
+        .icon-btn { background: #f1f3f9; border: none; padding: 8px; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; }
 
         /* Wallet Card */
         .wallet-card { margin: 10px 20px; padding: 30px 25px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 24px; color: white; box-shadow: 0 15px 30px rgba(67, 97, 238, 0.3); }
         .balance-val { font-size: 42px; font-weight: 800; margin: 8px 0; display: block; }
 
-        /* Action Grid (Simplified to 4 essential buttons) */
+        /* Action Grid */
         .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 25px 20px; }
         .action-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; text-decoration: none; }
         .icon-circle { width: 55px; height: 55px; background: #fff; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
         .action-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
 
-        /* Game List Styling */
+        /* Game Cards */
         .game-list-container { padding: 0 20px; }
-        .game-card { 
-            width: 100%; padding: 20px; background: #fff; border: 2px solid #f0f2f5; 
-            border-radius: 20px; display: flex; align-items: center; justify-content: space-between; 
-            text-decoration: none; color: inherit; margin-bottom: 12px; box-sizing: border-box;
-            transition: 0.2s;
-        }
-        .game-card:active { transform: scale(0.98); background: #fafbfc; }
+        .game-card { width: 100%; padding: 20px; background: #fff; border: 2px solid #f0f2f5; border-radius: 20px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: inherit; margin-bottom: 12px; box-sizing: border-box; transition: 0.2s; }
         .game-card h3 { margin: 0; font-size: 17px; font-weight: 800; }
         .game-card p { margin: 4px 0 0; font-size: 12px; color: var(--text-muted); }
 
-        /* Modal */
+        /* Modals (History & Chat) */
         .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: flex-end; }
-        .modal-content { background: white; width: 100%; max-width: 480px; border-radius: 30px 30px 0 0; padding: 25px; max-height: 70vh; overflow-y: auto; }
+        .modal-content { background: white; width: 100%; max-width: 480px; border-radius: 30px 30px 0 0; padding: 25px; max-height: 80vh; overflow-y: auto; box-sizing: border-box; }
         .trans-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
+
+        /* Chat Specific Styles */
+        .chat-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; box-shadow: 0 10px 25px rgba(67, 97, 238, 0.4); cursor: pointer; z-index: 999; }
+        .chat-container { display: flex; flex-direction: column; height: 70vh; }
+        .chat-msgs { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
+        .msg { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.4; }
+        .msg.user { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
+        .msg.admin { align-self: flex-start; background: #f1f3f9; color: var(--text-main); border-bottom-left-radius: 4px; }
+        .chat-input-row { display: flex; gap: 10px; padding-top: 15px; border-top: 1px solid #eee; }
+        .chat-input-row input { flex: 1; border: 1px solid #ddd; padding: 12px; border-radius: 12px; outline: none; }
+        .chat-input-row button { background: var(--primary); color: white; border: none; padding: 0 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -72,43 +78,17 @@
     </div>
 
     <div class="action-grid">
-        <a href="deposit.html" class="action-item">
-            <div class="icon-circle" style="color:#4cc9f0">📥</div>
-            <span class="action-label">Deposit</span>
-        </a>
-        <a href="recharge.html" class="action-item">
-            <div class="icon-circle" style="color:#4361ee">⚡</div>
-            <span class="action-label">Recharge</span>
-        </a>
-        <a href="withdraw.html" class="action-item">
-            <div class="icon-circle" style="color:#f72585">📤</div>
-            <span class="action-label">Withdraw</span>
-        </a>
-        <div class="action-item" onclick="copyRef()">
-            <div class="icon-circle" style="color:#ff9f1c">🔗</div>
-            <span class="action-label">Invite</span>
-        </div>
+        <a href="deposit.html" class="action-item"><div class="icon-circle" style="color:#4cc9f0">📥</div><span class="action-label">Deposit</span></a>
+        <a href="recharge.html" class="action-item"><div class="icon-circle" style="color:#4361ee">⚡</div><span class="action-label">Recharge</span></a>
+        <a href="withdraw.html" class="action-item"><div class="icon-circle" style="color:#f72585">📤</div><span class="action-label">Withdraw</span></a>
+        <div class="action-item" onclick="copyRef()"><div class="icon-circle" style="color:#ff9f1c">🔗</div><span class="action-label">Invite</span></div>
     </div>
 
     <div class="game-list-container">
         <h2 style="font-size:16px; margin: 10px 0 15px;">🔥 Premium Games</h2>
-
-        <a href="game.html" class="game-card" style="border-left: 6px solid var(--primary);">
-            <div>
-                <h3>Color Prediction</h3>
-                <p>Global Market • 1 Min Result • 1.9x</p>
-            </div>
-            <div style="font-size: 26px;">📈</div>
-        </a>
-
-        <a href="mines.html" class="game-card" style="border-left: 6px solid #ffd166;">
-            <div>
-                <h3>Mines Master</h3>
-                <p>Find Diamonds • Avoid 💣 • Up to 15x</p>
-            </div>
-            <div style="font-size: 26px;">💣</div>
-        </a>
-
+        <a href="game.html" class="game-card" style="border-left: 6px solid var(--primary);"><div><h3>Color Prediction</h3><p>Global Market • 1 Min</p></div><div style="font-size: 26px;">📈</div></a>
+        <a href="mines.html" class="game-card" style="border-left: 6px solid #ffd166;"><div><h3>Mines Master</h3><p>Find Diamonds • Avoid 💣</p></div><div style="font-size: 26px;">💣</div></a>
+        
         <a href="chick.html" class="game-card" style="border-left: 6px solid #ff4d4d;">
             <div>
                 <h3>Chicken Legend</h3>
@@ -123,8 +103,24 @@
     <div class="modal-content">
         <div style="width:40px; height:4px; background:#ddd; margin:0 auto 20px; border-radius:10px;" onclick="closeTransactions()"></div>
         <h2 style="margin:0 0 20px; font-size:20px;">Recent Activity</h2>
-        <div id="transList">
-            <p style="text-align:center; color:#999;">No transactions yet.</p>
+        <div id="transList"><p style="text-align:center; color:#999;">No transactions yet.</p></div>
+    </div>
+</div>
+
+<div class="chat-fab" onclick="openChat()">💬</div>
+
+<div id="chatModal" class="modal-overlay">
+    <div class="modal-content">
+        <div style="width:40px; height:4px; background:#ddd; margin:0 auto 20px; border-radius:10px;" onclick="closeChat()"></div>
+        <div class="chat-container">
+            <h2 style="margin:0 0 15px; font-size:20px;">Live Support</h2>
+            <div class="chat-msgs" id="chatMsgs">
+                <div class="msg admin">Hello! How can we help you today?</div>
+            </div>
+            <div class="chat-input-row">
+                <input type="text" id="chatInp" placeholder="Type a message...">
+                <button onclick="sendChat()">Send</button>
+            </div>
         </div>
     </div>
 </div>
@@ -132,25 +128,25 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
+    let userObj = null;
+
     onAuthStateChanged(auth, (user) => {
         if (!user) return;
+        userObj = user;
         document.getElementById("userIdDisplay").innerText = user.uid.substring(0,8).toUpperCase();
 
         onValue(ref(db, "users/" + user.uid), (snap) => {
@@ -158,23 +154,52 @@ const firebaseConfig = {
                 const data = snap.val();
                 document.getElementById("balanceDisplay").innerText = (data.balance || 0).toFixed(2);
                 
-                // Update History
                 if (data.transactions) {
                     const list = document.getElementById("transList");
                     list.innerHTML = "";
                     Object.values(data.transactions).reverse().forEach(t => {
                         const div = document.createElement("div");
                         div.className = "trans-item";
-                        div.innerHTML = `
-                            <div><b>${t.type.toUpperCase()}</b><br><small>${t.date}</small></div>
-                            <div style="color:${t.type=='deposit'?'#06d6a0':'#ef476f'}"><b>₹${t.amount}</b></div>
-                        `;
+                        div.innerHTML = `<div><b>${t.type.toUpperCase()}</b><br><small>${t.date}</small></div>
+                                         <div style="color:${t.type=='deposit'?'#06d6a0':'#ef476f'}"><b>₹${t.amount}</b></div>`;
                         list.appendChild(div);
                     });
                 }
             }
         });
+
+        onValue(ref(db, "chats/" + user.uid), (snap) => {
+            const chatBox = document.getElementById("chatMsgs");
+            chatBox.innerHTML = "";
+            if(snap.exists()){
+                Object.values(snap.val()).forEach(m => {
+                    const div = document.createElement("div");
+                    div.className = "msg " + (m.sender === 'admin' ? 'admin' : 'user');
+                    div.innerText = m.text;
+                    chatBox.appendChild(div);
+                });
+                chatBox.scrollTop = chatBox.scrollHeight;
+            } else {
+                chatBox.innerHTML = '<div class="msg admin">Welcome! Send a message to start chatting with us.</div>';
+            }
+        });
     });
+
+    window.openChat = () => document.getElementById("chatModal").style.display = "flex";
+    window.closeChat = () => document.getElementById("chatModal").style.display = "none";
+    
+    window.sendChat = async () => {
+        const inp = document.getElementById("chatInp");
+        if(!inp.value.trim() || !userObj) return;
+
+        await push(ref(db, "chats/" + userObj.uid), {
+            text: inp.value,
+            sender: "user",
+            userName: userObj.email.split('@')[0],
+            timestamp: serverTimestamp()
+        });
+        inp.value = "";
+    };
 
     window.openTransactions = () => document.getElementById("transModal").style.display = "flex";
     window.closeTransactions = () => document.getElementById("transModal").style.display = "none";
