@@ -11,124 +11,139 @@
             --secondary: #3f37c9;
             --success: #06d6a0;
             --danger: #ef476f;
-            --warning: #ffd166;
             --bg: #f8f9fc;
             --surface: #ffffff;
             --text-main: #2b2d42;
             --text-muted: #8d99ae;
         }
 
-        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; }
+        body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; overflow-x: hidden; }
         .app-shell { width: 100%; max-width: 480px; min-height: 100vh; background: var(--surface); position: relative; padding-bottom: 80px; }
 
-        /* Top Nav */
-        .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .nav-right { display: flex; gap: 10px; align-items: center; }
-        .icon-btn { background: #f1f3f9; border: none; padding: 8px; border-radius: 12px; cursor: pointer; font-size: 14px; font-weight: 600; }
+        /* Sidebar & Profile */
+        .sidebar { position: fixed; top: 0; left: -100%; width: 80%; max-width: 350px; height: 100%; background: white; z-index: 2000; transition: 0.3s ease; box-shadow: 10px 0 30px rgba(0,0,0,0.1); padding: 30px 20px; box-sizing: border-box; }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1999; backdrop-filter: blur(2px); }
+        .sidebar-overlay.active { display: block; }
 
-        /* Wallet Card */
+        .profile-header { text-align: center; margin-bottom: 30px; }
+        .avatar-wrapper { position: relative; width: 85px; height: 85px; margin: 0 auto 15px; }
+        .avatar-circle { width: 100%; height: 100%; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; overflow: hidden; }
+        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
+        .edit-badge { position: absolute; bottom: 0; right: 0; background: white; width: 28px; height: 28px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(0,0,0,0.1); cursor: pointer; border: 2px solid var(--primary); font-size: 14px; }
+
+        .info-list { margin-top: 20px; }
+        .info-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
+        .info-item span:first-child { color: var(--text-muted); font-size: 12px; font-weight: 700; text-transform: uppercase; }
+        .info-item span:last-child { font-weight: 700; color: var(--text-main); font-size: 14px; }
+
+        /* UI Elements */
+        .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
         .wallet-card { margin: 10px 20px; padding: 30px 25px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 24px; color: white; box-shadow: 0 15px 30px rgba(67, 97, 238, 0.3); }
         .balance-val { font-size: 42px; font-weight: 800; margin: 8px 0; display: block; }
-
-        /* Action Grid */
+        
         .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; padding: 25px 20px; }
-        .action-item { display: flex; flex-direction: column; align-items: center; gap: 8px; cursor: pointer; text-decoration: none; }
+        .action-item { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; cursor: pointer; }
         .icon-circle { width: 55px; height: 55px; background: #fff; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
-        .action-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
+        
+        .game-card { width: 100%; padding: 20px; background: #fff; border: 2px solid #f0f2f5; border-radius: 20px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: inherit; margin-bottom: 12px; box-sizing: border-box; }
 
-        /* Game Cards */
-        .game-list-container { padding: 0 20px; }
-        .game-card { width: 100%; padding: 20px; background: #fff; border: 2px solid #f0f2f5; border-radius: 20px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: inherit; margin-bottom: 12px; box-sizing: border-box; transition: 0.2s; }
-        .game-card h3 { margin: 0; font-size: 17px; font-weight: 800; }
-        .game-card p { margin: 4px 0 0; font-size: 12px; color: var(--text-muted); }
+        /* Modals */
+        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 3000; justify-content: center; align-items: flex-end; }
+        .modal-content { background: white; width: 100%; max-width: 480px; border-radius: 30px 30px 0 0; padding: 25px; box-sizing: border-box; animation: slideUp 0.3s ease; }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
-        /* Modals (History & Chat) */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); z-index: 1000; justify-content: center; align-items: flex-end; }
-        .modal-content { background: white; width: 100%; max-width: 480px; border-radius: 30px 30px 0 0; padding: 25px; max-height: 80vh; overflow-y: auto; box-sizing: border-box; }
-        .trans-item { display: flex; justify-content: space-between; padding: 15px 0; border-bottom: 1px solid #f1f5f9; }
+        input { width: 100%; padding: 14px; border-radius: 12px; border: 1px solid #ddd; margin-top: 8px; box-sizing: border-box; outline: none; }
+        .btn-main { width: 100%; padding: 16px; border-radius: 15px; border: none; background: var(--primary); color: white; font-weight: 700; cursor: pointer; margin-top: 15px; }
 
-        /* Chat Specific Styles */
-        .chat-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; box-shadow: 0 10px 25px rgba(67, 97, 238, 0.4); cursor: pointer; z-index: 999; }
-        .chat-container { display: flex; flex-direction: column; height: 70vh; }
-        .chat-msgs { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; padding-bottom: 20px; }
-        .msg { max-width: 80%; padding: 12px 16px; border-radius: 18px; font-size: 14px; line-height: 1.4; }
-        .msg.user { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 4px; }
-        .msg.admin { align-self: flex-start; background: #f1f3f9; color: var(--text-main); border-bottom-left-radius: 4px; }
-        .chat-input-row { display: flex; gap: 10px; padding-top: 15px; border-top: 1px solid #eee; }
-        .chat-input-row input { flex: 1; border: 1px solid #ddd; padding: 12px; border-radius: 12px; outline: none; }
-        .chat-input-row button { background: var(--primary); color: white; border: none; padding: 0 20px; border-radius: 12px; font-weight: bold; cursor: pointer; }
+        .chat-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; box-shadow: 0 10px 25px rgba(67, 97, 238, 0.4); cursor: pointer; }
+        .chat-msgs { height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; }
+        .msg { padding: 10px 15px; border-radius: 15px; font-size: 14px; max-width: 80%; }
+        .msg.user { align-self: flex-end; background: var(--primary); color: white; }
+        .msg.admin { align-self: flex-start; background: #f1f3f9; }
     </style>
 </head>
 <body>
 
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+<div class="sidebar" id="sidebar">
+    <div class="profile-header">
+        <div class="avatar-wrapper">
+            <div class="avatar-circle" id="avatarBox">U</div>
+            <div class="edit-badge" onclick="openEditModal()">✏️</div>
+        </div>
+        <h2 id="sideName" style="margin: 0; font-size: 20px;">User</h2>
+        <p id="sideEmail" style="color: var(--text-muted); font-size: 12px; margin: 5px 0;">email@test.com</p>
+    </div>
+    <div class="info-list">
+        <div class="info-item"><span>UID</span><span id="sideUid">...</span></div>
+        <div class="info-item"><span>VIP</span><span id="sideVip">Level 0</span></div>
+        <div class="info-item"><span>Profit</span><span id="sideWins">₹0.00</span></div>
+    </div>
+    <button class="btn-main" style="background: #fff1f2; color: var(--danger); margin-top: 40px;" onclick="logout()">Logout</button>
+</div>
+
 <div class="app-shell">
     <div class="top-nav">
-        <div style="font-weight: 900; font-size: 20px;">H4X<span style="color:var(--primary)">TEAM</span></div>
-        <div class="nav-right">
-            <button class="icon-btn" onclick="openTransactions()">📜 History</button>
-        </div>
+        <div style="font-size: 24px; cursor: pointer;" onclick="toggleSidebar()">☰</div>
+        <div style="font-weight: 800; font-size: 20px;">H4X<span style="color:var(--primary)">TEAM</span></div>
+        <button class="icon-btn" style="border:none; background:#f1f3f9; padding:8px 12px; border-radius:10px; font-weight:700;" onclick="openHistory()">📜 History</button>
     </div>
 
     <div class="wallet-card">
-        <span style="font-size: 13px; opacity: 0.8;">ACCOUNT BALANCE</span>
-        <span class="balance-val">₹<span id="balanceDisplay">0.00</span></span>
-        <div style="background:rgba(255,255,255,0.2); padding:4px 12px; border-radius:10px; font-size:11px;">
-            VIP MEMBER ID: <span id="userIdDisplay">...</span>
+        <span style="font-size: 13px; opacity: 0.8; font-weight: 600;">AVAILABLE BALANCE</span>
+        <span class="balance-val">₹<span id="mainBal">0.00</span></span>
+        <div style="background:rgba(255,255,255,0.2); padding:6px 12px; border-radius:10px; font-size:11px; font-weight:700;">
+            ID: <span id="mainUid">...</span>
         </div>
     </div>
 
     <div class="action-grid">
-        <a href="deposit.html" class="action-item"><div class="icon-circle" style="color:#4cc9f0">📥</div><span class="action-label">Deposit</span></a>
-        <a href="recharge.html" class="action-item"><div class="icon-circle" style="color:#4361ee">⚡</div><span class="action-label">Recharge</span></a>
-        <a href="withdraw.html" class="action-item"><div class="icon-circle" style="color:#f72585">📤</div><span class="action-label">Withdraw</span></a>
-        <div class="action-item" onclick="copyRef()"><div class="icon-circle" style="color:#ff9f1c">🔗</div><span class="action-label">Invite</span></div>
+        <a href="deposit.html" class="action-item"><div class="icon-circle">📥</div><span style="font-size:10px; font-weight:800; color:var(--text-muted);">DEPOSIT</span></a>
+        <a href="withdraw.html" class="action-item"><div class="icon-circle">📤</div><span style="font-size:10px; font-weight:800; color:var(--text-muted);">WITHDRAW</span></a>
+        <a href="recharge.html" class="action-item"><div class="icon-circle">⚡</div><span style="font-size:10px; font-weight:800; color:var(--text-muted);">RECHARGE</span></a>
+        <div class="action-item" onclick="alert('Link Copied!')"><div class="icon-circle">🔗</div><span style="font-size:10px; font-weight:800; color:var(--text-muted);">INVITE</span></div>
     </div>
 
-    <div class="game-list-container">
-        <h2 style="font-size:16px; margin: 10px 0 15px;">🔥 Premium Games</h2>
-        <a href="game.html" class="game-card" style="border-left: 6px solid var(--primary);"><div><h3>Color Prediction</h3><p>Global Market • 1 Min</p></div><div style="font-size: 26px;">📈</div></a>
-        <a href="mines.html" class="game-card" style="border-left: 6px solid #ffd166;"><div><h3>Mines Master</h3><p>Find Diamonds • Avoid 💣</p></div><div style="font-size: 26px;">💣</div></a>
-        
-        <a href="chick.html" class="game-card" style="border-left: 6px solid #ff4d4d;">
-            <div>
-                <h3>Chicken Legend</h3>
-                <p>Classic dome hunt • High Multiplier</p>
-            </div>
-            <div style="font-size: 26px;">🍗</div>
+    <div style="padding: 0 20px;">
+        <h3 style="font-size: 16px;">🔥 Popular Games</h3>
+        <a href="game.html" class="game-card" style="border-left: 5px solid var(--primary);">
+            <div><h4 style="margin:0">Color Prediction</h4><p style="margin:5px 0 0; font-size:12px; color:var(--text-muted);">Win 2X in 60 seconds</p></div>
+            <div style="font-size: 24px;">📈</div>
         </a>
     </div>
 </div>
 
-<div id="transModal" class="modal-overlay">
+<div id="editModal" class="modal-overlay" style="align-items: center;">
+    <div class="modal-content" style="border-radius: 25px; margin: 20px;">
+        <h2 style="margin:0 0 15px;">Edit Profile</h2>
+        <label style="font-size:12px; font-weight:800;">DISPLAY NAME</label>
+        <input type="text" id="editNameInp" placeholder="Enter name">
+        <label style="font-size:12px; font-weight:800; margin-top:15px; display:block;">PHOTO URL</label>
+        <input type="text" id="editImgInp" placeholder="https://link-to-image.png">
+        <button class="btn-main" onclick="saveProfile()">Save Changes</button>
+        <button class="btn-main" style="background:#f1f3f9; color:#666;" onclick="closeModals()">Cancel</button>
+    </div>
+</div>
+
+<div id="chatModal" class="modal-overlay">
     <div class="modal-content">
-        <div style="width:40px; height:4px; background:#ddd; margin:0 auto 20px; border-radius:10px;" onclick="closeTransactions()"></div>
-        <h2 style="margin:0 0 20px; font-size:20px;">Recent Activity</h2>
-        <div id="transList"><p style="text-align:center; color:#999;">No transactions yet.</p></div>
+        <div style="width:40px; height:5px; background:#ddd; margin:0 auto 15px; border-radius:10px;" onclick="closeModals()"></div>
+        <h2 style="margin:0 0 15px;">Live Support</h2>
+        <div class="chat-msgs" id="chatBox"></div>
+        <div style="display:flex; gap:10px;">
+            <input type="text" id="chatInp" placeholder="Message...">
+            <button class="btn-main" style="width:80px; margin:0;" onclick="sendMsg()">Send</button>
+        </div>
     </div>
 </div>
 
 <div class="chat-fab" onclick="openChat()">💬</div>
 
-<div id="chatModal" class="modal-overlay">
-    <div class="modal-content">
-        <div style="width:40px; height:4px; background:#ddd; margin:0 auto 20px; border-radius:10px;" onclick="closeChat()"></div>
-        <div class="chat-container">
-            <h2 style="margin:0 0 15px; font-size:20px;">Live Support</h2>
-            <div class="chat-msgs" id="chatMsgs">
-                <div class="msg admin">Hello! How can we help you today?</div>
-            </div>
-            <div class="chat-input-row">
-                <input type="text" id="chatInp" placeholder="Type a message...">
-                <button onclick="sendChat()">Send</button>
-            </div>
-        </div>
-    </div>
-</div>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, onValue, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -142,69 +157,85 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let userObj = null;
+    let currUser = null;
 
-    onAuthStateChanged(auth, (user) => {
-        if (!user) return;
-        userObj = user;
-        document.getElementById("userIdDisplay").innerText = user.uid.substring(0,8).toUpperCase();
+    // UI Handlers
+    window.toggleSidebar = () => {
+        document.getElementById('sidebar').classList.toggle('active');
+        document.getElementById('sidebarOverlay').classList.toggle('active');
+    };
 
-        onValue(ref(db, "users/" + user.uid), (snap) => {
-            if (snap.exists()) {
-                const data = snap.val();
-                document.getElementById("balanceDisplay").innerText = (data.balance || 0).toFixed(2);
-                
-                if (data.transactions) {
-                    const list = document.getElementById("transList");
-                    list.innerHTML = "";
-                    Object.values(data.transactions).reverse().forEach(t => {
-                        const div = document.createElement("div");
-                        div.className = "trans-item";
-                        div.innerHTML = `<div><b>${t.type.toUpperCase()}</b><br><small>${t.date}</small></div>
-                                         <div style="color:${t.type=='deposit'?'#06d6a0':'#ef476f'}"><b>₹${t.amount}</b></div>`;
-                        list.appendChild(div);
-                    });
-                }
+    window.openEditModal = () => document.getElementById('editModal').style.display = 'flex';
+    window.openChat = () => document.getElementById('chatModal').style.display = 'flex';
+    window.closeModals = () => {
+        document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+    };
+
+    window.logout = () => signOut(auth).then(() => location.href = 'index.html');
+
+    // Logic
+    onAuthStateChanged(auth, user => {
+        if (!user) return location.href = 'index.html';
+        currUser = user;
+
+        onValue(ref(db, `users/${user.uid}`), snap => {
+            const data = snap.val() || {};
+            const name = data.displayName || user.email.split('@')[0];
+            
+            // Update UI
+            document.getElementById('mainBal').innerText = (data.balance || 0).toFixed(2);
+            document.getElementById('mainUid').innerText = user.uid.substring(0,8).toUpperCase();
+            document.getElementById('sideUid').innerText = user.uid.substring(0,12) + "...";
+            document.getElementById('sideEmail').innerText = user.email;
+            document.getElementById('sideName').innerText = name;
+            document.getElementById('sideVip').innerText = "Level " + (data.vip || 0);
+            document.getElementById('sideWins').innerText = "₹" + (data.lifetimeWins || 0).toFixed(2);
+            
+            // Avatar
+            const avatarBox = document.getElementById('avatarBox');
+            if(data.photoURL) {
+                avatarBox.innerHTML = `<img src="${data.photoURL}">`;
+            } else {
+                avatarBox.innerText = name.charAt(0).toUpperCase();
             }
         });
 
-        onValue(ref(db, "chats/" + user.uid), (snap) => {
-            const chatBox = document.getElementById("chatMsgs");
-            chatBox.innerHTML = "";
-            if(snap.exists()){
-                Object.values(snap.val()).forEach(m => {
-                    const div = document.createElement("div");
-                    div.className = "msg " + (m.sender === 'admin' ? 'admin' : 'user');
-                    div.innerText = m.text;
-                    chatBox.appendChild(div);
-                });
-                chatBox.scrollTop = chatBox.scrollHeight;
-            } else {
-                chatBox.innerHTML = '<div class="msg admin">Welcome! Send a message to start chatting with us.</div>';
-            }
+        // Load Chat
+        onValue(ref(db, `chats/${user.uid}`), snap => {
+            const box = document.getElementById('chatBox');
+            box.innerHTML = "";
+            snap.forEach(child => {
+                const m = child.val();
+                const div = document.createElement('div');
+                div.className = `msg ${m.sender === 'user' ? 'user' : 'admin'}`;
+                div.innerText = m.text;
+                box.appendChild(div);
+            });
+            box.scrollTop = box.scrollHeight;
         });
     });
 
-    window.openChat = () => document.getElementById("chatModal").style.display = "flex";
-    window.closeChat = () => document.getElementById("chatModal").style.display = "none";
-    
-    window.sendChat = async () => {
-        const inp = document.getElementById("chatInp");
-        if(!inp.value.trim() || !userObj) return;
+    window.saveProfile = async () => {
+        const name = document.getElementById('editNameInp').value;
+        const img = document.getElementById('editImgInp').value;
+        const updates = {};
+        if(name) updates[`users/${currUser.uid}/displayName`] = name;
+        if(img) updates[`users/${currUser.uid}/photoURL`] = img;
+        
+        await update(ref(db), updates);
+        closeModals();
+    };
 
-        await push(ref(db, "chats/" + userObj.uid), {
+    window.sendMsg = async () => {
+        const inp = document.getElementById('chatInp');
+        if(!inp.value.trim()) return;
+        await push(ref(db, `chats/${currUser.uid}`), {
             text: inp.value,
-            sender: "user",
-            userName: userObj.email.split('@')[0],
+            sender: 'user',
             timestamp: serverTimestamp()
         });
         inp.value = "";
     };
-
-    window.openTransactions = () => document.getElementById("transModal").style.display = "flex";
-    window.closeTransactions = () => document.getElementById("transModal").style.display = "none";
-    window.copyRef = () => { alert("Referral Link Copied!"); };
 </script>
-
 </body>
 </html>
