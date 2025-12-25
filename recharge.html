@@ -1,152 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Recharge | H4XTEAM</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
-    <style>
-        :root {
-            --primary: #4361ee;
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
-            --bg: #ffffff;
-            --surface: #f8fafc;
-            --border: #e2e8f0;
-        }
-
-        body { 
-            background: var(--bg); color: var(--text-dark); 
-            font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; 
-            display: flex; justify-content: center;
-        }
-
-        .app-container { width: 100%; max-width: 480px; min-height: 100vh; position: relative; }
-
-        /* Header */
-        .header {
-            padding: 20px; display: flex; align-items: center; gap: 15px;
-            border-bottom: 1px solid var(--border);
-        }
-        .back-btn { font-size: 24px; cursor: pointer; text-decoration: none; color: black; }
-        .header h2 { font-size: 18px; font-weight: 800; margin: 0; }
-
-        /* Progress Bar */
-        .progress-bar { height: 4px; background: var(--surface); width: 100%; }
-        .progress-fill { height: 100%; background: var(--primary); width: 33%; transition: 0.3s; }
-
-        /* Section Styling */
-        .section { padding: 25px 20px; }
-        .label { font-size: 12px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 20px; display: block; }
-
-        /* Operator Selection */
-        .sim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .sim-card { 
-            border: 2px solid var(--border); border-radius: 20px; padding: 20px; 
-            text-align: center; cursor: pointer; transition: 0.2s; background: var(--bg);
-        }
-        .sim-card img { width: 45px; height: 45px; border-radius: 10px; margin-bottom: 10px; }
-        .sim-card b { display: block; font-size: 14px; }
-        .sim-card.active { border-color: var(--primary); background: #f0f3ff; transform: scale(1.02); }
-
-        /* Input Field */
-        .input-group { position: relative; display: none; margin-top: 30px; }
-        .input-box {
-            width: 100%; border: 2px solid var(--border); border-radius: 16px;
-            padding: 18px 20px; font-size: 18px; font-weight: 700; box-sizing: border-box;
-            outline: none; transition: 0.3s;
-        }
-        .input-box:focus { border-color: var(--primary); }
-
-        /* Plans Area */
-        #plansArea { display: none; padding: 10px 20px; }
-        .plan-card {
-            border: 1px solid var(--border); border-radius: 20px; padding: 20px;
-            display: flex; justify-content: space-between; align-items: center;
-            margin-bottom: 15px; background: var(--bg); transition: 0.2s;
-        }
-        .plan-card:active { transform: scale(0.98); }
-        .plan-price { font-size: 22px; font-weight: 800; }
-        .plan-details { font-size: 13px; color: var(--text-muted); font-weight: 600; }
-        .select-btn { 
-            background: var(--text-dark); color: #fff; border: none; padding: 12px 24px; 
-            border-radius: 12px; font-weight: 800; cursor: pointer;
-        }
-
-        /* Success Overlay */
-        .overlay {
-            display: none; position: fixed; inset: 0; background: #fff; 
-            z-index: 1000; flex-direction: column; align-items: center; justify-content: center;
-            text-align: center; padding: 30px;
-        }
-        .success-icon { width: 100px; height: 100px; background: #ecfdf5; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 50px; margin-bottom: 25px; }
-
-        /* Notifications Popup */
-        #notifyPopup {
-            display: none; position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-            width: 90%; max-width: 400px; background: #1e293b; color: white;
-            padding: 15px; border-radius: 15px; z-index: 2000; box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-        }
-    </style>
-</head>
-<body>
-
-<div id="notifyPopup">
-    <b id="notifTitle"></b><br>
-    <small id="notifMsg"></small>
-</div>
-
-<div class="app-container">
-    <div class="header">
-        <a href="dashboard.html" class="back-btn">←</a>
-        <h2>Mobile Recharge</h2>
-    </div>
-    <div class="progress-bar"><div class="progress-fill" id="pFill"></div></div>
-
-    <div class="section" id="step1">
-        <span class="label">Step 1: Select Operator</span>
-        <div class="sim-grid">
-            <div class="sim-card" onclick="selectSim('Jio', this)">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/b/be/Jio_logo.png" alt="Jio">
-                <b>JIO PREPAID</b>
-            </div>
-            <div class="sim-card" onclick="selectSim('Airtel', this)">
-                <img src="https://upload.wikimedia.org/wikipedia/commons/e/e1/Airtel_logo.png" alt="Airtel">
-                <b>AIRTEL PREPAID</b>
-            </div>
-        </div>
-
-        <div class="input-group" id="phoneGroup">
-            <span class="label">Step 2: Mobile Number</span>
-            <input type="number" id="mobileNum" class="input-box" placeholder="10 Digit Number" oninput="showPlans()">
-        </div>
-    </div>
-
-    <div id="plansArea">
-        <span class="label">Step 3: Select Plan</span>
-        <div id="plansList"></div>
-    </div>
-</div>
-
-<div class="overlay" id="successScreen">
-    <div class="success-icon">✓</div>
-    <h2 style="font-weight: 800;">Request Submitted</h2>
-    <p style="color: var(--text-muted); line-height: 1.6;">Your recharge for <b id="finalNum" style="color:black;"></b> is being processed.<br>Status will update within <b>24 hours</b>.</p>
-    <button class="select-btn" onclick="location.href='dashboard.html'" style="margin-top: 30px; width: 100%;">BACK TO HOME</button>
-</div>
-
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, push, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, push, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-        authDomain: "test-eb5e7.firebaseapp.com",
-        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-        projectId: "test-eb5e7",
-        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
-    };
+  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+  authDomain: "test-eb5e7.firebaseapp.com",
+  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+  projectId: "test-eb5e7",
+  storageBucket: "test-eb5e7.appspot.com",
+  messagingSenderId: "366282855653",
+  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+  measurementId: "G-ECKCTBLQJ8"
+};
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -155,12 +21,10 @@
     let selectedSim = "";
     let adminPlans = {};
 
-    // 1. Fetch live prices from Admin Settings
     onValue(ref(db, 'settings/plans'), (snap) => {
         if (snap.exists()) adminPlans = snap.val();
     });
 
-    // 2. Listen for Admin Notifications (Approval/Rejection)
     onAuthStateChanged(auth, (user) => {
         if(user) {
             onValue(ref(db, `users/${user.uid}/notifications`), (snap) => {
@@ -191,7 +55,6 @@
             const list = document.getElementById('plansList');
             list.innerHTML = "";
             
-            // Generate 3 Plans based on Admin Prices
             const plans = adminPlans[selectedSim] || [{p:299},{p:479},{p:719}];
             const details = ["1.5GB/Day • 28 Days", "1.5GB/Day • 56 Days", "2GB/Day • 84 Days"];
 
@@ -203,7 +66,7 @@
                         <div class="plan-price">₹${p.p}</div>
                         <div class="plan-details">${details[i]}</div>
                     </div>
-                    <button class="select-btn" onclick="submitReq('${p.p}')">SELECT</button>
+                    <button class="select-btn" onclick="submitReq(${p.p})">SELECT</button>
                 `;
                 list.appendChild(card);
             });
@@ -214,23 +77,38 @@
     window.submitReq = async (amount) => {
         const num = document.getElementById('mobileNum').value;
         const user = auth.currentUser;
-        if (!user) return alert("Please Login");
+        if (!user) return alert("Please Login First");
 
-        // Send to Admin Panel
-        const reqRef = ref(db, 'recharge_requests');
-        await push(reqRef, {
-            uid: user.uid,
-            mobile: num,
-            operator: selectedSim,
-            amount: amount,
-            status: "Pending",
-            timestamp: new Date().toLocaleString()
-        });
+        // --- NEW BALANCE CHECK LOGIC ---
+        const userRef = ref(db, `users/${user.uid}`);
+        const snapshot = await get(userRef);
+        
+        if (snapshot.exists()) {
+            const userData = snapshot.val();
+            const currentBalance = userData.balance || 0;
 
-        document.getElementById('finalNum').innerText = "+91 " + num;
-        document.getElementById('successScreen').style.display = 'flex';
+            if (currentBalance < amount) {
+                alert(`Insufficient Balance! You need ₹${amount}, but you only have ₹${currentBalance}. Please deposit money first.`);
+                window.location.href = "deposit.html"; // Redirect to deposit page
+                return;
+            }
+
+            // If balance is enough, proceed with request
+            const reqRef = ref(db, 'recharge_requests');
+            await push(reqRef, {
+                uid: user.uid,
+                email: user.email,
+                mobile: num,
+                operator: selectedSim,
+                amount: amount,
+                status: "Pending",
+                timestamp: new Date().toLocaleString()
+            });
+
+            document.getElementById('finalNum').innerText = "+91 " + num;
+            document.getElementById('successScreen').style.display = 'flex';
+        } else {
+            alert("User data not found. Please contact support.");
+        }
     };
 </script>
-
-</body>
-</html>
