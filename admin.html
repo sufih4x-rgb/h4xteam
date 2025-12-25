@@ -10,81 +10,52 @@
             --primary: #4361ee;
             --success: #06d6a0;
             --danger: #ff4d4d;
-            --warning: #fb8500;
-            --freeze: #3f37c9;
             --bg: #f4f7fe;
             --white: #ffffff;
             --text-dark: #1e293b;
             --text-light: #64748b;
         }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text-dark);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            margin: 0;
-            padding: 30px;
-        }
-
-        .btn-loading {
-            position: relative;
-            color: transparent !important;
-            pointer-events: none;
-        }
-        .btn-loading::after {
-            content: "";
-            position: absolute;
-            width: 16px; height: 16px;
-            top: 50%; left: 50%;
-            margin: -8px 0 0 -8px;
-            border: 2px solid rgba(0,0,0,0.1);
-            border-top-color: currentColor;
-            border-radius: 50%;
-            animation: spin 0.6s linear infinite;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        h1 { font-weight: 800; letter-spacing: -1px; margin-bottom: 30px; }
-        h2 { font-size: 14px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin-bottom: 20px; }
-
-        .section {
-            background: var(--white);
-            padding: 25px;
-            border-radius: 24px;
-            box-shadow: 0 10px 40px rgba(0,0,0,0.04);
-            border: 1px solid rgba(0,0,0,0.02);
-            margin-bottom: 30px;
-        }
-
-        .grid-layout { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; }
+        body { background-color: var(--bg); color: var(--text-dark); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 1100px; margin: auto; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        /* Stats & Header */
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--white); padding: 20px; border-radius: 18px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); border: 1px solid #edf2f7; }
+        .stat-card h3 { font-size: 12px; color: var(--text-light); text-transform: uppercase; margin: 0 0 10px 0; }
+        .stat-card div { font-size: 24px; font-weight: 800; color: var(--primary); }
+
+        /* Sections */
+        .section { background: var(--white); padding: 25px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.04); margin-bottom: 30px; border: 1px solid rgba(0,0,0,0.02); }
+        .section-title { font-size: 16px; font-weight: 800; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; }
+
+        /* Tables */
+        .table-wrap { overflow-x: auto; }
+        table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 15px; background: #f8fafc; font-size: 11px; color: var(--text-light); border-bottom: 2px solid #f1f5f9; }
         td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; }
 
-        input { padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; font-family: inherit; box-sizing: border-box; }
-        
-        button {
-            padding: 10px 18px;
-            border-radius: 10px;
-            font-weight: 700;
-            cursor: pointer;
-            border: none;
-            transition: 0.2s;
-            font-size: 11px;
-        }
-
+        /* Controls */
+        input, select { padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; font-family: inherit; font-size: 13px; }
+        button { padding: 10px 18px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; transition: 0.2s; font-size: 11px; }
         .btn-blue { background: var(--primary); color: white; }
-        .btn-green { background: #e6fcf5; color: #087f5b; }
-        .btn-red { background: #fff5f5; color: #c53030; }
-        .btn-ban { background: #1e293b; color: white; }
-        .btn-freeze { background: #edf2ff; color: var(--freeze); border: 1px solid #dbe4ff; }
+        .btn-green { background: var(--success); color: white; }
+        .btn-red { background: var(--danger); color: white; }
+        
+        /* Login Overlay */
+        #loginOverlay { position: fixed; inset: 0; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 10000; }
+        .login-card { background: white; padding: 40px; border-radius: 30px; text-align: center; width: 320px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
 
-        #loginOverlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 10000;
-        }
-        .login-card { background: white; padding: 40px; border-radius: 30px; text-align: center; width: 320px; }
+        /* Tabs */
+        .tabs { display: flex; gap: 10px; margin-bottom: 20px; }
+        .tab-btn { background: #e2e8f0; color: #64748b; padding: 12px 25px; border-radius: 12px; cursor: pointer; font-weight: 700; }
+        .tab-btn.active { background: var(--primary); color: white; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; text-transform: uppercase; }
+        .bg-pending { background: #fff7ed; color: #c2410c; }
+        .bg-success { background: #ecfdf5; color: #065f46; }
     </style>
 </head>
 <body>
@@ -98,73 +69,99 @@
     </div>
 </div>
 
-<h1>System Control Panel</h1>
+<div class="container">
+    <div class="stats-grid">
+        <div class="stat-card"><h3>Total Float</h3><div id="floatVal">₹0</div></div>
+        <div class="stat-card"><h3>Pending Recharge</h3><div id="pendRec">0</div></div>
+        <div class="stat-card"><h3>Active Users</h3><div id="userCount">0</div></div>
+    </div>
 
-<div class="grid-layout">
-    <div class="section">
-        <h2>💳 Gateway & Games Config</h2>
-        <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-            <input type="text" id="upiInput" placeholder="Active UPI ID" style="flex: 1;">
-            <button class="btn-blue" onclick="saveConfig('upi', 'upiInput')">Update UPI</button>
+    <div class="tabs">
+        <div class="tab-btn active" onclick="showTab('users')">Users & Config</div>
+        <div class="tab-btn" onclick="showTab('recharges')">Recharge Req</div>
+        <div class="tab-btn" onclick="showTab('withdrawals')">Withdraw/Deposit</div>
+        <div class="tab-btn" onclick="showTab('history')">History Log</div>
+    </div>
+
+    <div id="users" class="tab-content active">
+        <div class="section">
+            <div class="section-title">⚙️ Payment & Plan Config</div>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                <input type="text" id="upiId" placeholder="Admin UPI ID">
+                <button class="btn-blue" onclick="saveData('settings/payment', {upi: document.getElementById('upiId').value})">Update UPI</button>
+            </div>
+            <div style="margin-top:20px; display:flex; gap:10px;">
+                <input type="number" id="p1" placeholder="Plan 1 Price" style="width:100px">
+                <input type="number" id="p2" placeholder="Plan 2 Price" style="width:100px">
+                <input type="number" id="p3" placeholder="Plan 3 Price" style="width:100px">
+                <button class="btn-blue" onclick="savePlans()">Set All Plan Prices</button>
+            </div>
         </div>
-        <div style="display: flex; gap: 10px;">
-            <input type="text" id="qrInput" placeholder="QR Image URL" style="flex: 1;">
-            <button class="btn-blue" onclick="saveConfig('qr', 'qrInput')">Update QR</button>
+
+        <div class="section">
+            <div class="section-title">👥 User Management</div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>User</th><th>Balance</th><th>Status</th><th>Action</th></tr></thead>
+                    <tbody id="userList"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
-    <div class="section">
-        <h2>📊 Global Float</h2>
-        <div style="font-size: 28px; font-weight: 800; color: var(--primary);">₹<span id="totalStats">0</span></div>
-        <div style="font-size: 11px; color: var(--text-light); margin-top: 5px;">Total User Balances Combined</div>
+    <div id="recharges" class="tab-content">
+        <div class="section">
+            <div class="section-title">📱 Mobile Recharge Requests</div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Number</th><th>SIM</th><th>Amount</th><th>Action</th></tr></thead>
+                    <tbody id="rechargeList"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
-</div>
 
-<div class="section">
-    <h2>👥 User Management (Freeze/Unfreeze & Balance)</h2>
-    <div style="overflow-x: auto;">
-        <table>
-            <thead>
-                <tr>
-                    <th>User Detail</th>
-                    <th>Balance</th>
-                    <th>Set Amt</th>
-                    <th>Status</th>
-                    <th>Freeze Action & Reason</th>
-                    <th>Access</th>
-                </tr>
-            </thead>
-            <tbody id="userList"></tbody>
-        </table>
+    <div id="withdrawals" class="tab-content">
+        <div class="grid" style="display:grid; grid-template-columns: 1fr 1fr; gap:20px;">
+            <div class="section">
+                <div class="section-title">📥 Deposits</div>
+                <tbody id="depositList"></tbody>
+                <table id="depTable"></table>
+            </div>
+            <div class="section">
+                <div class="section-title">📤 Withdrawals</div>
+                <table id="withTable"></table>
+            </div>
+        </div>
     </div>
-</div>
 
-<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-    <div class="section">
-        <h2>📥 Deposit Requests</h2>
-        <table id="depositTable">
-            <tbody id="depositList"></tbody>
-        </table>
-    </div>
-    <div class="section">
-        <h2>📤 Withdrawal Requests</h2>
-        <table id="withdrawTable">
-            <tbody id="withdrawList"></tbody>
-        </table>
+    <div id="history" class="tab-content">
+        <div class="section">
+            <div class="section-title">📜 Action History</div>
+            <div class="table-wrap">
+                <table>
+                    <thead><tr><th>Type</th><th>Detail</th><th>Amount</th><th>Status</th><th>Time</th></tr></thead>
+                    <tbody id="historyList"></tbody>
+                </table>
+            </div>
+        </div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, set, increment, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-        authDomain: "test-eb5e7.firebaseapp.com",
-        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-        projectId: "test-eb5e7",
-        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
-    };
+   const firebaseConfig = {
+  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+  authDomain: "test-eb5e7.firebaseapp.com",
+  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+  projectId: "test-eb5e7",
+  storageBucket: "test-eb5e7.appspot.com",
+  messagingSenderId: "366282855653",
+  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+  measurementId: "G-ECKCTBLQJ8"
+};
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -172,139 +169,96 @@
     window.checkAuth = function() {
         if(document.getElementById("adminPass").value === "admin123") {
             document.getElementById("loginOverlay").style.display = "none";
-            loadData();
-        } else { alert("Access Denied"); }
-    };
+            initAdmin();
+        } else { alert("Wrong Password"); }
+    }
 
-    function loadData() {
-        // Load Settings
-        onValue(ref(db, "settings/payment"), snap => {
-            const d = snap.val();
-            if(d) {
-                document.getElementById("upiInput").value = d.upi || "";
-                document.getElementById("qrInput").value = d.qr || "";
-            }
-        });
+    window.showTab = (id) => {
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+        event.target.classList.add('active');
+    }
 
+    function initAdmin() {
         // Load Users
         onValue(ref(db, "users/"), snap => {
-            let html = ""; let total = 0;
+            let html = ""; let float = 0; let count = 0;
             snap.forEach(child => {
                 const u = child.val();
-                total += (u.balance || 0);
-                const isBanned = u.status === "banned";
-                const isFrozen = u.status === "frozen";
-
+                float += (u.balance || 0); count++;
                 html += `<tr>
-                    <td>
-                        <div style="font-weight:800">${u.email ? u.email.split('@')[0] : 'User'}</div>
-                        <div style="font-size:9px; color:gray;">ID: ${child.key.substring(0,8)}</div>
-                    </td>
-                    <td>₹${(u.balance || 0).toLocaleString()}</td>
-                    <td>
-                        <input id="adj_${child.key}" type="number" style="width:60px; font-size:11px;" placeholder="0">
-                        <button class="btn-blue" style="padding:5px 8px" onclick="adjustBalance(this, '${child.key}')">OK</button>
-                    </td>
-                    <td>
-                        <span style="color:${isBanned ? 'red' : (isFrozen ? 'blue' : 'green')}">
-                            ${isBanned ? '● BANNED' : (isFrozen ? '❄️ FROZEN' : '● ACTIVE')}
-                        </span>
-                    </td>
-                    <td>
-                        <input id="res_${child.key}" type="text" placeholder="Reason..." value="${u.freezeReason || ''}" style="width:100px; font-size:10px;">
-                        <button class="${isFrozen ? 'btn-green' : 'btn-freeze'}" onclick="toggleFreeze(this, '${child.key}', ${isFrozen})">
-                            ${isFrozen ? 'UNFREEZE' : 'FREEZE'}
-                        </button>
-                    </td>
-                    <td>
-                        <button class="${isBanned ? 'btn-green' : 'btn-ban'}" onclick="toggleStatus(this, '${child.key}', '${isBanned ? 'active' : 'banned'}')">
-                            ${isBanned ? 'UNBAN' : 'BAN'}
-                        </button>
-                    </td>
+                    <td>${u.email ? u.email.split('@')[0] : 'User'}</td>
+                    <td>₹${u.balance || 0} <button onclick="editBal('${child.key}')">✏️</button></td>
+                    <td><span class="badge ${u.status === 'banned' ? 'btn-red' : 'bg-success'}">${u.status || 'active'}</span></td>
+                    <td><button class="btn-red" onclick="banUser('${child.key}')">BAN</button></td>
                 </tr>`;
             });
             document.getElementById("userList").innerHTML = html;
-            document.getElementById("totalStats").innerText = total.toLocaleString();
+            document.getElementById("floatVal").innerText = "₹" + float.toLocaleString();
+            document.getElementById("userCount").innerText = count;
         });
 
-        // Load Deposits
-        onValue(ref(db, "transactions/deposits/"), snap => {
-            let html = "<tr><th>UTR</th><th>Amt</th><th>Opt</th></tr>";
-            snap.forEach(uNode => {
-                uNode.forEach(tx => {
-                    if(tx.val().status === "pending") {
-                        html += `<tr><td>${tx.key}</td><td>₹${tx.val().amount}</td><td>
-                            <button class="btn-green" onclick="handleDeposit(this, '${uNode.key}', '${tx.key}', ${tx.val().amount}, 'approved')">✔</button>
-                            <button class="btn-red" onclick="handleDeposit(this, '${uNode.key}', '${tx.key}', 0, 'rejected')">✖</button>
-                        </td></tr>`;
-                    }
-                });
+        // Load Recharge Requests
+        onValue(ref(db, "recharge_requests"), snap => {
+            let html = ""; let pCount = 0;
+            let histHtml = "";
+            snap.forEach(child => {
+                const r = child.val();
+                if(r.status === "Pending") {
+                    pCount++;
+                    html += `<tr>
+                        <td>${r.mobile}</td>
+                        <td>${r.operator}</td>
+                        <td>₹${r.amount}</td>
+                        <td>
+                            <button class="btn-green" onclick="handleRecharge('${child.key}', '${r.uid}', 'Success', '${r.mobile}')">Approve</button>
+                            <button class="btn-red" onclick="handleRecharge('${child.key}', '${r.uid}', 'Rejected', '${r.mobile}')">Reject</button>
+                        </td>
+                    </tr>`;
+                } else {
+                    histHtml = `<tr><td>Recharge</td><td>${r.mobile}</td><td>₹${r.amount}</td><td>${r.status}</td><td>${r.timestamp}</td></tr>` + histHtml;
+                }
             });
-            document.getElementById("depositList").innerHTML = html;
-        });
-
-        // Load Withdrawals
-        onValue(ref(db, "transactions/withdrawals/"), snap => {
-            let html = "<tr><th>User</th><th>Amt</th><th>Opt</th></tr>";
-            snap.forEach(uNode => {
-                uNode.forEach(wd => {
-                    if(wd.val().status === "pending") {
-                        html += `<tr><td>${uNode.key.substring(0,5)}</td><td>₹${wd.val().amount}</td><td>
-                            <button class="btn-green" onclick="handleWithdraw(this, '${uNode.key}', '${wd.key}', 'approved')">PAID</button>
-                            <button class="btn-red" onclick="handleWithdraw(this, '${uNode.key}', '${wd.key}', 'rejected', ${wd.val().amount})">✖</button>
-                        </td></tr>`;
-                    }
-                });
-            });
-            document.getElementById("withdrawList").innerHTML = html;
+            document.getElementById("rechargeList").innerHTML = html || "<tr><td colspan='4'>No Pending Requests</td></tr>";
+            document.getElementById("pendRec").innerText = pCount;
+            document.getElementById("historyList").innerHTML = histHtml;
         });
     }
 
-    // --- LOGIC FUNCTIONS ---
-
-    window.toggleFreeze = async function(btn, uid, isFrozen) {
-        const reason = document.getElementById(`res_${uid}`).value;
-        if(!isFrozen && !reason) return alert("Enter reason first!");
+    // Process Recharge & Notify
+    window.handleRecharge = async (id, uid, status, mobile) => {
+        await update(ref(db, `recharge_requests/${id}`), { status: status });
         
-        btn.classList.add('btn-loading');
-        await update(ref(db, `users/${uid}`), {
-            status: isFrozen ? "active" : "frozen",
-            freezeReason: isFrozen ? "" : reason
+        // Notification logic
+        const notifyRef = ref(db, `users/${uid}/notifications`);
+        await set(notifyRef, {
+            title: status === "Success" ? "✅ Recharge Successful" : "❌ Recharge Rejected",
+            message: status === "Success" 
+                ? `Your recharge for ${mobile} was successful! Balance updated.` 
+                : `Recharge for ${mobile} failed. Contact Support.`,
+            time: new Date().toLocaleString()
         });
-        btn.classList.remove('btn-loading');
+        alert("Action Completed & User Notified");
     };
 
-    window.adjustBalance = async function(btn, uid) {
-        const amt = Number(document.getElementById(`adj_${uid}`).value);
-        btn.classList.add('btn-loading');
-        await update(ref(db, `users/${uid}`), { balance: amt });
-        btn.classList.remove('btn-loading');
+    window.savePlans = async () => {
+        const plans = {
+            Airtel: [{p: document.getElementById('p1').value}, {p: document.getElementById('p2').value}, {p: document.getElementById('p3').value}],
+            Jio: [{p: document.getElementById('p1').value}, {p: document.getElementById('p2').value}, {p: document.getElementById('p3').value}]
+        };
+        await set(ref(db, "settings/plans"), plans);
+        alert("Plans updated for all users!");
     };
 
-    window.toggleStatus = async function(btn, uid, newStat) {
-        btn.classList.add('btn-loading');
-        await update(ref(db, `users/${uid}`), { status: newStat });
-        btn.classList.remove('btn-loading');
+    window.editBal = async (uid) => {
+        const newBal = prompt("Enter new balance amount:");
+        if(newBal) await update(ref(db, `users/${uid}`), { balance: Number(newBal) });
     };
 
-    window.saveConfig = async function(type, inputId) {
-        const val = document.getElementById(inputId).value;
-        await update(ref(db, "settings/payment"), { [type]: val });
-        alert("Updated!");
-    };
-
-    window.handleDeposit = async function(btn, uid, txid, amt, status) {
-        btn.classList.add('btn-loading');
-        if(status === 'approved') await update(ref(db, `users/${uid}`), { balance: increment(amt) });
-        await update(ref(db, `transactions/deposits/${uid}/${txid}`), { status: status });
-        btn.classList.remove('btn-loading');
-    };
-
-    window.handleWithdraw = async function(btn, uid, wid, status, refund = 0) {
-        btn.classList.add('btn-loading');
-        if(status === 'rejected') await update(ref(db, `users/${uid}`), { balance: increment(refund) });
-        await update(ref(db, `transactions/withdrawals/${uid}/${wid}`), { status: status });
-        btn.classList.remove('btn-loading');
+    window.saveData = async (path, data) => {
+        await update(ref(db, path), data);
+        alert("Config Updated!");
     };
 </script>
 </body>
