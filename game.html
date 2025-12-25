@@ -61,10 +61,11 @@
     .loading {
         color: #00aaff;
         text-shadow: 0 0 10px #00aaff;
+        margin-top: 10px;
+        font-size: 22px;
     }
 </style>
 
-<!-- Firebase -->
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
 
@@ -110,7 +111,6 @@ let winMultiplier = 1.9;
 
 // ------------------ LOAD USER DATA --------------------
 firebase.database().ref("users/" + userId).once("value").then(snap => {
-
     let data = snap.val();
 
     if (!data) {
@@ -122,7 +122,6 @@ firebase.database().ref("users/" + userId).once("value").then(snap => {
     let deposits = data.deposits;
     let totalWon = data.totalWon || 0;
 
-    // Win limits
     if (deposits === 1) maxWin = 200;
     else if (deposits >= 5) maxWin = 500;
     else maxWin = 0;
@@ -132,7 +131,9 @@ firebase.database().ref("users/" + userId).once("value").then(snap => {
     document.getElementById("maxWin").innerText = maxWin;
 });
 
-// ------------------ PLAY FUNCTION --------------------
+// ------------------ PLAY + COUNTDOWN --------------------
+
+let timer = null;
 
 function play() {
     let bet = parseInt(document.getElementById("bet").value);
@@ -144,14 +145,28 @@ function play() {
     if (bet > balance) return alert("Insufficient balance");
     if (totalWon >= maxWin) return alert("Your win limit is reached!");
 
-    document.getElementById("status").innerHTML = "Processing... 30 seconds remaining ⏳";
     document.getElementById("resultBox").style.display = "none";
 
-    setTimeout(() => runGame(bet, balance, totalWon), 30000);  
+    let sec = 30;
+    document.getElementById("status").innerHTML = `Processing... ${sec}s left ⏳`;
+
+    clearInterval(timer);
+
+    timer = setInterval(() => {
+        sec--;
+        document.getElementById("status").innerHTML = `Processing... ${sec}s left ⏳`;
+
+        if (sec <= 0) {
+            clearInterval(timer);
+            document.getElementById("status").innerHTML = "Result Ready ✔️";
+            runGame(bet, balance, totalWon);
+        }
+    }, 1000);
 }
 
-function runGame(bet, balance, totalWon) {
+// ------------------ RUN RESULT --------------------
 
+function runGame(bet, balance, totalWon) {
     let win = Math.random() > 0.5;
     let profit = 0;
 
@@ -159,8 +174,7 @@ function runGame(bet, balance, totalWon) {
         profit = Math.floor(bet * winMultiplier);
 
         if (totalWon + profit > maxWin) {
-            profit = maxWin - totalWon;  
-            win = true;
+            profit = maxWin - totalWon;
         }
 
         balance += profit;
