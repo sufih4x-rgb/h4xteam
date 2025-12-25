@@ -40,7 +40,6 @@
             transition: transform 0.3s ease;
         }
 
-        /* Ban Overlay Animation */
         #banOverlay {
             display: none;
             position: absolute;
@@ -90,7 +89,6 @@
 
         .reg-btn-link:hover { background: #f0f3ff; }
 
-        /* Spinner */
         .is-loading { color: transparent !important; pointer-events: none; }
         .is-loading::after {
             content: ""; position: absolute; width: 20px; height: 20px;
@@ -162,12 +160,20 @@
         btn.classList.add("is-loading");
 
         try {
-            // 1. Authenticate
+            // 1. Authenticate with Firebase
             const cred = await signInWithEmailAndPassword(auth, email, pass);
-            
-            // 2. Check Ban Status
-            const userSnap = await get(ref(db, 'users/' + cred.user.uid));
-            
+            const user = cred.user;
+
+            // 2. CHECK EMAIL VERIFICATION
+            if (!user.emailVerified) {
+                await signOut(auth); // Log them out immediately
+                btn.classList.remove("is-loading");
+                alert("Email not verified! Please check your inbox and click the verification link.");
+                return;
+            }
+
+            // 3. CHECK BAN STATUS
+            const userSnap = await get(ref(db, 'users/' + user.uid));
             if (userSnap.exists() && userSnap.val().status === "banned") {
                 await signOut(auth);
                 btn.classList.remove("is-loading");
@@ -175,12 +181,17 @@
                 return;
             }
 
-            // 3. Success
+            // 4. SUCCESS - Redirect to Dashboard
             window.location.href = "dashboard.html";
 
         } catch (e) {
             btn.classList.remove("is-loading");
-            alert("Login Failed: " + e.message);
+            // Handle common Firebase errors
+            if (e.code === 'auth/invalid-credential') {
+                alert("Error: Incorrect email or password.");
+            } else {
+                alert("Login Failed: " + e.message);
+            }
         }
     };
 </script>
