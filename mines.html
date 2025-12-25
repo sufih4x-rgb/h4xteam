@@ -14,7 +14,7 @@
         }
 
         body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; }
-        .game-shell { width: 100%; max-width: 480px; min-height: 100vh; background: var(--surface); padding: 20px; box-sizing: border-box; }
+        .game-shell { width: 100%; max-width: 480px; min-height: 100vh; background: var(--surface); padding: 20px; box-sizing: border-box; position: relative; }
 
         /* Wallet Header */
         .header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; color: white; padding: 15px; border-radius: 18px; margin-bottom: 20px; }
@@ -27,71 +27,60 @@
 
         /* Grid */
         .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
-        .slot { aspect-ratio: 1; background: #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.2s; border: 2px solid transparent; }
-        .slot.diamond { background: #ecfeff; border-color: #06b6d4; animation: pop 0.3s; }
-        .slot.bomb { background: #fef2f2; border-color: #ef4444; }
+        .slot { aspect-ratio: 1; background: #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.1s; border: 2px solid transparent; }
+        .slot.diamond { background: #ecfeff; border-color: #06b6d4; animation: pop 0.2s; }
+        .slot.bomb { background: #fef2f2; border-color: #ef4444; animation: shake 0.3s; }
         
         @keyframes pop { 0% { transform: scale(0.8); } 100% { transform: scale(1); } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
 
         /* Betting Area */
         .bet-area { background: #f8fafc; padding: 15px; border-radius: 20px; border: 1px solid #e2e8f0; }
-        input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; margin: 10px 0; font-weight: 700; }
+        input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; margin: 10px 0; font-weight: 700; outline: none; }
         .main-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; }
         .btn-start { background: var(--primary); color: white; }
         .btn-cashout { background: var(--success); color: white; display: none; }
 
-        /* History */
-        .history { margin-top: 25px; }
-        .hist-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
-        .win-txt { color: var(--success); font-weight: 700; }
-        .loss-txt { color: var(--danger); font-weight: 700; }
-
-        /* Loader Animation */
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-
-        .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center; }
-        .modal { background:white; padding:30px; border-radius:24px; text-align:center; width:80%; max-width:320px; }
+        /* Notifications */
+        .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; }
+        .modal { background:white; padding:30px; border-radius:24px; text-align:center; width:85%; max-width:320px; }
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 10px auto; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
 <div class="game-shell">
     <div class="header">
-        <span style="font-weight:700">MINES MASTER</span>
+        <span style="font-weight:700; letter-spacing:1px;">MINES</span>
         <div class="balance-chip">₹<span id="balanceDisplay">0.00</span></div>
     </div>
 
     <div class="lvl-box">
-        <button class="lvl-btn active" onclick="changeLvl('easy', this)">EASY</button>
-        <button class="lvl-btn" onclick="changeLvl('medium', this)">MEDIUM</button>
-        <button class="lvl-btn" onclick="changeLvl('hard', this)">HARD</button>
+        <button class="lvl-btn active" id="btn-easy" onclick="changeLvl('easy')">EASY (3💣)</button>
+        <button class="lvl-btn" id="btn-medium" onclick="changeLvl('medium')">MED (7💣)</button>
+        <button class="lvl-btn" id="btn-hard" onclick="changeLvl('hard')">HARD (15💣)</button>
     </div>
 
     <div class="grid" id="gameGrid"></div>
 
     <div class="bet-area">
-        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700">
-            <span>MULTIPLIER: <span id="multText" style="color:var(--primary)">1.00x</span></span>
-            <span>PROFIT: <span id="profitText" style="color:var(--success)">₹0.00</span></span>
+        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:800; margin-bottom:5px;">
+            <span>MULT: <span id="multText" style="color:var(--primary)">1.00x</span></span>
+            <span>WINNING: <span id="profitText" style="color:var(--success)">₹0.00</span></span>
         </div>
-        <input type="number" id="betInput" value="10" min="10">
+        <input type="number" id="betInput" value="10" placeholder="Min ₹10">
         <button id="startBtn" class="main-btn btn-start" onclick="startGame()">START GAME</button>
         <button id="cashBtn" class="main-btn btn-cashout" onclick="cashout()">CASHOUT</button>
-    </div>
-
-    <div class="history">
-        <h3 style="font-size:14px; color:#64748b">RECENT ACTIVITY</h3>
-        <div id="historyList"></div>
     </div>
 </div>
 
 <div id="alertOverlay" class="overlay">
     <div class="modal">
-        <div id="modalIcon" style="font-size:50px"></div>
-        <h2 id="modalTitle"></h2>
-        <p id="modalDesc"></p>
-        <button class="main-btn btn-start" onclick="closeModal()">CONTINUE</button>
+        <div id="modalIcon" style="font-size:50px; margin-bottom:10px;"></div>
+        <h2 id="modalTitle" style="margin:0;"></h2>
+        <p id="modalDesc" style="color:#64748b; font-size:14px; line-height:1.5;"></p>
+        <button class="main-btn btn-start" onclick="closeModal()">OK</button>
     </div>
 </div>
 
@@ -100,7 +89,7 @@
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-   const firebaseConfig = {
+ const firebaseConfig = {
   apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
   authDomain: "test-eb5e7.firebaseapp.com",
   databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
@@ -110,7 +99,6 @@
   appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
   measurementId: "G-ECKCTBLQJ8"
 };
-
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
@@ -131,6 +119,7 @@
         });
     });
 
+    // Create Grid
     const grid = document.getElementById("gameGrid");
     for(let i=0; i<20; i++) {
         const div = document.createElement("div");
@@ -139,16 +128,16 @@
         grid.appendChild(div);
     }
 
-    window.changeLvl = (lvl, btn) => {
+    window.changeLvl = (lvl) => {
         if(isPlaying) return;
         currentLvl = lvl;
         document.querySelectorAll('.lvl-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
+        document.getElementById(`btn-${lvl}`).classList.add('active');
     }
 
     window.startGame = async () => {
         activeBet = parseFloat(document.getElementById("betInput").value);
-        if(activeBet < 10 || activeBet > balance) return alert("Invalid Balance");
+        if(activeBet < 10 || activeBet > balance) return alert("Invalid Bet Amount");
 
         await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(-activeBet) });
 
@@ -156,7 +145,7 @@
         diamondsFound = 0;
         currentMult = 1.00;
         mines = [];
-        let count = currentLvl === 'easy' ? 3 : (currentLvl === 'medium' ? 7 : 15);
+        let count = (currentLvl === 'easy') ? 3 : (currentLvl === 'medium' ? 7 : 15);
         
         while(mines.length < count) {
             let r = Math.floor(Math.random() * 20);
@@ -167,24 +156,28 @@
         document.getElementById("cashBtn").style.display = "block";
         document.getElementById("multText").innerText = "1.00x";
         document.getElementById("profitText").innerText = "₹0.00";
-        document.querySelectorAll(".slot").forEach(s => s.className = "slot");
-        document.querySelectorAll(".slot").forEach(s => s.innerText = "");
+        document.querySelectorAll(".slot").forEach(s => { s.className = "slot"; s.innerText = ""; });
     }
 
     window.handleMove = (idx, el) => {
         if(!isPlaying || el.classList.contains('diamond')) return;
 
         if(mines.includes(idx)) {
-            endGame(false);
+            // LOSS LOGIC: Full lose
+            isPlaying = false;
             el.innerText = "💣";
             el.classList.add("bomb");
+            setTimeout(() => {
+                showModal("💥 LOSS", "You hit a mine. Better luck next time!", "💣");
+                resetUI();
+            }, 500);
         } else {
             diamondsFound++;
-            applyAlgorithm();
+            calculateAlgorithm();
             el.innerText = "💎";
             el.classList.add("diamond");
 
-            // Safety check for 200 Profit
+            // 200 Profit Protection
             if((activeBet * currentMult) - activeBet >= 200) {
                 isPlaying = false;
                 showProcessing();
@@ -192,69 +185,54 @@
         }
     }
 
-    function applyAlgorithm() {
-        // RANDOM MULTIPLIER LOGIC
-        let step = 0;
-        if(currentLvl === 'easy') {
-            // Target 5x max
-            step = 1.15 + (Math.random() * 0.1); // Picks between 1.15 and 1.25
-        } else if(currentLvl === 'medium') {
-            // Target 5x max but faster starts
-            step = diamondsFound === 1 ? 2.1 : 1.2 + (Math.random() * 0.2);
-            if(diamondsFound >= 7) endGame(false); // Lose if open 7th
+    function calculateAlgorithm() {
+        if(currentLvl === 'easy' || currentLvl === 'medium') {
+            if(diamondsFound === 1) {
+                // First diamond 1.1x to 1.5x
+                currentMult = 1.1 + (Math.random() * 0.4); 
+            } else {
+                currentMult += 0.4 + (Math.random() * 0.6);
+            }
+            if(currentMult > 5) currentMult = 5.00;
+            
+            // Medium Limit
+            if(currentLvl === 'medium' && diamondsFound >= 7) {
+                isPlaying = false;
+                showModal("💥 AUTO-LOSS", "Medium difficulty limit reached!", "💣");
+                resetUI();
+            }
         } else {
-            // Hard - Target 15x
-            step = diamondsFound === 1 ? 3.4 : 1.5 + (Math.random() * 0.5);
+            // Hard Logic
+            if(diamondsFound === 1) {
+                currentMult = 3.5 + (Math.random() * 0.5);
+            } else {
+                currentMult += 2.5 + (Math.random() * 2.0);
+            }
+            if(currentMult > 15) currentMult = 15.00;
         }
 
-        currentMult *= step;
-        
-        // Cap Multipliers
-        let cap = (currentLvl === 'hard') ? 15 : 5;
-        if(currentMult > cap) currentMult = cap;
-
         document.getElementById("multText").innerText = currentMult.toFixed(2) + "x";
-        document.getElementById("profitText").innerText = "₹" + (activeBet * currentMult - activeBet).toFixed(2);
+        document.getElementById("profitText").innerText = "₹" + (activeBet * currentMult).toFixed(2);
     }
 
     window.cashout = async () => {
         if(!isPlaying || diamondsFound === 0) return;
-        const winAmount = activeBet * currentMult;
-        
+        const winTotal = activeBet * currentMult;
         isPlaying = false;
-        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(winAmount) });
         
-        addHistory(winAmount, true);
-        showModal("🎉 WINNER", `You cashed out ₹${winAmount.toFixed(2)}`, "💎");
-        resetUI();
-    }
-
-    function endGame(win) {
-        isPlaying = false;
-        if(!win) {
-            addHistory(activeBet, false);
-            showModal("💥 EXPLOSION", "You hit a mine! Bet lost.", "💣");
-        }
+        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(winTotal) });
+        showModal("🏆 WINNER", `You cashed out ₹${winTotal.toFixed(2)}`, "💰");
         resetUI();
     }
 
     function resetUI() {
         document.getElementById("startBtn").style.display = "block";
         document.getElementById("cashBtn").style.display = "none";
-    }
-
-    function addHistory(amt, isWin) {
-        const list = document.getElementById("historyList");
-        const div = document.createElement("div");
-        div.className = "hist-item";
-        div.innerHTML = `<span>Mines (${currentLvl.toUpperCase()})</span> 
-                         <span class="${isWin ? 'win-txt' : 'loss-txt'}">${isWin ? '+' : '-'}₹${amt.toFixed(2)}</span>`;
-        list.prepend(div);
-        if(list.children.length > 5) list.lastChild.remove();
+        isPlaying = false;
     }
 
     function showProcessing() {
-        showModal("⏳ PROCESSING", "System checking game integrity. Please wait 2 minutes for security clearance.", "<div class='loader'></div>");
+        showModal("⏳ SECURITY CHECK", "Game integrity check in progress. High profit detected. Please wait 2 minutes.", "<div class='loader'></div>");
     }
 
     function showModal(title, desc, icon) {
