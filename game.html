@@ -3,101 +3,99 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Game - H4XTEAM</title>
+    <title>Global Game | H4XTEAM Pro</title>
     <style>
-        /* White Theme Styling */
-        body { background: #f4f7f6; color: #333; font-family: 'Segoe UI', Arial, sans-serif; text-align: center; padding: 20px; }
-        .container { max-width: 450px; margin: auto; background: #fff; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        :root { --primary: #4361ee; --success: #2ed573; --danger: #ff4757; --bg: #f8f9fc; }
+        body { background: var(--bg); color: #2b2d42; font-family: 'Inter', sans-serif; text-align: center; padding: 10px; margin: 0; }
+        .app-container { max-width: 450px; margin: auto; background: #fff; padding: 25px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); min-height: 95vh; }
         
-        h1 { color: #222; margin-bottom: 5px; font-size: 24px; }
-        .balance-card { background: #00ffcc1a; padding: 15px; border-radius: 15px; margin: 15px 0; border: 1px dashed #00c853; }
-        .bal-text { font-size: 30px; font-weight: bold; color: #00c853; }
+        /* Balance UI */
+        .wallet { background: linear-gradient(135deg, #1e90ff, #4361ee); color: white; padding: 25px; border-radius: 20px; margin-bottom: 20px; text-align: left; }
+        .bal { font-size: 36px; font-weight: 800; display: block; }
 
-        .btn-group { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
-        .btn { width: 120px; padding: 18px; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        /* Timer UI */
+        #matchTimer { font-size: 55px; font-weight: 900; color: var(--primary); font-family: monospace; margin: 10px 0; }
         
-        .red { background: #ff4757; color: white; box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3); }
-        .green { background: #2ed573; color: white; box-shadow: 0 4px 10px rgba(46, 213, 115, 0.3); }
-        
-        /* Disabled / Locked state */
-        .disabled { background: #dfe4ea !important; color: #a4b0be !important; box-shadow: none !important; cursor: not-allowed; }
+        /* Choice Buttons */
+        .btn-grid { display: flex; gap: 15px; margin: 20px 0; }
+        .choice { flex: 1; padding: 20px; border: none; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; color: white; transition: 0.3s; }
+        .red { background: var(--danger); }
+        .green { background: var(--success); }
+        .selected { transform: scale(1.05); border: 4px solid #2b2d42; box-shadow: 0 0 15px rgba(0,0,0,0.2); }
+        .disabled { opacity: 0.2; cursor: not-allowed; }
 
-        input { width: 90%; padding: 15px; background: #f1f2f6; color: #2f3542; border: 1px solid #ced4da; text-align: center; font-size: 20px; border-radius: 10px; margin: 10px 0; outline: none; }
-        input:focus { border-color: #00ffcc; }
-        
-        #placeBetBtn { width: 90%; background: #2f3542; color: #fff; font-size: 18px; margin-top: 10px; }
-        #matchTimer { font-size: 40px; color: #1e90ff; margin: 15px 0; font-weight: bold; }
-        #lockMsg { color: #ff4757; font-weight: bold; height: 20px; }
-        
-        #resultBox { margin-top: 20px; padding: 20px; border-radius: 15px; display: none; background: #f8f9fa; border: 2px solid #00ffcc; }
+        /* Betting Controls */
+        input { width: 90%; padding: 18px; border: 2px solid #edf2f7; border-radius: 15px; font-size: 22px; font-weight: bold; margin-bottom: 15px; outline: none; }
+        #confirmBtn { width: 95%; padding: 18px; background: #2b2d42; color: white; border: none; border-radius: 15px; font-size: 18px; font-weight: bold; cursor: pointer; }
+
+        /* Result Popup */
+        #resultBox { margin-top: 20px; padding: 25px; border-radius: 20px; display: none; border: 3px solid #eee; animation: slideUp 0.5s ease; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* History */
+        .dots { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 10px; background: #f1f3f9; padding: 15px; border-radius: 15px; justify-content: center; }
+        .dot { width: 30px; height: 30px; border-radius: 50%; color: white; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: bold; }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>H4XTEAM GLOBAL</h1>
-    <p style="color: #777; font-size: 14px;">24-Hour Synchronized Match</p>
-    
-    <div class="balance-card">
-        <div style="color: #666; font-size: 14px;">Available Balance</div>
-        <div class="bal-text">₹<span id="balanceDisplay">0</span></div>
-    </div>
-
-    <div id="gameUI">
-        <div class="btn-group">
-            <button id="btnRed" class="btn red" onclick="selectColor('RED')">RED</button>
-            <button id="btnGreen" class="btn green" onclick="selectColor('GREEN')">GREEN</button>
-        </div>
-
-        <input type="number" id="betAmount" placeholder="Enter Amount (Min ₹10)">
-        <p id="selectedDisplay" style="font-weight: bold; height: 20px; margin: 10px 0;"></p>
-
-        <button id="placeBetBtn" class="btn" onclick="placeBet()">CONFIRM BET</button>
+<div class="app-container">
+    <div class="wallet">
+        <label style="font-size:12px; opacity:0.8;">WALLET BALANCE</label>
+        <span class="bal">₹<span id="balanceDisplay">0.00</span></span>
     </div>
 
     <div id="matchTimer">00:00</div>
-    <div id="lockMsg"></div>
+    <div id="lockMsg" style="color:var(--danger); font-weight:bold; height:20px; margin-bottom:10px;"></div>
+
+    <div class="btn-grid">
+        <button id="btnRed" class="choice red" onclick="selectColor('RED')">RED</button>
+        <button id="btnGreen" class="choice green" onclick="selectColor('GREEN')">GREEN</button>
+    </div>
+
+    <input type="number" id="betAmount" placeholder="Enter Bet Amount">
+    <button id="confirmBtn" onclick="placeBet()">CONFIRM BET</button>
 
     <div id="resultBox"></div>
+
+    <div style="margin-top: 30px; text-align: left;">
+        <b style="font-size: 14px; color: #8d99ae;">MATCH HISTORY</b>
+        <div id="trendList" class="dots"></div>
+    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, set, get, update, onValue, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, get, update, onValue, increment, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-        authDomain: "test-eb5e7.firebaseapp.com",
-        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-        projectId: "test-eb5e7",
-        storageBucket: "test-eb5e7.appspot.com",
-        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
-    };
+   const firebaseConfig = {
+  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+  authDomain: "test-eb5e7.firebaseapp.com",
+  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+  projectId: "test-eb5e7",
+  storageBucket: "test-eb5e7.appspot.com",
+  messagingSenderId: "366282855653",
+  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+  measurementId: "G-ECKCTBLQJ8"
+};
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let uid = "";
-    let balance = 0;
-    let selectedColor = "";
-    let currentMatchId = "";
-    let hasBetted = false;
-    let isSettled = false;
+    let uid = "", balance = 0, selectedColor = "", currentMatchId = "", hasBetted = false, isSettled = false;
 
-    // 1. AUTH & REAL-TIME BALANCE
     onAuthStateChanged(auth, (user) => {
         if (!user) { window.location.href = "index.html"; return; }
         uid = user.uid;
         onValue(ref(db, `users/${uid}/balance`), (s) => {
             balance = s.val() || 0;
-            document.getElementById("balanceDisplay").innerText = balance;
+            document.getElementById("balanceDisplay").innerText = balance.toFixed(2);
         });
     });
 
-    // 2. GLOBAL CLOCK (1-Minute Intervals)
-    setInterval(() => {
+    setInterval(async () => {
         let now = new Date();
         let totalSecs = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
         let matchWindow = Math.floor(totalSecs / 60); 
@@ -112,92 +110,110 @@
         document.getElementById("matchTimer").innerText = `00:${remaining < 10 ? '0'+remaining : remaining}`;
 
         if (remaining <= 10) {
-            document.getElementById("lockMsg").innerText = "BETTING LOCKED ⏳";
-            document.getElementById("placeBetBtn").disabled = true;
-            document.getElementById("placeBetBtn").classList.add("disabled");
-            if (remaining <= 2 && !isSettled) checkResult();
+            document.getElementById("lockMsg").innerText = "BETTING CLOSED 🔒";
+            document.getElementById("confirmBtn").disabled = true;
+            if (remaining <= 2 && !isSettled) {
+                isSettled = true;
+                await runAntiLossSystem();
+            }
         } else {
             document.getElementById("lockMsg").innerText = "";
-            if (!hasBetted) {
-                document.getElementById("placeBetBtn").disabled = false;
-                document.getElementById("placeBetBtn").classList.remove("disabled");
-            }
+            if (!hasBetted) document.getElementById("confirmBtn").disabled = false;
         }
     }, 1000);
 
-    window.selectColor = (c) => {
-        if (hasBetted) return;
-        selectedColor = c;
-        document.getElementById("btnRed").classList.toggle("disabled", c !== "RED");
-        document.getElementById("btnGreen").classList.toggle("disabled", c !== "GREEN");
-        document.getElementById("selectedDisplay").innerText = "Target: " + c;
-        document.getElementById("selectedDisplay").style.color = (c === "RED" ? "#ff4757" : "#2ed573");
-    };
+    // --- THE SMART ANTI-LOSS LOGIC ---
+    async function runAntiLossSystem() {
+        const matchRef = ref(db, `matches/${currentMatchId}`);
+        const snap = await get(matchRef);
+        let winColor;
 
-    // 3. SECURE BETTING
-    window.placeBet = async () => {
-        const val = document.getElementById("betAmount").value;
-        let amt = parseInt(val);
+        if (!snap.exists()) {
+            // Calculate totals from all users
+            const allBetsSnap = await get(ref(db, `matchBets/${currentMatchId}`));
+            let totalRed = 0;
+            let totalGreen = 0;
 
-        if (!selectedColor) return alert("Please select a color!");
-        if (isNaN(amt) || amt < 10) return alert("Invalid Amount! Min ₹10");
-        if (amt > balance) return alert("Insufficient Balance!");
-        if (hasBetted) return;
+            if (allBetsSnap.exists()) {
+                allBetsSnap.forEach((child) => {
+                    const bet = child.val();
+                    if (bet.color === "RED") totalRed += bet.amount;
+                    if (bet.color === "GREEN") totalGreen += bet.amount;
+                });
+            }
 
-        hasBetted = true;
-        document.getElementById("placeBetBtn").disabled = true;
+            // SMART LOGIC:
+            if (totalRed === totalGreen) {
+                winColor = "RED"; // If same amount, RED wins
+            } else if (totalRed < totalGreen) {
+                winColor = "RED"; // RED has less money, RED wins
+            } else {
+                winColor = "GREEN"; // GREEN has less money, GREEN wins
+            }
 
-        try {
-            await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
-            await set(ref(db, `matchBets/${currentMatchId}/${uid}`), {
-                color: selectedColor,
-                amount: amt,
-                status: "pending"
-            });
-            alert("Success! Bet of ₹" + amt + " confirmed.");
-        } catch (e) {
-            alert("Error placing bet. Check connection.");
-            hasBetted = false;
+            await set(matchRef, { result: winColor, timestamp: Date.now(), totalRed, totalGreen });
+        } else {
+            winColor = snap.val().result;
         }
-    };
 
-    // 4. PAYOUT LOGIC
-    async function checkResult() {
-        const snap = await get(ref(db, `matches/${currentMatchId}`));
-        if (snap.exists()) {
-            isSettled = true;
-            processPayout(snap.val().result);
-        }
-    }
-
-    async function processPayout(winColor) {
+        // Process user payout
         const betSnap = await get(ref(db, `matchBets/${currentMatchId}/${uid}`));
-        const box = document.getElementById("resultBox");
-        box.style.display = "block";
-
         if (betSnap.exists() && betSnap.val().status === "pending") {
             const myBet = betSnap.val();
             const won = (myBet.color === winColor);
             await update(ref(db, `matchBets/${currentMatchId}/${uid}`), { status: "settled" });
 
+            const box = document.getElementById("resultBox");
+            box.style.display = "block";
             if (won) {
-                let winAmt = myBet.amount * 2;
+                let winAmt = Math.floor(myBet.amount * 1.9);
                 await update(ref(db, `users/${uid}`), { balance: increment(winAmt) });
-                box.innerHTML = `<h2 style='color:#2ed573'>${winColor} WON 🎉</h2><p>You received ₹${winAmt}</p>`;
+                box.innerHTML = `<h2 style="color:var(--success)">WIN: ${winColor} 🎉</h2><h1>+ ₹${winAmt}</h1>`;
+                box.style.borderColor = "var(--success)";
             } else {
-                box.innerHTML = `<h2 style='color:#ff4757'>${winColor} WON ❌</h2><p>Lost ₹${myBet.amount}</p>`;
+                box.innerHTML = `<h2 style="color:var(--danger)">LOSE: ${winColor} ❌</h2><h1>- ₹${myBet.amount}</h1>`;
+                box.style.borderColor = "var(--danger)";
             }
-        } else {
-            box.innerHTML = `<h2>RESULT: ${winColor}</h2><p>No active bet found.</p>`;
         }
     }
 
+    window.selectColor = (c) => {
+        if (hasBetted) return;
+        selectedColor = c;
+        document.getElementById("btnRed").className = `choice red ${c==='RED'?'selected':''}`;
+        document.getElementById("btnGreen").className = `choice green ${c==='GREEN'?'selected':''}`;
+    };
+
+    window.placeBet = async () => {
+        let amt = parseInt(document.getElementById("betAmount").value);
+        if (!selectedColor || isNaN(amt) || amt < 10 || amt > balance || hasBetted) return alert("Check selection/balance!");
+
+        hasBetted = true;
+        document.getElementById("confirmBtn").disabled = true;
+        await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
+        await set(ref(db, `matchBets/${currentMatchId}/${uid}`), {
+            color: selectedColor, amount: amt, status: "pending"
+        });
+        alert("Bet Placed Successfully!");
+    };
+
+    onValue(query(ref(db, "matches"), limitToLast(12)), (snap) => {
+        const list = document.getElementById("trendList");
+        list.innerHTML = "";
+        snap.forEach(child => {
+            const res = child.val().result;
+            if(res) {
+                const color = res === 'RED' ? '#ff4757' : '#2ed573';
+                list.innerHTML = `<div class="dot" style="background:${color}">${res[0]}</div>` + list.innerHTML;
+            }
+        });
+    });
+
     function resetRound() {
         hasBetted = false; isSettled = false; selectedColor = "";
-        document.getElementById("btnRed").classList.remove("disabled");
-        document.getElementById("btnGreen").classList.remove("disabled");
+        document.getElementById("btnRed").classList.remove("selected", "disabled");
+        document.getElementById("btnGreen").classList.remove("selected", "disabled");
         document.getElementById("resultBox").style.display = "none";
-        document.getElementById("selectedDisplay").innerText = "";
         document.getElementById("betAmount").value = "";
     }
 </script>
