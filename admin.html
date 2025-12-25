@@ -25,7 +25,6 @@
             padding: 30px;
         }
 
-        /* Loading Spinner */
         .btn-loading {
             position: relative;
             color: transparent !important;
@@ -59,7 +58,6 @@
             border: 1px solid rgba(0,0,0,0.02);
         }
 
-        /* Config Form */
         .config-row { display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-end; }
         .config-group { flex: 1; }
         label { display: block; font-size: 11px; font-weight: 800; margin-bottom: 8px; color: var(--text-light); }
@@ -81,9 +79,9 @@
         }
 
         .btn-blue { background: var(--primary); color: white; }
-        .btn-green { background: #e6fcf5; color: #087f5b; }
+        .btn-green { background: #e6fcf5; color: #087f5b; } /* UNBAN Style */
         .btn-red { background: #fff5f5; color: #c53030; }
-        .btn-ban { background: #1e293b; color: white; }
+        .btn-ban { background: #1e293b; color: white; } /* BAN Style */
 
         #loginOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
@@ -135,7 +133,15 @@
     <h2>👥 Global User Registry</h2>
     <div style="overflow-x: auto;">
         <table id="userTable">
-            <thead><tr><th>User / UID</th><th>Balance</th><th>Adjustment</th><th>Safety</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>User / UID</th>
+                    <th>Balance</th>
+                    <th>Adjustment</th>
+                    <th>Safety Status</th>
+                    <th>Access Control</th>
+                </tr>
+            </thead>
             <tbody id="userList"></tbody>
         </table>
     </div>
@@ -158,7 +164,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, increment, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -171,7 +177,6 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Auth Check
     window.checkAuth = function() {
         if(document.getElementById("adminPass").value === "admin123") {
             document.getElementById("loginOverlay").style.display = "none";
@@ -179,9 +184,7 @@
         } else { alert("Access Denied"); }
     };
 
-    // Load Real-time Data
     function loadData() {
-        // Load Settings
         onValue(ref(db, "settings/payment"), snap => {
             const data = snap.val();
             if(data) {
@@ -190,7 +193,6 @@
             }
         });
 
-        // Load Users
         onValue(ref(db, "users/"), snap => {
             let html = "";
             let total = 0;
@@ -198,17 +200,27 @@
                 const u = child.val();
                 total += (u.balance || 0);
                 const isBanned = u.status === "banned";
+                
                 html += `<tr>
-                    <td><div style="font-weight:800">${u.email || 'User'}</div><div style="font-size:10px; color:gray;">${child.key.substring(0,12)}</div></td>
+                    <td>
+                        <div style="font-weight:800">${u.email || 'User'}</div>
+                        <div style="font-size:10px; color:gray;">${child.key.substring(0,12)}</div>
+                    </td>
                     <td>₹${(u.balance || 0).toLocaleString()}</td>
                     <td style="display:flex; gap:5px;">
                         <input id="adj_${child.key}" type="number" style="width:70px;" placeholder="Amt">
                         <button class="btn-blue" onclick="adjustBalance(this, '${child.key}')">Set</button>
                     </td>
                     <td>
-                        <button class="${isBanned ? 'btn-green' : 'btn-ban'}" onclick="toggleBan(this, '${child.key}', '${isBanned ? 'active' : 'banned'}')">
-                            ${isBanned ? 'UNBAN' : 'BAN USER'}
-                        </button>
+                        <span style="color: ${isBanned ? 'var(--danger)' : 'var(--success)'}">
+                            ${isBanned ? '● BANNED' : '● ACTIVE'}
+                        </span>
+                    </td>
+                    <td>
+                        ${isBanned ? 
+                            `<button class="btn-green" onclick="toggleStatus(this, '${child.key}', 'active')">✅ UNBAN USER</button>` : 
+                            `<button class="btn-ban" onclick="toggleStatus(this, '${child.key}', 'banned')">🚫 BAN USER</button>`
+                        }
                     </td>
                 </tr>`;
             });
@@ -216,7 +228,6 @@
             document.getElementById("totalStats").innerText = total.toLocaleString();
         });
 
-        // Load Deposits
         onValue(ref(db, "transactions/deposits/"), snap => {
             let html = "<tr><th>UTR</th><th>Amount</th><th>Action</th></tr>";
             snap.forEach(userNode => {
@@ -236,7 +247,6 @@
             document.getElementById("depositList").innerHTML = html;
         });
 
-        // Load Withdrawals
         onValue(ref(db, "transactions/withdrawals/"), snap => {
             let html = "<tr><th>User</th><th>Amount</th><th>Action</th></tr>";
             snap.forEach(userNode => {
@@ -274,9 +284,10 @@
         btn.classList.remove('btn-loading');
     };
 
-    window.toggleBan = async function(btn, uid, status) {
+    window.toggleStatus = async function(btn, uid, newStatus) {
+        if(!confirm(`Are you sure you want to ${newStatus === 'banned' ? 'BAN' : 'UNBAN'} this user?`)) return;
         btn.classList.add('btn-loading');
-        await update(ref(db, `users/${uid}`), { status: status });
+        await update(ref(db, `users/${uid}`), { status: newStatus });
         btn.classList.remove('btn-loading');
     };
 
@@ -297,7 +308,6 @@
         await update(ref(db, `transactions/withdrawals/${uid}/${wid}`), { status: status });
         btn.classList.remove('btn-loading');
     };
-
 </script>
 </body>
 </html>
