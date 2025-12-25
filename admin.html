@@ -2,52 +2,135 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>H4XTEAM ADMIN PANEL</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin System | H4XTEAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        body { background:#000; color:#0aff9d; font-family: 'Courier New', monospace; padding:20px; }
-        h1 { text-align:center; color:#00ffdd; text-shadow:0 0 15px #00ffff; }
-        .section { margin-top:30px; padding:20px; border:2px solid #00ffaa; border-radius:10px; background: rgba(0,255,170,0.05); }
-        table { width:100%; margin-top:15px; border-collapse:collapse; background: #111; }
-        th, td { border:1px solid #333; padding:12px; text-align:center; }
-        th { background: #00ffaa; color: #000; }
-        input { background:#111; color:#0aff9d; border:1px solid #00ffaa; padding:8px; border-radius:5px; width: 80px; }
-        button { padding:8px 15px; border-radius:5px; font-weight:bold; cursor:pointer; border: none; transition: 0.3s; }
-        .green { background:#00ff99; color: #000; }
-        .green:hover { background: #00cc77; }
-        .red { background:#ff4444; color:#fff; }
-        .red:hover { background: #cc3333; }
-        #loginOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:#000; display:flex; flex-direction:column; justify-content:center; align-items:center; z-index:9999; }
+        :root {
+            --primary: #4361ee;
+            --success: #06d6a0;
+            --danger: #ff4d4d;
+            --bg: #f4f7fe;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-light: #64748b;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text-dark);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 { font-weight: 800; color: var(--text-dark); letter-spacing: -1px; margin-bottom: 30px; }
+        h2 { font-size: 18px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+
+        .section {
+            background: var(--white);
+            padding: 25px;
+            border-radius: 24px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
+            margin-bottom: 30px;
+            border: 1px solid rgba(0,0,0,0.02);
+        }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { 
+            text-align: left; 
+            padding: 15px; 
+            background: #f8fafc; 
+            color: var(--text-light); 
+            font-size: 12px; 
+            text-transform: uppercase; 
+            letter-spacing: 1px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 14px; font-weight: 500; }
+
+        input {
+            padding: 10px 15px;
+            border-radius: 10px;
+            border: 2px solid #f1f5f9;
+            outline: none;
+            font-family: inherit;
+            font-weight: 600;
+            width: 100px;
+        }
+
+        button {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+            transition: 0.2s;
+            font-size: 13px;
+        }
+
+        .btn-approve { background: #e6fcf5; color: #087f5b; }
+        .btn-approve:hover { background: var(--success); color: white; }
+        
+        .btn-reject { background: #fff5f5; color: #c53030; }
+        .btn-reject:hover { background: var(--danger); color: white; }
+
+        .btn-adjust { background: var(--primary); color: white; padding: 10px 15px; }
+
+        /* Login Overlay */
+        #loginOverlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
+            z-index: 10000;
+        }
+
+        .login-card {
+            background: white; padding: 40px; border-radius: 30px;
+            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            width: 90%; max-width: 350px;
+        }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
-    <h1>ADMIN ACCESS REQUIRED</h1>
-    <input type="password" id="adminPass" placeholder="Enter Password" style="width:200px; margin-bottom:10px;">
-    <button class="green" onclick="checkAuth()">UNLOCK PANEL</button>
+    <div class="login-card">
+        <div style="font-size: 40px; margin-bottom: 10px;">🛡️</div>
+        <h2 style="justify-content: center; margin-bottom: 5px;">Secure Admin</h2>
+        <p style="color: var(--text-light); font-size: 14px; margin-bottom: 25px;">Please enter master password</p>
+        <input type="password" id="adminPass" placeholder="••••••••" style="width: 100%; box-sizing: border-box; margin-bottom: 15px; text-align: center;">
+        <button class="btn-adjust" style="width: 100%; padding: 15px;" onclick="checkAuth()">Unlock Dashboard</button>
+    </div>
 </div>
 
-<h1>⚡ H4XTEAM ADMIN SYSTEM ⚡</h1>
+<h1>System Administrator</h1>
 
 <div class="section">
-    <h2>User Management</h2>
-    <table id="userTable">
-        <tr><th>UID</th><th>Balance</th><th>Total Won</th><th>Action</th></tr>
-    </table>
+    <h2>👥 User Management</h2>
+    <div style="overflow-x: auto;">
+        <table id="userTable">
+            <tr><th>UID</th><th>Balance</th><th>Actions</th></tr>
+        </table>
+    </div>
 </div>
 
 <div class="section">
-    <h2>Pending Deposits</h2>
-    <table id="depositTable">
-        <tr><th>UID</th><th>Amount</th><th>TXID</th><th>Action</th></tr>
-    </table>
+    <h2>📥 Deposit Requests</h2>
+    <div style="overflow-x: auto;">
+        <table id="depositTable">
+            <tr><th>UID</th><th>Amount</th><th>TXID</th><th>Action</th></tr>
+        </table>
+    </div>
 </div>
 
 <div class="section">
-    <h2>Pending Withdrawals</h2>
-    <table id="withdrawTable">
-        <tr><th>UID</th><th>Amount</th><th>WID</th><th>Action</th></tr>
-    </table>
+    <h2>📤 Withdrawal Requests</h2>
+    <div style="overflow-x: auto;">
+        <table id="withdrawTable">
+            <tr><th>UID</th><th>Amount</th><th>WID</th><th>Action</th></tr>
+        </table>
+    </div>
 </div>
 
 <script type="module">
@@ -55,52 +138,48 @@
     import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
-};
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // --- AUTH CHECK ---
     window.checkAuth = function() {
         const pass = document.getElementById("adminPass").value;
-        if(pass === "admin123") { // CHANGE THIS PASSWORD
+        if(pass === "admin123") {
             document.getElementById("loginOverlay").style.display = "none";
             loadAllData();
         } else {
-            alert("Access Denied");
+            alert("Unauthorized access!");
         }
     };
 
     function loadAllData() {
-        // Load Users
+        // Real-time Users
         onValue(ref(db, "users/"), snap => {
             let table = document.getElementById("userTable");
-            table.innerHTML = `<tr><th>UID</th><th>Balance</th><th>Total Won</th><th>Manual Adjust</th></tr>`;
+            table.innerHTML = `<tr><th>UID</th><th>Email</th><th>Balance</th><th>Manual Adjust</th></tr>`;
             snap.forEach(user => {
                 let d = user.val();
                 table.innerHTML += `
                 <tr>
-                    <td>${user.key}</td>
-                    <td>₹${d.balance || 0}</td>
-                    <td>${d.totalWon || 0}</td>
+                    <td style="font-family: monospace; font-size: 11px;">${user.key.substring(0,10)}...</td>
+                    <td>${d.email || 'N/A'}</td>
+                    <td style="color: var(--primary); font-weight: 800;">₹${(d.balance || 0).toLocaleString()}</td>
                     <td>
                         <input id="amt_${user.key}" type="number" placeholder="Amt">
-                        <button class="green" onclick="adjustBalance('${user.key}', 'add')">+</button>
-                        <button class="red" onclick="adjustBalance('${user.key}', 'sub')">-</button>
+                        <button class="btn-approve" onclick="adjustBalance('${user.key}', 'add')">+</button>
+                        <button class="btn-reject" onclick="adjustBalance('${user.key}', 'sub')">-</button>
                     </td>
                 </tr>`;
             });
         });
 
-        // Load Deposits
+        // Real-time Deposits
         onValue(ref(db, "transactions/deposits/"), snap => {
             let table = document.getElementById("depositTable");
             table.innerHTML = `<tr><th>UID</th><th>Amount</th><th>TXID</th><th>Action</th></tr>`;
@@ -110,12 +189,12 @@
                     if(d.status === "pending") {
                         table.innerHTML += `
                         <tr>
-                            <td>${userNode.key}</td>
-                            <td>₹${d.amount}</td>
-                            <td>${tx.key}</td>
+                            <td style="font-family: monospace; font-size: 11px;">${userNode.key.substring(0,8)}...</td>
+                            <td style="font-weight: 700;">₹${d.amount}</td>
+                            <td><span style="background:#eee; padding:3px 8px; border-radius:5px; font-size:10px;">${tx.key}</span></td>
                             <td>
-                                <button class="green" onclick="handleDeposit('${userNode.key}','${tx.key}',${d.amount},'approved')">Approve</button>
-                                <button class="red" onclick="handleDeposit('${userNode.key}','${tx.key}',0,'rejected')">Reject</button>
+                                <button class="btn-approve" onclick="handleDeposit('${userNode.key}','${tx.key}',${d.amount},'approved')">Approve</button>
+                                <button class="btn-reject" onclick="handleDeposit('${userNode.key}','${tx.key}',0,'rejected')">Reject</button>
                             </td>
                         </tr>`;
                     }
@@ -123,7 +202,7 @@
             });
         });
 
-        // Load Withdrawals
+        // Real-time Withdrawals
         onValue(ref(db, "transactions/withdrawals/"), snap => {
             let table = document.getElementById("withdrawTable");
             table.innerHTML = `<tr><th>UID</th><th>Amount</th><th>WID</th><th>Action</th></tr>`;
@@ -133,12 +212,12 @@
                     if(d.status === "pending") {
                         table.innerHTML += `
                         <tr>
-                            <td>${userNode.key}</td>
-                            <td>₹${d.amount}</td>
-                            <td>${wd.key}</td>
+                            <td style="font-family: monospace; font-size: 11px;">${userNode.key.substring(0,8)}...</td>
+                            <td style="font-weight: 700; color: var(--danger);">₹${d.amount}</td>
+                            <td><span style="background:#eee; padding:3px 8px; border-radius:5px; font-size:10px;">${wd.key}</span></td>
                             <td>
-                                <button class="green" onclick="handleWithdraw('${userNode.key}','${wd.key}',${d.amount},'approved')">Confirm Pay</button>
-                                <button class="red" onclick="handleWithdraw('${userNode.key}','${wd.key}',${d.amount},'rejected')">Reject (Refund)</button>
+                                <button class="btn-approve" onclick="handleWithdraw('${userNode.key}','${wd.key}',${d.amount},'approved')">Paid</button>
+                                <button class="btn-reject" onclick="handleWithdraw('${userNode.key}','${wd.key}',${d.amount},'rejected')">Reject</button>
                             </td>
                         </tr>`;
                     }
@@ -147,32 +226,21 @@
         });
     }
 
-    // --- LOGIC FUNCTIONS ---
-
     window.adjustBalance = function(uid, type) {
         let val = Number(document.getElementById("amt_"+uid).value);
-        if(!val) return alert("Enter amount");
-        let finalAmt = type === 'add' ? val : -val;
-        update(ref(db, `users/${uid}`), { balance: increment(finalAmt) });
-        alert("Success");
+        if(!val) return;
+        update(ref(db, `users/${uid}`), { balance: increment(type === 'add' ? val : -val) });
     };
 
     window.handleDeposit = function(uid, txid, amount, status) {
-        if(status === 'approved') {
-            update(ref(db, `users/${uid}`), { balance: increment(amount) });
-        }
+        if(status === 'approved') update(ref(db, `users/${uid}`), { balance: increment(amount), deposits: increment(1) });
         update(ref(db, `transactions/deposits/${uid}/${txid}`), { status: status });
     };
 
     window.handleWithdraw = function(uid, wid, amount, status) {
-        if(status === 'rejected') {
-            // Refund the balance if rejected
-            update(ref(db, `users/${uid}`), { balance: increment(amount) });
-        }
-        // If approved, we don't subtract again because it's usually subtracted when user requests it
+        if(status === 'rejected') update(ref(db, `users/${uid}`), { balance: increment(amount) });
         update(ref(db, `transactions/withdrawals/${uid}/${wid}`), { status: status });
     };
-
 </script>
 </body>
 </html>
