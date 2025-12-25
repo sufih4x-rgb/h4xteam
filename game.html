@@ -1,83 +1,202 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Game - H4XTEAM</title>
+<meta charset="UTF-8">
+<title>H4XTEAM GAME</title>
+
 <style>
-body{background:#000;color:#0affff;font-family:Arial;text-align:center;padding-top:30px}
-button{padding:15px;width:40%;margin:10px;font-size:18px;border:none;border-radius:8px;font-weight:bold;cursor:pointer}
-.red{background:#ff0033;color:#fff;box-shadow:0 0 12px #ff0033}
-.green{background:#00ff55;color:#000;box-shadow:0 0 12px #00ff55}
-input{width:80%;padding:12px;margin-top:20px;background:#111;border:1px solid #0affff;color:#0affff;border-radius:8px}
-#box{padding:20px;border:1px solid #0affff;margin:20px;border-radius:8px}
-.back{width:80%;background:#0affff;color:#000;margin-top:20px}
+    body {
+        background: #000;
+        color: #fff;
+        font-family: Arial, sans-serif;
+        text-align: center;
+        padding: 20px;
+    }
+
+    h1 {
+        color: #0aff9d;
+        text-shadow: 0 0 10px #00ffcc;
+        font-size: 38px;
+    }
+
+    .container {
+        margin-top: 40px;
+    }
+
+    input {
+        padding: 10px;
+        width: 200px;
+        font-size: 18px;
+        border: 2px solid #0aff9d;
+        background: black;
+        color: white;
+        border-radius: 8px;
+        box-shadow: 0 0 10px #00ffcc;
+    }
+
+    button {
+        margin-top: 20px;
+        padding: 12px 28px;
+        font-size: 20px;
+        background: #0aff9d;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        color: black;
+        font-weight: bold;
+        text-shadow: 0 0 10px white;
+        box-shadow: 0 0 15px #00ffcc;
+    }
+
+    #resultBox {
+        margin-top: 30px;
+        padding: 20px;
+        display: none;
+        font-size: 22px;
+        border: 2px solid #0aff9d;
+        border-radius: 12px;
+        box-shadow: 0 0 20px #00ffcc;
+    }
+
+    .loading {
+        color: #00aaff;
+        text-shadow: 0 0 10px #00aaff;
+    }
 </style>
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
+
 </head>
 <body>
 
-<h1>Red / Green Game</h1>
+<h1>H4XTEAM NEON GAME</h1>
 
-<div id="box">
-  <p>Balance: ₹<span id="balance">0</span></p>
-  <input id="bet" type="number" placeholder="Enter Bet Amount (min 5)">
+<div class="container">
+    <h2>Balance: ₹<span id="balance">0</span></h2>
+    <h3>Total Won: ₹<span id="totalWon">0</span></h3>
+    <h4>Win Limit: ₹<span id="maxWin">0</span></h4>
+
+    <input type="number" id="bet" placeholder="Enter Bet (5 - 1000)">
+    <br>
+    <button onclick="play()">Play</button>
+
+    <div id="status" class="loading"></div>
+
+    <div id="resultBox"></div>
 </div>
 
-<button class="red" onclick="play('red')">RED</button>
-<button class="green" onclick="play('green')">GREEN</button>
-
-<button class="back" onclick="window.location='dashboard.html'">Back</button>
-
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-const firebaseConfig={
- apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
- authDomain:"test-eb5e7.firebaseapp.com",
- databaseURL:"https://test-eb5e7-default-rtdb.firebaseio.com",
- projectId:"test-eb5e7",
- storageBucket:"test-eb5e7.appspot.com",
- messagingSenderId:"366282855653",
- appId:"1:366282855653:web:dca7e000f5a22fb11f300c",
- measurementId:"G-ECKCTBLQJ8"
+// ------------------ FIREBASE SETUP --------------------
+const firebaseConfig = {
+    apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+    authDomain: "test-eb5e7.firebaseapp.com",
+    databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+    projectId: "test-eb5e7",
+    storageBucket: "test-eb5e7.appspot.com",
+    messagingSenderId: "366282855653",
+    appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+    measurementId: "G-ECKCTBLQJ8"
 };
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getDatabase(app);
+const app = firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-let uid="";
-let balance=0;
+let userId = "USER001";  
+let maxWin = 0;
+let winMultiplier = 1.9;
 
-onAuthStateChanged(auth, async user=>{
- if(!user) return window.location="index.html";
- uid=user.uid;
- let snap = await get(ref(db,"users/"+uid));
- balance = snap.val().balance;
- document.getElementById("balance").innerText = balance;
+// ------------------ LOAD USER DATA --------------------
+firebase.database().ref("users/" + userId).once("value").then(snap => {
+
+    let data = snap.val();
+
+    if (!data) {
+        alert("User not found in database.");
+        return;
+    }
+
+    let balance = data.balance;
+    let deposits = data.deposits;
+    let totalWon = data.totalWon || 0;
+
+    // Win limits
+    if (deposits === 1) maxWin = 200;
+    else if (deposits >= 5) maxWin = 500;
+    else maxWin = 0;
+
+    document.getElementById("balance").innerText = balance;
+    document.getElementById("totalWon").innerText = totalWon;
+    document.getElementById("maxWin").innerText = maxWin;
 });
 
-window.play = async function(color){
- let bet = Number(document.getElementById("bet").value);
+// ------------------ PLAY FUNCTION --------------------
 
- if(bet < 5){ alert("Minimum bet is 5"); return; }
- if(bet > balance){ alert("Not enough balance"); return; }
+function play() {
+    let bet = parseInt(document.getElementById("bet").value);
+    let balance = parseInt(document.getElementById("balance").innerText);
+    let totalWon = parseInt(document.getElementById("totalWon").innerText);
 
- let result = Math.random() < 0.5 ? "red" : "green";
+    if (bet < 5) return alert("Minimum bet is ₹5");
+    if (bet > 1000) return alert("Maximum bet is ₹1000");
+    if (bet > balance) return alert("Insufficient balance");
+    if (totalWon >= maxWin) return alert("Your win limit is reached!");
 
- let winAmount = 0;
- if(result === color){
-   winAmount = bet * 1.9; // payout 1.9x
-   balance += winAmount;
-   alert("You WON! Result = " + result + "\nYou got ₹" + winAmount);
- } else {
-   balance -= bet;
-   alert("You LOST. Result = " + result);
- }
+    document.getElementById("status").innerHTML = "Processing... 30 seconds remaining ⏳";
+    document.getElementById("resultBox").style.display = "none";
 
- await update(ref(db,"users/"+uid),{ balance: balance });
+    setTimeout(() => runGame(bet, balance, totalWon), 30000);  
+}
 
- document.getElementById("balance").innerText = balance;
+function runGame(bet, balance, totalWon) {
+
+    let win = Math.random() > 0.5;
+    let profit = 0;
+
+    if (win) {
+        profit = Math.floor(bet * winMultiplier);
+
+        if (totalWon + profit > maxWin) {
+            profit = maxWin - totalWon;  
+            win = true;
+        }
+
+        balance += profit;
+        totalWon += profit;
+
+    } else {
+        profit = -bet;
+        balance -= bet;
+    }
+
+    let box = document.getElementById("resultBox");
+    box.style.display = "block";
+
+    if (win) {
+        box.innerHTML = `
+            <span style="color:#0aff9d; font-size:26px;">YOU WON!</span><br>
+            Profit: ₹${profit}<br>
+            New Balance: ₹${balance}<br>
+            Total Won: ₹${totalWon} / ₹${maxWin}
+        `;
+    } else {
+        box.innerHTML = `
+            <span style="color:#ff4444; font-size:26px;">YOU LOST</span><br>
+            Lost Amount: ₹${bet}<br>
+            New Balance: ₹${balance}<br>
+            Remaining Win Limit: ₹${maxWin - totalWon}
+        `;
+    }
+
+    document.getElementById("balance").innerText = balance;
+    document.getElementById("totalWon").innerText = totalWon;
+
+    firebase.database().ref("users/" + userId).update({
+        balance: balance,
+        totalWon: totalWon
+    });
 }
 </script>
 
