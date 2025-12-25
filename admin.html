@@ -73,7 +73,7 @@
         /* Login Overlay */
         #loginOverlay { position: fixed; inset: 0; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 10000; }
         .login-card { background: white; padding: 40px; border-radius: 30px; text-align: center; width: 320px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
-        input[type="password"], input[type="text"] { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px; box-sizing: border-box; }
+        input[type="password"], input[type="text"], select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -98,6 +98,7 @@
         <button class="tab-btn active" onclick="showTab(event, 'users')">👥 Users</button>
         <button class="tab-btn" onclick="showTab(event, 'deposits')">📥 Deposits</button>
         <button class="tab-btn" onclick="showTab(event, 'withdrawals')">📤 Withdrawals</button>
+        <button class="tab-btn" onclick="showTab(event, 'recharges')">📱 Recharges</button>
         <button class="tab-btn" onclick="showTab(event, 'support')">💬 Support</button>
     </div>
 
@@ -145,6 +146,46 @@
         </div>
     </div>
 
+    <div id="recharges" class="tab-content">
+        <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px;">
+            <div class="section">
+                <div class="section-title">Add Recharge Plan</div>
+                <label style="font-size: 12px; font-weight: bold;">Operator</label>
+                <select id="planOperator">
+                    <option value="Jio">Jio</option>
+                    <option value="Airtel">Airtel</option>
+                    <option value="VI">VI</option>
+                    <option value="BSNL">BSNL</option>
+                </select>
+                <label style="font-size: 12px; font-weight: bold;">Plan Name/Benefit</label>
+                <input type="text" id="planName" placeholder="e.g. 2GB/Day + Unlimited Voice">
+                <label style="font-size: 12px; font-weight: bold;">Validity (Days)</label>
+                <input type="text" id="planValidity" placeholder="e.g. 28 Days">
+                <label style="font-size: 12px; font-weight: bold;">Price (₹)</label>
+                <input type="text" id="planPrice" placeholder="e.g. 299">
+                <button class="btn-blue" style="width: 100%; padding: 12px;" onclick="addPlan()">Add Plan to Database</button>
+            </div>
+
+            <div class="section">
+                <div class="section-title">Pending Recharge Requests</div>
+                <div class="table-wrap" style="margin-bottom: 30px;">
+                    <table>
+                        <thead><tr><th>User</th><th>Mobile</th><th>Plan</th><th>Action</th></tr></thead>
+                        <tbody id="rechargeReqList"></tbody>
+                    </table>
+                </div>
+                
+                <div class="section-title">Active Plans List</div>
+                <div class="table-wrap">
+                    <table>
+                        <thead><tr><th>Operator</th><th>Plan</th><th>Price</th><th>Control</th></tr></thead>
+                        <tbody id="activePlansList"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div id="support" class="tab-content">
         <div class="chat-container">
             <div class="chat-sidebar" id="chatList"></div>
@@ -162,18 +203,18 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, push, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, push, set, remove, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-   const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        storageBucket: "test-eb5e7.appspot.com",
+        messagingSenderId: "366282855653",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+        measurementId: "G-ECKCTBLQJ8"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -201,21 +242,9 @@
             snap.forEach(child => {
                 const u = child.val(); const uid = child.key;
                 total += (u.balance || 0); count++;
-                
                 const isBanned = u.status === 'banned';
                 const isFrozen = u.walletState === 'frozen';
-
-                html += `<tr>
-                    <td><strong>${u.displayName || 'User'}</strong><br><small>${uid.substring(0,8)}</small></td>
-                    <td>₹${(u.balance || 0).toFixed(2)}</td>
-                    <td><span class="badge ${isBanned ? 'badge-banned' : 'badge-active'}">${isBanned ? 'BANNED' : 'ACTIVE'}</span></td>
-                    <td><span class="badge ${isFrozen ? 'badge-frozen' : 'badge-active'}">${isFrozen ? 'FROZEN' : 'OPEN'}</span></td>
-                    <td>
-                        <button class="${isBanned ? 'btn-green' : 'btn-red'}" onclick="updateProp('${uid}','status','${isBanned ? 'active' : 'banned'}')">${isBanned ? 'Unban' : 'Ban'}</button>
-                        <button class="btn-orange" onclick="updateProp('${uid}','walletState','${isFrozen ? 'active' : 'frozen'}')">${isFrozen ? 'Unfreeze' : 'Freeze'}</button>
-                        <button class="btn-blue" onclick="setBalance('${uid}')">Edit ₹</button>
-                    </td>
-                </tr>`;
+                html += `<tr><td><strong>${u.displayName || 'User'}</strong><br><small>${uid.substring(0,8)}</small></td><td>₹${(u.balance || 0).toFixed(2)}</td><td><span class="badge ${isBanned ? 'badge-banned' : 'badge-active'}">${isBanned ? 'BANNED' : 'ACTIVE'}</span></td><td><span class="badge ${isFrozen ? 'badge-frozen' : 'badge-active'}">${isFrozen ? 'FROZEN' : 'OPEN'}</span></td><td><button class="${isBanned ? 'btn-green' : 'btn-red'}" onclick="updateProp('${uid}','status','${isBanned ? 'active' : 'banned'}')">${isBanned ? 'Unban' : 'Ban'}</button> <button class="btn-orange" onclick="updateProp('${uid}','walletState','${isFrozen ? 'active' : 'frozen'}')">${isFrozen ? 'Unfreeze' : 'Freeze'}</button> <button class="btn-blue" onclick="setBalance('${uid}')">Edit ₹</button></td></tr>`;
             });
             document.getElementById("userList").innerHTML = html;
             document.getElementById("totalBal").innerText = "₹" + total.toLocaleString();
@@ -229,9 +258,7 @@
                 const d = child.val();
                 if(d.status === "Pending") {
                     p++;
-                    html += `<tr><td>${d.uid.substring(0,6)}</td><td>₹${d.amount}</td>
-                        <td><button class="btn-green" onclick="txn('deposits','${child.key}','${d.uid}',${d.amount},'Approved')">Approve</button>
-                        <button class="btn-red" onclick="txn('deposits','${child.key}','${d.uid}',${d.amount},'Rejected')">Reject</button></td></tr>`;
+                    html += `<tr><td>${d.uid.substring(0,6)}</td><td>₹${d.amount}</td><td><button class="btn-green" onclick="txn('deposits','${child.key}','${d.uid}',${d.amount},'Approved')">Approve</button> <button class="btn-red" onclick="txn('deposits','${child.key}','${d.uid}',${d.amount},'Rejected')">Reject</button></td></tr>`;
                 }
             });
             document.getElementById("depList").innerHTML = html || "<tr><td colspan='3'>No pending deposits</td></tr>";
@@ -244,12 +271,33 @@
             snap.forEach(child => {
                 const w = child.val();
                 if(w.status === "Pending") {
-                    html += `<tr><td>${w.uid.substring(0,6)}</td><td>₹${w.amount}</td>
-                        <td><button class="btn-green" onclick="txn('withdrawals','${child.key}','${w.uid}',${w.amount},'Approved')">Paid</button>
-                        <button class="btn-red" onclick="txn('withdrawals','${child.key}','${w.uid}',${w.amount},'Rejected')">Reject</button></td></tr>`;
+                    html += `<tr><td>${w.uid.substring(0,6)}</td><td>₹${w.amount}</td><td><button class="btn-green" onclick="txn('withdrawals','${child.key}','${w.uid}',${w.amount},'Approved')">Paid</button> <button class="btn-red" onclick="txn('withdrawals','${child.key}','${w.uid}',${w.amount},'Rejected')">Reject</button></td></tr>`;
                 }
             });
             document.getElementById("withList").innerHTML = html || "<tr><td colspan='3'>No pending withdrawals</td></tr>";
+        });
+
+        // RECHARGE LOGIC
+        // 1. Load Requests
+        onValue(ref(db, "recharge_requests"), snap => {
+            let html = "";
+            snap.forEach(child => {
+                const r = child.val();
+                if(r.status === "Pending") {
+                    html += `<tr><td>${r.uid.substring(0,5)}</td><td>${r.mobile}</td><td>${r.operator} ₹${r.amount}</td><td><button class="btn-green" onclick="approveRecharge('${child.key}')">Done</button> <button class="btn-red" onclick="rejectRecharge('${child.key}','${r.uid}',${r.amount})">Refund</button></td></tr>`;
+                }
+            });
+            document.getElementById("rechargeReqList").innerHTML = html || "<tr><td colspan='4'>No pending recharges</td></tr>";
+        });
+
+        // 2. Load Plans
+        onValue(ref(db, "recharge_plans"), snap => {
+            let html = "";
+            snap.forEach(child => {
+                const p = child.val();
+                html += `<tr><td>${p.operator}</td><td>${p.name} (${p.validity})</td><td>₹${p.price}</td><td><button class="btn-red" onclick="deletePlan('${child.key}')">Del</button></td></tr>`;
+            });
+            document.getElementById("activePlansList").innerHTML = html || "<tr><td colspan='4'>No plans added</td></tr>";
         });
 
         // Chat List
@@ -266,14 +314,35 @@
         });
     }
 
-    // --- LOGIC ---
-    window.updateProp = (uid, prop, val) => update(ref(db, `users/${uid}`), { [prop]: val });
+    // RECHARGE FUNCTIONS
+    window.addPlan = () => {
+        const op = document.getElementById("planOperator").value;
+        const name = document.getElementById("planName").value;
+        const val = document.getElementById("planValidity").value;
+        const price = document.getElementById("planPrice").value;
+        if(!name || !price) return alert("Fill all details");
+        push(ref(db, "recharge_plans"), {
+            operator: op, name: name, validity: val, price: parseFloat(price)
+        });
+        document.getElementById("planName").value = "";
+        document.getElementById("planPrice").value = "";
+    };
 
+    window.deletePlan = (id) => remove(ref(db, `recharge_plans/${id}`));
+
+    window.approveRecharge = (id) => update(ref(db, `recharge_requests/${id}`), { status: "Success" });
+
+    window.rejectRecharge = async (id, uid, amt) => {
+        await update(ref(db, `users/${uid}`), { balance: increment(parseFloat(amt)) });
+        await update(ref(db, `recharge_requests/${id}`), { status: "Refunded" });
+    };
+
+    // LOGIC
+    window.updateProp = (uid, prop, val) => update(ref(db, `users/${uid}`), { [prop]: val });
     window.setBalance = (uid) => {
         const val = prompt("Enter new balance:");
         if(val) update(ref(db, `users/${uid}`), { balance: parseFloat(val) });
     };
-
     window.txn = async (path, tid, uid, amt, status) => {
         if(status === "Approved") {
             const change = path === 'deposits' ? amt : -amt;
@@ -281,7 +350,6 @@
         }
         await update(ref(db, `${path}/${tid}`), { status: status });
     };
-
     window.loadChat = (uid) => {
         activeChat = uid;
         document.getElementById("chatHeader").innerText = "User: " + uid;
@@ -295,7 +363,6 @@
             box.scrollTop = box.scrollHeight;
         });
     };
-
     window.sendReply = () => {
         const inp = document.getElementById("adminReply");
         if(!inp.value || !activeChat) return;
