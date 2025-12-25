@@ -1,73 +1,82 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Login • H4XTEAM</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<link rel="stylesheet" href="global.css">
-
-<!-- Firebase -->
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
-
+<title>Login - H4XTEAM</title>
+<style>
+body{
+    background:#000;
+    color:#0affff;
+    font-family:Arial;
+    text-align:center;
+    padding-top:60px;
+}
+input{
+    width:80%;
+    padding:12px;
+    margin-top:10px;
+    background:#111;
+    border:1px solid #0affff;
+    color:#0affff;
+    border-radius:8px;
+}
+button{
+    width:80%;
+    padding:14px;
+    margin-top:20px;
+    background:#0affff;
+    color:#000;
+    border:none;
+    border-radius:8px;
+    font-weight:bold;
+}
+a{
+    color:#0affff;
+    display:block;
+    margin-top:10px;
+}
+</style>
 </head>
 <body>
 
-<div class="box">
-    <h2>LOGIN</h2>
+<h1>H4XTEAM LOGIN</h1>
 
-    <input type="email" id="email" placeholder="Email">
-    <input type="password" id="password" placeholder="Password">
+<input id="email" type="email" placeholder="Email">
+<input id="password" type="password" placeholder="Password">
 
-    <button onclick="login()">LOGIN</button>
+<button onclick="login()">Login</button>
 
-    <br><br>
-    <span class="link" onclick="location='register.html'">Create Account</span><br>
-    <span class="link" onclick="location='reset.html'">Forgot Password?</span>
-</div>
+<a href="register.html">Create Account</a>
+<a href="reset.html">Forgot Password?</a>
 
-<script>
-// ---------------- FIREBASE SETUP ----------------
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
 const firebaseConfig = {
-    apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-    authDomain: "test-eb5e7.firebaseapp.com",
-    databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-    projectId: "test-eb5e7",
-    storageBucket: "test-eb5e7.appspot.com",
-    messagingSenderId: "366282855653",
-    appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-    measurementId: "G-ECKCTBLQJ8"
+  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+  authDomain: "test-eb5e7.firebaseapp.com",
+  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+  projectId: "test-eb5e7",
+  storageBucket: "test-eb5e7.appspot.com",
+  messagingSenderId: "366282855653",
+  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+  measurementId: "G-ECKCTBLQJ8"
 };
-firebase.initializeApp(firebaseConfig);
 
-const auth = firebase.auth();
-const db = firebase.database();
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
 
-// ---------------- LOGIN FUNCTION ----------------
-function login() {
-    let email = document.getElementById("email").value.trim();
-    let pass = document.getElementById("password").value.trim();
+window.login = function(){
+    let email = document.getElementById("email").value;
+    let pass = document.getElementById("password").value;
 
-    if (!email || !pass) return alert("All fields required");
-
-    auth.signInWithEmailAndPassword(email, pass)
-    .then(user => {
-        let uid = user.user.uid;
-
-        // Log IP
-        fetch("https://api.ipify.org?format=json")
-        .then(r => r.json())
-        .then(ip => {
-            db.ref("ipLogs/" + uid).set({
-                ip: ip.ip,
-                timestamp: new Date().toLocaleString()
-            });
-        });
-
-        location = "dashboard.html";
+    signInWithEmailAndPassword(auth, email, pass)
+    .then(()=>{
+        window.location = "dashboard.html";
     })
-    .catch(err => alert(err.message));
+    .catch(err=>{
+        alert("Login Failed: " + err.message);
+    });
 }
 </script>
 
