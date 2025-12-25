@@ -1,79 +1,233 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Deposit - H4XTEAM</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ultimate Deposit | H4XTEAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-light: #eef2ff;
+            --success: #06d6a0;
+            --danger: #ef476f;
+            --bg: #f8f9fc;
+            --surface: #ffffff;
+            --text-main: #1a1c2e;
+            --text-muted: #64748b;
+        }
 
-<style>
-body{
-    background:#000;
-    color:#00f6ff;
-    font-family:Arial;
-    text-align:center;
-    padding:30px;
-}
-h1{
-    color:#00f6ff;
-    text-shadow:0 0 15px #00f6ff;
-}
-input{
-    width:80%;
-    padding:12px;
-    background:#0a0a0a;
-    border:1px solid #00f6ff;
-    color:#00f6ff;
-    border-radius:10px;
-    margin-top:20px;
-    font-size:17px;
-}
-button{
-    width:80%;
-    padding:14px;
-    background:#00f6ff;
-    color:#000;
-    font-weight:bold;
-    font-size:18px;
-    border:none;
-    border-radius:10px;
-    margin-top:25px;
-    box-shadow:0 0 10px #00f6ff;
-}
-#qr{
-    margin-top:20px;
-    display:none;
-    border:2px solid #00f6ff;
-    border-radius:12px;
-}
-.message{
-    margin-top:15px;
-    font-size:18px;
-}
-</style>
+        body { 
+            background: var(--bg); 
+            color: var(--text-main); 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            margin: 0; 
+            display: flex; 
+            justify-content: center;
+        }
+
+        .app-shell {
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            background: var(--surface);
+            position: relative;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .back-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 12px;
+            background: var(--primary-light);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            text-decoration: none;
+            color: var(--primary);
+            font-size: 20px;
+            border: none;
+        }
+
+        h1 { font-size: 22px; margin: 0; font-weight: 800; }
+
+        /* Stepper Logic */
+        .step-box {
+            display: none;
+            animation: slideUp 0.4s ease forwards;
+        }
+        .step-box.active { display: block; }
+
+        @keyframes slideUp {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Input Cards */
+        .card {
+            background: #fff;
+            border: 1px solid #f1f5f9;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            margin-bottom: 20px;
+        }
+
+        label { 
+            display: block; 
+            font-size: 12px; 
+            font-weight: 700; 
+            color: var(--text-muted); 
+            margin-bottom: 10px; 
+            letter-spacing: 0.5px;
+        }
+
+        input {
+            width: 100%;
+            padding: 15px;
+            border: 2px solid #f1f5f9;
+            border-radius: 14px;
+            font-size: 18px;
+            font-weight: 600;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.2s;
+        }
+        input:focus { border-color: var(--primary); background: #fcfdff; }
+
+        /* Payment QR Details */
+        .qr-wrapper {
+            background: var(--primary-light);
+            border-radius: 24px;
+            padding: 25px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        #qr-img {
+            background: #fff;
+            padding: 10px;
+            border-radius: 16px;
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.15);
+            margin-bottom: 15px;
+        }
+
+        .upi-pill {
+            background: #fff;
+            padding: 10px 15px;
+            border-radius: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        /* Buttons */
+        .primary-btn {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 16px;
+            font-size: 16px;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.25);
+            transition: 0.3s;
+        }
+        .primary-btn:active { transform: scale(0.98); }
+
+        .secondary-btn {
+            width: 100%;
+            padding: 15px;
+            background: #fff;
+            color: var(--text-main);
+            border: 2px solid #f1f5f9;
+            border-radius: 16px;
+            font-size: 15px;
+            font-weight: 700;
+            margin-top: 10px;
+            cursor: pointer;
+        }
+
+        .notice {
+            background: #fff8f1;
+            border-left: 4px solid #ff9f1c;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            color: #b45309;
+            margin-top: 15px;
+            line-height: 1.5;
+            text-align: left;
+        }
+    </style>
 </head>
-
 <body>
 
-<h1>Deposit</h1>
+<div class="app-shell">
+    <div class="header">
+        <button onclick="window.location='dashboard.html'" class="back-btn">←</button>
+        <h1>Deposit Funds</h1>
+    </div>
 
-<input id="amount" type="number" placeholder="Enter Amount (50 - 500)">
-<input id="utr" type="text" placeholder="Enter UTR Number">
+    <div id="step1" class="step-box active">
+        <div class="card">
+            <label>ENTER RECHARGE AMOUNT</label>
+            <input type="number" id="amount" placeholder="Min ₹50 - Max ₹500">
+            <p style="font-size: 11px; color: var(--text-muted); margin-top: 10px;">
+                Note: 10% processing fee will be added automatically.
+            </p>
+        </div>
+        <button class="primary-btn" onclick="nextStep()">Continue to Payment</button>
+    </div>
 
-<button onclick="generateQR()">Generate QR</button>
+    <div id="step2" class="step-box">
+        <div class="qr-wrapper">
+            <label style="color: var(--primary); margin-bottom: 15px;">SCAN TO PAY</label>
+            <img id="qr-img" width="200" src="">
+            
+            <div class="upi-pill">
+                <span id="upi-id">9561998301@amazonpay</span>
+                <span onclick="copyUPI()" style="color: var(--primary); cursor: pointer; font-weight: 800;">COPY</span>
+            </div>
+        </div>
 
-<img id="qr" width="250">
-<div id="details" class="message"></div>
+        <div class="card">
+            <label>TOTAL PAYABLE (INC. 10% FEE)</label>
+            <div id="final-amt" style="font-size: 28px; font-weight: 800; color: var(--primary);">₹0.00</div>
+            
+            <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 15px 0;">
+            
+            <label>12-DIGIT UTR / REFERENCE NO.</label>
+            <input type="text" id="utr" placeholder="Enter Ref Number">
+            
+            <div class="notice">
+                <b>⚠️ Important:</b> Pay the exact "Total Payable" amount above first. After paying, enter the UTR/Reference number from your app (GPay/PhonePe) here.
+            </div>
+        </div>
 
-<button onclick="submitDeposit()">Submit Deposit</button>
-
-<button onclick="window.location='dashboard.html'">Back</button>
+        <button class="primary-btn" onclick="submitDeposit()">Submit for Approval</button>
+        <button class="secondary-btn" onclick="prevStep()">Change Amount</button>
+    </div>
+</div>
 
 <script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig = {
+    const firebaseConfig = {
   apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
   authDomain: "test-eb5e7.firebaseapp.com",
   databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
@@ -84,72 +238,71 @@ const firebaseConfig = {
   measurementId: "G-ECKCTBLQJ8"
 };
 
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getDatabase(app);
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
 
-let UID = "";
-
-onAuthStateChanged(auth, (u)=>{
-    if(!u){ window.location="index.html"; return; }
-    UID = u.uid;
-});
-
-// ----------------------------------------
-// GENERATE QR
-// ----------------------------------------
-window.generateQR = function(){
-    let amt = Number(document.getElementById("amount").value);
-
-    if(amt < 50 || amt > 500){
-        alert("Amount must be between ₹50 - ₹500");
-        return;
-    }
-
-    let finalPay = amt + (amt * 0.10); // 10% charge
-    finalPay = Math.floor(finalPay);
-
-    let qrURL = 
-      "https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=9561998301@amazonpay&am="+finalPay;
-
-    document.getElementById("qr").src = qrURL;
-    document.getElementById("qr").style.display = "block";
-
-    document.getElementById("details").innerHTML =
-        `<br>Payable Amount: <b>₹${finalPay}</b><br>
-         UPI ID: <b>9561998301@amazonpay</b>`;
-};
-
-// ----------------------------------------
-// SUBMIT DEPOSIT
-// ----------------------------------------
-window.submitDeposit = async function(){
-
-    let amt = Number(document.getElementById("amount").value);
-    let utr = document.getElementById("utr").value.trim();
-
-    if(amt < 50 || amt > 500){
-        alert("Enter valid amount between ₹50 - ₹500");
-        return;
-    }
-    if(utr.length < 6){
-        alert("Enter valid UTR number");
-        return;
-    }
-
-    let txID = "DP" + Math.floor(Math.random()*99999999);
-
-    await set(ref(db, "transactions/deposits/"+UID+"/"+txID), {
-        amount: amt,
-        utr: utr,
-        status: "pending",
-        time: Date.now()
+    let UID = "";
+    onAuthStateChanged(auth, (u) => {
+        if (!u) { window.location = "index.html"; return; }
+        UID = u.uid;
     });
 
-    alert("Deposit Submitted! Wait for approval.");
-    window.location = "processing.html";
-};
+    window.nextStep = function() {
+        const amt = Number(document.getElementById("amount").value);
+        if (amt < 50 || amt > 500) {
+            alert("Please enter amount between ₹50 and ₹500");
+            return;
+        }
 
+        const finalPay = Math.floor(amt + (amt * 0.10));
+        const upiID = "9561998301@amazonpay";
+        const qrURL = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=upi://pay?pa=${upiID}%26am=${finalPay}%26cu=INR%26pn=H4XTEAM`;
+
+        document.getElementById("qr-img").src = qrURL;
+        document.getElementById("final-amt").innerText = "₹" + finalPay;
+        
+        document.getElementById("step1").classList.remove("active");
+        document.getElementById("step2").classList.add("active");
+    };
+
+    window.prevStep = function() {
+        document.getElementById("step2").classList.remove("active");
+        document.getElementById("step1").classList.add("active");
+    };
+
+    window.copyUPI = function() {
+        const upiText = document.getElementById("upi-id").innerText;
+        navigator.clipboard.writeText(upiText).then(() => {
+            alert("UPI ID Copied!");
+        });
+    };
+
+    window.submitDeposit = async function() {
+        const amt = Number(document.getElementById("amount").value);
+        const utr = document.getElementById("utr").value.trim();
+
+        if (utr.length < 10) {
+            alert("Please enter a valid UTR/Reference number.");
+            return;
+        }
+
+        const txID = "DEP-" + Date.now().toString().slice(-6);
+
+        try {
+            await set(ref(db, "transactions/deposits/" + UID + "/" + txID), {
+                amount: amt,
+                utr: utr,
+                status: "pending",
+                time: Date.now()
+            });
+            alert("Deposit request sent! Please wait for manual verification.");
+            window.location = "dashboard.html";
+        } catch (e) {
+            alert("Something went wrong. Check connection.");
+        }
+    };
 </script>
+
 </body>
 </html>
