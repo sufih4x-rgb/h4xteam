@@ -3,132 +3,117 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Admin | H4XTEAM</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>H4X Master Console</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4361ee;
-            --sidebar-bg: #0f172a;
-            --success: #10b981;
-            --danger: #ef4444;
-            --warning: #f59e0b;
-            --info: #3b82f6;
-            --bg: #f8fafc;
-            --white: #ffffff;
+            --primary: #6366f1; --sidebar: #0f172a; --bg: #f8fafc;
+            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
         }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
 
-        body { background-color: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
-        
-        /* Sidebar */
-        .sidebar { width: 260px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 20px 0; }
-        .sidebar-header { padding: 0 25px 30px; font-size: 22px; font-weight: 800; color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .nav-item { padding: 14px 25px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: #94a3b8; font-size: 13px; font-weight: 600; transition: 0.2s; }
-        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.05); color: white; }
-        .nav-item.active { border-right: 4px solid var(--primary); color: white; }
+        /* Sidebar Navigation */
+        .sidebar { width: 280px; background: var(--sidebar); color: white; display: flex; flex-direction: column; padding: 25px 0; }
+        .sidebar-brand { padding: 0 30px 40px; font-size: 24px; font-weight: 800; color: var(--primary); letter-spacing: -1px; }
+        .nav-item { padding: 16px 30px; display: flex; align-items: center; gap: 15px; cursor: pointer; color: #94a3b8; font-size: 14px; font-weight: 600; transition: 0.3s; }
+        .nav-item:hover { color: white; background: rgba(255,255,255,0.03); }
+        .nav-item.active { color: white; background: var(--primary); border-radius: 0 50px 50px 0; margin-right: 20px; }
 
-        /* Main Content */
-        .main-content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-        .top-bar { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
-        .search-container input { width: 300px; padding: 10px 15px; border-radius: 8px; border: 1px solid #e2e8f0; outline: none; }
+        /* Main Area */
+        .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .header { background: white; padding: 20px 40px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
+        .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; padding: 30px 40px; }
+        .stat-card { background: white; padding: 20px; border-radius: 16px; border: 1px solid #e2e8f0; }
+        .stat-card small { color: #64748b; font-size: 12px; font-weight: 600; text-transform: uppercase; }
+        .stat-card div { font-size: 24px; font-weight: 800; margin-top: 5px; color: var(--sidebar); }
 
-        .content-body { padding: 25px; }
-        .section { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); display: none; }
-        .section.active { display: block; animation: fadeIn 0.3s ease; }
-        
+        .content { flex: 1; padding: 0 40px 40px; overflow-y: auto; }
+        .view { background: white; border-radius: 20px; padding: 30px; border: 1px solid #e2e8f0; display: none; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); }
+        .view.active { display: block; animation: slideUp 0.4s ease; }
+
         /* Tables */
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 12px; background: #f1f5f9; font-size: 11px; text-transform: uppercase; color: #64748b; }
-        td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; }
-
-        /* Badges & Buttons */
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
-        .badge-danger { background: #fee2e2; color: #b91c1c; }
-        .badge-success { background: #dcfce7; color: #15803d; }
-        .badge-sim { background: #e0e7ff; color: #4338ca; }
+        th { text-align: left; padding: 15px; color: #64748b; font-size: 11px; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #f1f5f9; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 14px; vertical-align: middle; }
         
-        button { padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; font-size: 11px; margin-right: 5px; transition: 0.2s; }
-        .btn-green { background: var(--success); color: white; }
-        .btn-red { background: var(--danger); color: white; }
-        .btn-warn { background: var(--warning); color: white; }
-        .btn-blue { background: var(--primary); color: white; }
+        /* Action Buttons */
+        .btn { padding: 10px 16px; border-radius: 10px; font-weight: 700; font-size: 12px; cursor: pointer; border: none; transition: 0.2s; }
+        .btn-check { background: #dcfce7; color: #15803d; }
+        .btn-cross { background: #fee2e2; color: #b91c1c; }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-copy { background: #f1f5f9; color: #475569; padding: 5px 8px; font-size: 10px; }
 
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-        #loginOverlay { position: fixed; inset: 0; background: var(--sidebar-bg); z-index: 9999; display: flex; justify-content: center; align-items: center; }
+        #login-gate { position: fixed; inset: 0; background: var(--sidebar); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
-<div id="loginOverlay">
-    <div style="background:white; padding:40px; border-radius:24px; text-align:center; width:300px;">
-        <h2 style="margin:0 0 20px 0;">🛡️ Admin Login</h2>
-        <input type="password" id="adminPass" placeholder="Admin PIN" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
-        <button class="btn-blue" style="width:100%; padding:15px;" onclick="checkAuth()">Login</button>
+<div id="login-gate">
+    <div style="background:white; padding:50px; border-radius:30px; width:360px; text-align:center;">
+        <h2 style="margin:0 0 10px;">Security Check</h2>
+        <p style="color:#64748b; margin-bottom:30px;">Enter Admin PIN to continue</p>
+        <input type="password" id="pin" placeholder="••••" style="width:100%; padding:15px; border-radius:12px; border:2px solid #e2e8f0; text-align:center; font-size:24px; letter-spacing:10px; margin-bottom:20px;">
+        <button class="btn btn-primary" style="width:100%; padding:18px;" onclick="verify()">Unlock Dashboard</button>
     </div>
 </div>
 
 <div class="sidebar">
-    <div class="sidebar-header">H4X PANEL</div>
-    <div class="nav-item active" onclick="showTab(this, 'userSec')">👤 User Database</div>
-    <div class="nav-item" onclick="showTab(this, 'depSec')">📥 Deposit Approve</div>
-    <div class="nav-item" onclick="showTab(this, 'withSec')">📤 Withdraw Approve</div>
-    <div class="nav-item" onclick="showTab(this, 'simSec')">📱 SIM Requests</div>
-    <div class="nav-item" onclick="showTab(this, 'histSec')">📜 History Logs</div>
+    <div class="sidebar-brand">H4X PANEL</div>
+    <div class="nav-item active" onclick="switchView(this, 'user-view')">👥 Users & Ban</div>
+    <div class="nav-item" onclick="switchView(this, 'dep-view')">📥 Deposit/Recharge</div>
+    <div class="nav-item" onclick="switchView(this, 'with-view')">📤 Withdrawals</div>
+    <div class="nav-item" onclick="switchView(this, 'sim-view')">📱 SIM Topup</div>
+    <div class="nav-item" onclick="switchView(this, 'log-view')">📜 History</div>
 </div>
 
-<div class="main-content">
-    <div class="top-bar">
-        <div class="search-container">
-            <input type="text" id="globalSearch" placeholder="Search UID or Phone..." onkeyup="filterData()">
-        </div>
-        <div id="totalStats" style="font-weight: 800; color: var(--primary);">System Online</div>
+<div class="main">
+    <div class="header">
+        <input type="text" id="masterSearch" placeholder="Search anything..." onkeyup="masterFilter()" style="padding:12px 20px; width:350px; border-radius:12px; border:1px solid #e2e8f0; outline:none; background:#f8fafc;">
+        <div id="live-clock" style="font-weight:700; color:#64748b;"></div>
     </div>
 
-    <div class="content-body">
-        <div id="userSec" class="section active">
-            <div style="margin-bottom:20px;"><h2>User Master Control</h2></div>
-            <table>
-                <thead><tr><th>User</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
+    <div class="stats-grid">
+        <div class="stat-card"><small>Total Users</small><div id="stat-users">0</div></div>
+        <div class="stat-card"><small>Total Balance</small><div id="stat-money">₹0</div></div>
+        <div class="stat-card"><small>Pending Tasks</small><div id="stat-pending" style="color:var(--warning)">0</div></div>
+        <div class="stat-card"><small>Total Banned</small><div id="stat-banned" style="color:var(--danger)">0</div></div>
+    </div>
+
+    <div class="content">
+        <div id="user-view" class="view active">
+            <table id="uTable">
+                <thead><tr><th>User Detail</th><th>Current Balance</th><th>Account Status</th><th>Quick Actions</th></tr></thead>
                 <tbody id="userList"></tbody>
             </table>
         </div>
 
-        <div id="depSec" class="section">
-            <div style="margin-bottom:20px;"><h2>Wallet Deposits</h2></div>
-            <table>
-                <thead><tr><th>UID</th><th>Amount</th><th>Status</th><th>Control</th></tr></thead>
+        <div id="dep-view" class="view">
+            <table id="dTable">
+                <thead><tr><th>Transaction UID</th><th>Amount</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody id="depList"></tbody>
             </table>
         </div>
 
-        <div id="withSec" class="section">
-            <div style="margin-bottom:20px;"><h2>Withdrawals</h2></div>
-            <table>
-                <thead><tr><th>UID</th><th>Amount</th><th>Method</th><th>Control</th></tr></thead>
+        <div id="with-view" class="view">
+            <table id="wTable">
+                <thead><tr><th>User ID</th><th>Requested Amount</th><th>Method</th><th>Approval</th></tr></thead>
                 <tbody id="withList"></tbody>
             </table>
         </div>
 
-        <div id="simSec" class="section">
-            <div style="margin-bottom:20px;"><h2>SIM Recharge Requests</h2></div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>UID</th>
-                        <th>Mobile Number</th>
-                        <th>Operator</th>
-                        <th>Plan Price</th>
-                        <th>Control</th>
-                    </tr>
-                </thead>
+        <div id="sim-view" class="view">
+            <table id="sTable">
+                <thead><tr><th>UID</th><th>Mobile Number</th><th>Provider</th><th>Plan</th><th>Action</th></tr></thead>
                 <tbody id="simList"></tbody>
             </table>
         </div>
 
-        <div id="histSec" class="section">
-            <div style="margin-bottom:20px;"><h2>Transaction History</h2></div>
-            <table>
-                <thead><tr><th>Time</th><th>Type</th><th>Target</th><th>Amount</th><th>Status</th></tr></thead>
-                <tbody id="histList"></tbody>
+        <div id="log-view" class="view">
+            <table id="lTable">
+                <thead><tr><th>Timestamp</th><th>Activity</th><th>Target UID</th><th>Amount</th><th>Status</th></tr></thead>
+                <tbody id="logList"></tbody>
             </table>
         </div>
     </div>
@@ -136,135 +121,135 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, increment, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, increment, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
-        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-        authDomain: "test-eb5e7.firebaseapp.com",
-        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-        projectId: "test-eb5e7",
-        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
-    };
+  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+  authDomain: "test-eb5e7.firebaseapp.com",
+  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+  projectId: "test-eb5e7",
+  storageBucket: "test-eb5e7.appspot.com",
+  messagingSenderId: "366282855653",
+  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+  measurementId: "G-ECKCTBLQJ8"
+};
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    window.checkAuth = () => {
-        if(document.getElementById("adminPass").value === "admin123") {
-            document.getElementById("loginOverlay").style.display = "none";
-            initSystem();
-        } else alert("Denied");
+    // SECURITY
+    window.verify = () => {
+        if(document.getElementById('pin').value === "1234") {
+            document.getElementById('login-gate').style.display = 'none';
+            launch();
+        } else alert("Invalid PIN");
     };
 
-    window.showTab = (btn, id) => {
-        document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-        document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        btn.classList.add('active');
+    // UI SWITCHER
+    window.switchView = (el, id) => {
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        el.classList.add('active');
         document.getElementById(id).classList.add('active');
     };
 
-    function initSystem() {
-        // 1. Users Observer
+    function launch() {
+        setInterval(() => { document.getElementById('live-clock').innerText = new Date().toLocaleString(); }, 1000);
+
+        // LIVE USERS & STATS
         onValue(ref(db, "users"), snap => {
-            let html = "";
+            let uHtml = ""; let totalBal = 0; let bannedCount = 0;
             snap.forEach(c => {
                 const u = c.val();
-                const isFrozen = u.walletState === 'frozen';
                 const isBanned = u.status === 'banned';
-                html += `<tr class="t-row" data-search="${c.key} ${u.displayName}">
-                    <td><strong>${u.displayName || 'User'}</strong><br><small>${c.key.slice(0,10)}</small></td>
-                    <td>₹${(u.balance || 0).toFixed(2)}</td>
-                    <td><span class="badge ${isBanned ? 'badge-danger' : 'badge-success'}">${isBanned ? 'BAN' : 'OK'}</span></td>
+                if(isBanned) bannedCount++;
+                totalBal += (u.balance || 0);
+                
+                uHtml += `<tr class="data-row" data-search="${c.key} ${u.displayName}">
+                    <td><strong>${u.displayName || 'User'}</strong><br><small style="color:#94a3b8">${c.key.slice(0,12)}</small></td>
+                    <td><span style="color:var(--success); font-weight:800">₹${(u.balance || 0)}</span></td>
+                    <td><span class="btn ${isBanned?'btn-cross':'btn-check'}">${isBanned?'BANNED':'ACTIVE'}</span></td>
                     <td>
-                        <button class="btn-green" onclick="manualRefill('${c.key}')">Recharge</button>
-                        <button class="btn-warn" onclick="toggleField('${c.key}','walletState','${isFrozen?'active':'frozen'}')">${isFrozen?'Unfreeze':'Freeze'}</button>
-                        <button class="btn-red" onclick="toggleField('${c.key}','status','${isBanned?'active':'banned'}')">${isBanned?'Unban':'Ban'}</button>
+                        <button class="btn btn-primary" onclick="addBal('${c.key}')">Add ₹</button>
+                        <button class="btn btn-cross" onclick="setAccount('${c.key}','${isBanned?'active':'banned'}')">${isBanned?'Unban':'Ban'}</button>
                     </td></tr>`;
             });
-            document.getElementById("userList").innerHTML = html;
+            document.getElementById('userList').innerHTML = uHtml;
+            document.getElementById('stat-users').innerText = snap.size;
+            document.getElementById('stat-money').innerText = "₹" + totalBal.toLocaleString();
+            document.getElementById('stat-banned').innerText = bannedCount;
         });
 
-        // 2. Deposit/Withdraw Observers (Simplified)
-        const loadRequests = (path, elId) => {
-            onValue(ref(db, path), snap => {
-                let html = "";
+        // UNIVERSAL REQUEST HANDLER (Catches everything)
+        const syncTable = (node, element, type) => {
+            onValue(ref(db, node), snap => {
+                let html = ""; let pCount = 0;
                 snap.forEach(c => {
                     const d = c.val();
-                    if(d.status === "Pending") {
-                        html += `<tr><td>${d.uid.slice(0,10)}</td><td>₹${d.amount}</td><td>Pending</td>
-                        <td><button class="btn-green" onclick="handleTxn('${path}','${c.key}','${d.uid}',${d.amount},'Approved')">Approve</button>
-                        <button class="btn-red" onclick="handleTxn('${path}','${c.key}','${d.uid}',${d.amount},'Rejected')">Reject</button></td></tr>`;
+                    if(d.status === "Pending" || !d.status) {
+                        pCount++;
+                        if(type === 'SIM') {
+                            html += `<tr><td>${d.uid?.slice(0,6)}</td>
+                            <td>${d.mobile} <button class="btn-copy" onclick="navigator.clipboard.writeText('${d.mobile}')">Copy</button></td>
+                            <td>${d.operator}</td><td>₹${d.amount}</td>
+                            <td><button class="btn btn-check" onclick="handleSim('${c.key}','${d.uid}',${d.amount},'Approved')">Done</button>
+                            <button class="btn btn-cross" onclick="handleSim('${c.key}','${d.uid}',${d.amount},'Rejected')">Reject</button></td></tr>`;
+                        } else {
+                            html += `<tr><td>${d.uid?.slice(0,8)}</td><td>₹${d.amount}</td>
+                            <td><span style="color:var(--warning)">Pending</span></td>
+                            <td><button class="btn btn-check" onclick="handleTxn('${node}','${c.key}','${d.uid}',${d.amount},'Approved')">Approve</button>
+                            <button class="btn btn-cross" onclick="handleTxn('${node}','${c.key}','${d.uid}',${d.amount},'Rejected')">Reject</button></td></tr>`;
+                        }
                     }
                 });
-                document.getElementById(elId).innerHTML = html || "<tr><td colspan='4'>Clear</td></tr>";
+                document.getElementById(element).innerHTML = html || "<tr><td colspan='5' style='text-align:center; color:#94a3b8; padding:40px;'>No pending requests in "+node+"</td></tr>";
             });
         };
-        loadRequests("deposits", "depList");
-        loadRequests("withdrawals", "withList");
 
-        // 3. SIM RECHARGE Observer
-        onValue(ref(db, "sim_requests"), snap => {
-            let html = "";
-            snap.forEach(c => {
-                const s = c.val();
-                if(s.status === "Pending") {
-                    html += `<tr>
-                        <td>${s.uid.slice(0,8)}</td>
-                        <td><span class="badge badge-sim">${s.mobile}</span></td>
-                        <td>${s.operator}</td>
-                        <td>₹${s.amount}</td>
-                        <td>
-                            <button class="btn-green" onclick="handleSim('${c.key}','${s.uid}',${s.amount},'Approved')">Done</button>
-                            <button class="btn-red" onclick="handleSim('${c.key}','${s.uid}',${s.amount},'Rejected')">Fail</button>
-                        </td>
-                    </tr>`;
-                }
-            });
-            document.getElementById("simList").innerHTML = html || "<tr><td colspan='5'>No SIM Requests</td></tr>";
-        });
+        syncTable("deposits", "depList", "DEP");
+        syncTable("withdrawals", "withList", "WITH");
+        syncTable("sim_requests", "simList", "SIM");
 
-        // 4. History
+        // GLOBAL LOGS
         onValue(ref(db, "history"), snap => {
-            let list = []; snap.forEach(c => list.push(c.val()));
-            document.getElementById("histList").innerHTML = list.reverse().slice(0,30).map(h => `<tr>
-                <td>${new Date(h.time).toLocaleTimeString()}</td>
-                <td><span class="badge" style="background:#eee">${h.type}</span></td>
-                <td>${h.uid.slice(0,8)}</td><td>₹${h.amount}</td><td>${h.status}</td>
+            let logs = []; snap.forEach(c => logs.push(c.val()));
+            document.getElementById('logList').innerHTML = logs.reverse().slice(0,50).map(l => `<tr>
+                <td style="font-size:11px">${new Date(l.time).toLocaleTimeString()}</td>
+                <td><span style="font-weight:700">${l.type}</span></td>
+                <td><small>${l.uid?.slice(0,10)}</small></td>
+                <td>₹${l.amount}</td>
+                <td><span style="color:${l.status==='Approved'?'var(--success)':'var(--danger)'}">${l.status}</span></td>
             </tr>`).join("");
         });
     }
 
-    // LOGIC FUNCTIONS
-    window.toggleField = (uid, f, v) => update(ref(db, `users/${uid}`), { [f]: v });
-    
-    window.manualRefill = (uid) => {
-        const a = prompt("Amount:");
-        if(a) update(ref(db, `users/${uid}`), { balance: increment(parseFloat(a)) });
+    // --- ACTIONS ---
+    window.addBal = (uid) => {
+        const amt = prompt("Amount to Add:");
+        if(amt) update(ref(db, `users/${uid}`), { balance: increment(parseFloat(amt)) });
     };
+
+    window.setAccount = (uid, status) => update(ref(db, `users/${uid}`), { status: status });
 
     window.handleTxn = async (path, tid, uid, amt, status) => {
         if(status === "Approved") {
             const mod = path === 'deposits' ? amt : -amt;
             await update(ref(db, `users/${uid}`), { balance: increment(mod) });
         }
-        await update(ref(db, `history/${tid}`), { uid, amount: amt, type: path.toUpperCase(), status, time: Date.now() });
-        update(ref(db, `${path}/${tid}`), { status });
+        await set(ref(db, `history/${tid}`), { uid, amount: amt, type: path.toUpperCase(), status, time: Date.now() });
+        update(ref(db, `${path}/${tid}`), { status: status });
     };
 
     window.handleSim = async (tid, uid, amt, status) => {
-        // Usually SIM recharge deducts balance at time of request, 
-        // if rejected, you might want to refund the user.
-        if(status === "Rejected") {
-            await update(ref(db, `users/${uid}`), { balance: increment(amt) });
-        }
-        await update(ref(db, `history/${tid}`), { uid, amount: amt, type: 'SIM_RECHARGE', status, time: Date.now() });
-        update(ref(db, `sim_requests/${tid}`), { status });
+        if(status === "Rejected") await update(ref(db, `users/${uid}`), { balance: increment(amt) });
+        await set(ref(db, `history/${tid}`), { uid, amount: amt, type: 'SIM_TOPUP', status, time: Date.now() });
+        update(ref(db, `sim_requests/${tid}`), { status: status });
     };
 
-    window.filterData = () => {
-        const q = document.getElementById("globalSearch").value.toLowerCase();
-        document.querySelectorAll(".t-row").forEach(r => {
-            r.style.display = r.getAttribute("data-search").toLowerCase().includes(q) ? "" : "none";
+    window.masterFilter = () => {
+        const q = document.getElementById('masterSearch').value.toLowerCase();
+        document.querySelectorAll('.data-row').forEach(r => {
+            r.style.display = r.getAttribute('data-search').toLowerCase().includes(q) ? "" : "none";
         });
     };
 </script>
