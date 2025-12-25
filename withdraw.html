@@ -36,7 +36,9 @@
 
 <h1>Withdraw</h1>
 
-<input id="amount" type="number" placeholder="Enter Withdraw Amount (100 - 10,000)">
+<p id="bal" style="font-size:20px;">Balance: ₹0</p>
+
+<input id="amount" type="number" placeholder="Enter Withdraw Amount (100 - 10000)">
 <input id="upi" type="text" placeholder="Enter Your UPI ID">
 
 <button onclick="requestWithdraw()">Request Withdraw</button>
@@ -47,7 +49,7 @@
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -59,21 +61,30 @@ const firebaseConfig = {
   appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
   measurementId: "G-ECKCTBLQJ8"
 };
+
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getDatabase(app);
 
 let uid = "";
+let userBalance = 0;
 
-onAuthStateChanged(auth, user => {
+onAuthStateChanged(auth, async (user) => {
     if (!user) window.location = "index.html";
     uid = user.uid;
+
+    // Fetch balance
+    let snap = await get(ref(db, "users/" + uid + "/balance"));
+    if (snap.exists()) {
+        userBalance = snap.val();
+        document.getElementById("bal").innerHTML = `Balance: ₹${userBalance}`;
+    }
 });
 
-window.requestWithdraw = async function() {
+window.requestWithdraw = async function(){
 
     let amt = Number(document.getElementById("amount").value);
-    let upi = document.getElementById("upi").value.trim();
+    let upi = document.getElementById("upi").value;
 
     if (amt < 100 || amt > 10000) {
         alert("Withdraw amount must be between ₹100 - ₹10,000");
@@ -81,7 +92,14 @@ window.requestWithdraw = async function() {
     }
 
     if (upi.length < 5 || !upi.includes("@")) {
-        alert("Enter a valid UPI ID");
+        alert("Enter valid UPI ID");
+        return;
+    }
+
+    // Balance check
+    if (userBalance < amt) {
+        document.getElementById("msg").innerHTML =
+          `<p style='color:red;'>INSUFFICIENT BALANCE</p>`;
         return;
     }
 
@@ -95,10 +113,10 @@ window.requestWithdraw = async function() {
     });
 
     document.getElementById("msg").innerHTML =
-        `<p>Your withdraw request of <b>₹${amt}</b> has been submitted.</p>
+        `<p>Your withdraw request of <b>₹${amt}</b> is submitted.</p>
          <p>Status: <b>PENDING</b></p>`;
 
-    alert("Withdraw Request Submitted!");
+    alert("Withdraw Request Sent Successfully!");
 };
 </script>
 
