@@ -3,13 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin System | H4XTEAM</title>
+    <title>Master Control | H4XTEAM</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
             --primary: #4361ee;
             --success: #06d6a0;
             --danger: #ff4d4d;
+            --warning: #fb8500;
             --bg: #f4f7fe;
             --white: #ffffff;
             --text-dark: #1e293b;
@@ -21,121 +22,143 @@
             color: var(--text-dark);
             font-family: 'Plus Jakarta Sans', sans-serif;
             margin: 0;
-            padding: 20px;
+            padding: 30px;
         }
 
-        h1 { font-weight: 800; color: var(--text-dark); letter-spacing: -1px; margin-bottom: 30px; }
-        h2 { font-size: 18px; font-weight: 700; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+        /* Loading Spinner */
+        .btn-loading {
+            position: relative;
+            color: transparent !important;
+            pointer-events: none;
+        }
+        .btn-loading::after {
+            content: "";
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            top: 50%;
+            left: 50%;
+            margin: -8px 0 0 -8px;
+            border: 2px solid rgba(0,0,0,0.1);
+            border-top-color: currentColor;
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
 
+        h1 { font-weight: 800; letter-spacing: -1px; margin-bottom: 30px; }
+        h2 { font-size: 16px; text-transform: uppercase; letter-spacing: 1px; color: var(--text-light); margin-bottom: 20px; }
+
+        .grid-top { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 30px; }
+        
         .section {
             background: var(--white);
             padding: 25px;
             border-radius: 24px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.03);
-            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.04);
             border: 1px solid rgba(0,0,0,0.02);
         }
 
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { 
-            text-align: left; 
-            padding: 15px; 
-            background: #f8fafc; 
-            color: var(--text-light); 
-            font-size: 12px; 
-            text-transform: uppercase; 
-            letter-spacing: 1px;
-            border-bottom: 2px solid #f1f5f9;
-        }
-        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 14px; font-weight: 500; }
+        /* Config Form */
+        .config-row { display: flex; gap: 15px; margin-bottom: 15px; align-items: flex-end; }
+        .config-group { flex: 1; }
+        label { display: block; font-size: 11px; font-weight: 800; margin-bottom: 8px; color: var(--text-light); }
+        
+        table { width: 100%; border-collapse: collapse; }
+        th { text-align: left; padding: 15px; background: #f8fafc; font-size: 11px; color: var(--text-light); border-bottom: 2px solid #f1f5f9; }
+        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; }
 
-        input {
-            padding: 10px 15px;
-            border-radius: 10px;
-            border: 2px solid #f1f5f9;
-            outline: none;
-            font-family: inherit;
-            font-weight: 600;
-            width: 100px;
-        }
-
+        input { padding: 10px; border-radius: 10px; border: 1px solid #e2e8f0; font-family: inherit; width: 100%; box-sizing: border-box; }
+        
         button {
-            padding: 10px 20px;
-            border-radius: 12px;
+            padding: 10px 18px;
+            border-radius: 10px;
             font-weight: 700;
             cursor: pointer;
             border: none;
             transition: 0.2s;
-            font-size: 13px;
+            font-size: 12px;
         }
 
-        .btn-approve { background: #e6fcf5; color: #087f5b; }
-        .btn-approve:hover { background: var(--success); color: white; }
-        
-        .btn-reject { background: #fff5f5; color: #c53030; }
-        .btn-reject:hover { background: var(--danger); color: white; }
+        .btn-blue { background: var(--primary); color: white; }
+        .btn-green { background: #e6fcf5; color: #087f5b; }
+        .btn-red { background: #fff5f5; color: #c53030; }
+        .btn-ban { background: #1e293b; color: white; }
 
-        .btn-adjust { background: var(--primary); color: white; padding: 10px 15px; }
-
-        /* Login Overlay */
         #loginOverlay {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: linear-gradient(135deg, #4361ee, #3f37c9);
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
-            z-index: 10000;
+            background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 10000;
         }
-
-        .login-card {
-            background: white; padding: 40px; border-radius: 30px;
-            text-align: center; box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-            width: 90%; max-width: 350px;
-        }
+        .login-card { background: white; padding: 40px; border-radius: 30px; text-align: center; width: 320px; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
     <div class="login-card">
-        <div style="font-size: 40px; margin-bottom: 10px;">🛡️</div>
-        <h2 style="justify-content: center; margin-bottom: 5px;">Secure Admin</h2>
-        <p style="color: var(--text-light); font-size: 14px; margin-bottom: 25px;">Please enter master password</p>
-        <input type="password" id="adminPass" placeholder="••••••••" style="width: 100%; box-sizing: border-box; margin-bottom: 15px; text-align: center;">
-        <button class="btn-adjust" style="width: 100%; padding: 15px;" onclick="checkAuth()">Unlock Dashboard</button>
+        <div style="font-size: 40px; margin-bottom: 15px;">🗝️</div>
+        <h2 style="color: var(--text-dark);">Master Access</h2>
+        <input type="password" id="adminPass" placeholder="Enter System Key" style="text-align: center; margin-bottom: 20px;">
+        <button class="btn-blue" style="width: 100%;" onclick="checkAuth()">Unlock Dashboard</button>
     </div>
 </div>
 
-<h1>System Administrator</h1>
+<h1>System Control Panel</h1>
 
-<div class="section">
-    <h2>👥 User Management</h2>
+<div class="grid-top">
+    <div class="section">
+        <h2>💳 Gateway Configuration</h2>
+        <div class="config-row">
+            <div class="config-group">
+                <label>ACTIVE UPI ID</label>
+                <input type="text" id="upiInput" placeholder="vpa@upi">
+            </div>
+            <button class="btn-blue" onclick="saveConfig('upi', 'upiInput')">Update UPI</button>
+        </div>
+        <div class="config-row">
+            <div class="config-group">
+                <label>QR CODE IMAGE URL</label>
+                <input type="text" id="qrInput" placeholder="https://imgur.com/your-qr.png">
+            </div>
+            <button class="btn-blue" onclick="saveConfig('qr', 'qrInput')">Update QR</button>
+        </div>
+    </div>
+
+    <div class="section">
+        <h2>📊 Quick Stats</h2>
+        <div style="font-size: 24px; font-weight: 800; color: var(--primary);">₹<span id="totalStats">0</span></div>
+        <div style="font-size: 12px; color: var(--text-light);">System Volume Transacted</div>
+    </div>
+</div>
+
+<div class="section" style="margin-bottom: 30px;">
+    <h2>👥 Global User Registry</h2>
     <div style="overflow-x: auto;">
         <table id="userTable">
-            <tr><th>UID</th><th>Balance</th><th>Actions</th></tr>
+            <thead><tr><th>User / UID</th><th>Balance</th><th>Adjustment</th><th>Safety</th></tr></thead>
+            <tbody id="userList"></tbody>
         </table>
     </div>
 </div>
 
-<div class="section">
-    <h2>📥 Deposit Requests</h2>
-    <div style="overflow-x: auto;">
+<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+    <div class="section">
+        <h2>📥 Pending Deposits</h2>
         <table id="depositTable">
-            <tr><th>UID</th><th>Amount</th><th>TXID</th><th>Action</th></tr>
+            <tbody id="depositList"></tbody>
         </table>
     </div>
-</div>
-
-<div class="section">
-    <h2>📤 Withdrawal Requests</h2>
-    <div style="overflow-x: auto;">
+    <div class="section">
+        <h2>📤 Pending Withdrawals</h2>
         <table id="withdrawTable">
-            <tr><th>UID</th><th>Amount</th><th>WID</th><th>Action</th></tr>
+            <tbody id="withdrawList"></tbody>
         </table>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, increment, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -148,99 +171,133 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
+    // Auth Check
     window.checkAuth = function() {
-        const pass = document.getElementById("adminPass").value;
-        if(pass === "admin123") {
+        if(document.getElementById("adminPass").value === "admin123") {
             document.getElementById("loginOverlay").style.display = "none";
-            loadAllData();
-        } else {
-            alert("Unauthorized access!");
-        }
+            loadData();
+        } else { alert("Access Denied"); }
     };
 
-    function loadAllData() {
-        // Real-time Users
+    // Load Real-time Data
+    function loadData() {
+        // Load Settings
+        onValue(ref(db, "settings/payment"), snap => {
+            const data = snap.val();
+            if(data) {
+                document.getElementById("upiInput").value = data.upi || "";
+                document.getElementById("qrInput").value = data.qr || "";
+            }
+        });
+
+        // Load Users
         onValue(ref(db, "users/"), snap => {
-            let table = document.getElementById("userTable");
-            table.innerHTML = `<tr><th>UID</th><th>Email</th><th>Balance</th><th>Manual Adjust</th></tr>`;
-            snap.forEach(user => {
-                let d = user.val();
-                table.innerHTML += `
-                <tr>
-                    <td style="font-family: monospace; font-size: 11px;">${user.key.substring(0,10)}...</td>
-                    <td>${d.email || 'N/A'}</td>
-                    <td style="color: var(--primary); font-weight: 800;">₹${(d.balance || 0).toLocaleString()}</td>
+            let html = "";
+            let total = 0;
+            snap.forEach(child => {
+                const u = child.val();
+                total += (u.balance || 0);
+                const isBanned = u.status === "banned";
+                html += `<tr>
+                    <td><div style="font-weight:800">${u.email || 'User'}</div><div style="font-size:10px; color:gray;">${child.key.substring(0,12)}</div></td>
+                    <td>₹${(u.balance || 0).toLocaleString()}</td>
+                    <td style="display:flex; gap:5px;">
+                        <input id="adj_${child.key}" type="number" style="width:70px;" placeholder="Amt">
+                        <button class="btn-blue" onclick="adjustBalance(this, '${child.key}')">Set</button>
+                    </td>
                     <td>
-                        <input id="amt_${user.key}" type="number" placeholder="Amt">
-                        <button class="btn-approve" onclick="adjustBalance('${user.key}', 'add')">+</button>
-                        <button class="btn-reject" onclick="adjustBalance('${user.key}', 'sub')">-</button>
+                        <button class="${isBanned ? 'btn-green' : 'btn-ban'}" onclick="toggleBan(this, '${child.key}', '${isBanned ? 'active' : 'banned'}')">
+                            ${isBanned ? 'UNBAN' : 'BAN USER'}
+                        </button>
                     </td>
                 </tr>`;
             });
+            document.getElementById("userList").innerHTML = html;
+            document.getElementById("totalStats").innerText = total.toLocaleString();
         });
 
-        // Real-time Deposits
+        // Load Deposits
         onValue(ref(db, "transactions/deposits/"), snap => {
-            let table = document.getElementById("depositTable");
-            table.innerHTML = `<tr><th>UID</th><th>Amount</th><th>TXID</th><th>Action</th></tr>`;
+            let html = "<tr><th>UTR</th><th>Amount</th><th>Action</th></tr>";
             snap.forEach(userNode => {
                 userNode.forEach(tx => {
-                    let d = tx.val();
-                    if(d.status === "pending") {
-                        table.innerHTML += `
-                        <tr>
-                            <td style="font-family: monospace; font-size: 11px;">${userNode.key.substring(0,8)}...</td>
-                            <td style="font-weight: 700;">₹${d.amount}</td>
-                            <td><span style="background:#eee; padding:3px 8px; border-radius:5px; font-size:10px;">${tx.key}</span></td>
+                    if(tx.val().status === "pending") {
+                        html += `<tr>
+                            <td>${tx.key}</td>
+                            <td>₹${tx.val().amount}</td>
                             <td>
-                                <button class="btn-approve" onclick="handleDeposit('${userNode.key}','${tx.key}',${d.amount},'approved')">Approve</button>
-                                <button class="btn-reject" onclick="handleDeposit('${userNode.key}','${tx.key}',0,'rejected')">Reject</button>
+                                <button class="btn-green" onclick="handleDeposit(this, '${userNode.key}', '${tx.key}', ${tx.val().amount}, 'approved')">✔</button>
+                                <button class="btn-red" onclick="handleDeposit(this, '${userNode.key}', '${tx.key}', 0, 'rejected')">✖</button>
                             </td>
                         </tr>`;
                     }
                 });
             });
+            document.getElementById("depositList").innerHTML = html;
         });
 
-        // Real-time Withdrawals
+        // Load Withdrawals
         onValue(ref(db, "transactions/withdrawals/"), snap => {
-            let table = document.getElementById("withdrawTable");
-            table.innerHTML = `<tr><th>UID</th><th>Amount</th><th>WID</th><th>Action</th></tr>`;
+            let html = "<tr><th>User</th><th>Amount</th><th>Action</th></tr>";
             snap.forEach(userNode => {
                 userNode.forEach(wd => {
-                    let d = wd.val();
-                    if(d.status === "pending") {
-                        table.innerHTML += `
-                        <tr>
-                            <td style="font-family: monospace; font-size: 11px;">${userNode.key.substring(0,8)}...</td>
-                            <td style="font-weight: 700; color: var(--danger);">₹${d.amount}</td>
-                            <td><span style="background:#eee; padding:3px 8px; border-radius:5px; font-size:10px;">${wd.key}</span></td>
+                    if(wd.val().status === "pending") {
+                        html += `<tr>
+                            <td>${userNode.key.substring(0,6)}</td>
+                            <td>₹${wd.val().amount}</td>
                             <td>
-                                <button class="btn-approve" onclick="handleWithdraw('${userNode.key}','${wd.key}',${d.amount},'approved')">Paid</button>
-                                <button class="btn-reject" onclick="handleWithdraw('${userNode.key}','${wd.key}',${d.amount},'rejected')">Reject</button>
+                                <button class="btn-green" onclick="handleWithdraw(this, '${userNode.key}', '${wd.key}', 'approved')">PAID</button>
+                                <button class="btn-red" onclick="handleWithdraw(this, '${userNode.key}', '${wd.key}', 'rejected', ${wd.val().amount})">REJECT</button>
                             </td>
                         </tr>`;
                     }
                 });
             });
+            document.getElementById("withdrawList").innerHTML = html;
         });
     }
 
-    window.adjustBalance = function(uid, type) {
-        let val = Number(document.getElementById("amt_"+uid).value);
-        if(!val) return;
-        update(ref(db, `users/${uid}`), { balance: increment(type === 'add' ? val : -val) });
+    // --- ACTIONS ---
+
+    window.saveConfig = async function(type, inputId) {
+        const val = document.getElementById(inputId).value;
+        const btn = event.target;
+        btn.classList.add('btn-loading');
+        await update(ref(db, "settings/payment"), { [type]: val });
+        btn.classList.remove('btn-loading');
     };
 
-    window.handleDeposit = function(uid, txid, amount, status) {
-        if(status === 'approved') update(ref(db, `users/${uid}`), { balance: increment(amount), deposits: increment(1) });
-        update(ref(db, `transactions/deposits/${uid}/${txid}`), { status: status });
+    window.adjustBalance = async function(btn, uid) {
+        const amt = Number(document.getElementById(`adj_${uid}`).value);
+        btn.classList.add('btn-loading');
+        await update(ref(db, `users/${uid}`), { balance: amt });
+        btn.classList.remove('btn-loading');
     };
 
-    window.handleWithdraw = function(uid, wid, amount, status) {
-        if(status === 'rejected') update(ref(db, `users/${uid}`), { balance: increment(amount) });
-        update(ref(db, `transactions/withdrawals/${uid}/${wid}`), { status: status });
+    window.toggleBan = async function(btn, uid, status) {
+        btn.classList.add('btn-loading');
+        await update(ref(db, `users/${uid}`), { status: status });
+        btn.classList.remove('btn-loading');
     };
+
+    window.handleDeposit = async function(btn, uid, txid, amt, status) {
+        btn.classList.add('btn-loading');
+        if(status === 'approved') {
+            await update(ref(db, `users/${uid}`), { balance: increment(amt), deposits: increment(1) });
+        }
+        await update(ref(db, `transactions/deposits/${uid}/${txid}`), { status: status, notified: false });
+        btn.classList.remove('btn-loading');
+    };
+
+    window.handleWithdraw = async function(btn, uid, wid, status, refundAmt = 0) {
+        btn.classList.add('btn-loading');
+        if(status === 'rejected') {
+            await update(ref(db, `users/${uid}`), { balance: increment(refundAmt) });
+        }
+        await update(ref(db, `transactions/withdrawals/${uid}/${wid}`), { status: status });
+        btn.classList.remove('btn-loading');
+    };
+
 </script>
 </body>
 </html>
