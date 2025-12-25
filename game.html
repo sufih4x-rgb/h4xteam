@@ -1,73 +1,205 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-    <title>H4X ADMIN - Financial Control</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Global Game - H4XTEAM</title>
     <style>
-        body { background:#000; color:#0aff9d; font-family: monospace; padding:20px; }
-        .card { border: 1px solid #0aff9d; padding:15px; margin-bottom:20px; background:#111; }
-        table { width:100%; border-collapse:collapse; margin-top:10px; }
-        th, td { border:1px solid #333; padding:10px; text-align:left; }
-        button { cursor:pointer; padding:5px 10px; font-weight:bold; }
-        .btn-approve { background:#0f0; color:#000; border:none; }
-        .btn-reject { background:#f00; color:#fff; border:none; margin-left:5px; }
+        /* White Theme Styling */
+        body { background: #f4f7f6; color: #333; font-family: 'Segoe UI', Arial, sans-serif; text-align: center; padding: 20px; }
+        .container { max-width: 450px; margin: auto; background: #fff; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); }
+        
+        h1 { color: #222; margin-bottom: 5px; font-size: 24px; }
+        .balance-card { background: #00ffcc1a; padding: 15px; border-radius: 15px; margin: 15px 0; border: 1px dashed #00c853; }
+        .bal-text { font-size: 30px; font-weight: bold; color: #00c853; }
+
+        .btn-group { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        .btn { width: 120px; padding: 18px; border: none; border-radius: 12px; font-size: 18px; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        
+        .red { background: #ff4757; color: white; box-shadow: 0 4px 10px rgba(255, 71, 87, 0.3); }
+        .green { background: #2ed573; color: white; box-shadow: 0 4px 10px rgba(46, 213, 115, 0.3); }
+        
+        /* Disabled / Locked state */
+        .disabled { background: #dfe4ea !important; color: #a4b0be !important; box-shadow: none !important; cursor: not-allowed; }
+
+        input { width: 90%; padding: 15px; background: #f1f2f6; color: #2f3542; border: 1px solid #ced4da; text-align: center; font-size: 20px; border-radius: 10px; margin: 10px 0; outline: none; }
+        input:focus { border-color: #00ffcc; }
+        
+        #placeBetBtn { width: 90%; background: #2f3542; color: #fff; font-size: 18px; margin-top: 10px; }
+        #matchTimer { font-size: 40px; color: #1e90ff; margin: 15px 0; font-weight: bold; }
+        #lockMsg { color: #ff4757; font-weight: bold; height: 20px; }
+        
+        #resultBox { margin-top: 20px; padding: 20px; border-radius: 15px; display: none; background: #f8f9fa; border: 2px solid #00ffcc; }
     </style>
 </head>
 <body>
 
-<h1>⚡ ADMIN FINANCIAL CONTROL</h1>
+<div class="container">
+    <h1>H4XTEAM GLOBAL</h1>
+    <p style="color: #777; font-size: 14px;">24-Hour Synchronized Match</p>
+    
+    <div class="balance-card">
+        <div style="color: #666; font-size: 14px;">Available Balance</div>
+        <div class="bal-text">₹<span id="balanceDisplay">0</span></div>
+    </div>
 
-<div class="card">
-    <h3>Pending Withdrawals</h3>
-    <table id="withdrawTable">
-        <tr><th>User UID</th><th>Amount</th><th>UPI ID</th><th>Action</th></tr>
-    </table>
+    <div id="gameUI">
+        <div class="btn-group">
+            <button id="btnRed" class="btn red" onclick="selectColor('RED')">RED</button>
+            <button id="btnGreen" class="btn green" onclick="selectColor('GREEN')">GREEN</button>
+        </div>
+
+        <input type="number" id="betAmount" placeholder="Enter Amount (Min ₹10)">
+        <p id="selectedDisplay" style="font-weight: bold; height: 20px; margin: 10px 0;"></p>
+
+        <button id="placeBetBtn" class="btn" onclick="placeBet()">CONFIRM BET</button>
+    </div>
+
+    <div id="matchTimer">00:00</div>
+    <div id="lockMsg"></div>
+
+    <div id="resultBox"></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, increment, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, set, get, update, onValue, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = { /* USE YOUR CONFIG HERE */ };
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        storageBucket: "test-eb5e7.appspot.com",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+    };
+
     const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // LOAD WITHDRAWALS
-    onValue(ref(db, "transactions/withdrawals/"), (snap) => {
-        const table = document.getElementById("withdrawTable");
-        table.innerHTML = `<tr><th>User UID</th><th>Amount</th><th>UPI ID</th><th>Action</th></tr>`;
-        
-        snap.forEach((userNode) => {
-            const userId = userNode.key;
-            userNode.forEach((wd) => {
-                const data = wd.val();
-                const wdId = wd.key;
-                if(data.status === "pending") {
-                    table.innerHTML += `
-                    <tr>
-                        <td>${userId}</td>
-                        <td>₹${data.amount}</td>
-                        <td>${data.upi}</td>
-                        <td>
-                            <button class="btn-approve" onclick="manageWD('${userId}','${wdId}',${data.amount},'approved')">Approve</button>
-                            <button class="btn-reject" onclick="manageWD('${userId}','${wdId}',${data.amount},'rejected')">Reject (Refund)</button>
-                        </td>
-                    </tr>`;
-                }
-            });
+    let uid = "";
+    let balance = 0;
+    let selectedColor = "";
+    let currentMatchId = "";
+    let hasBetted = false;
+    let isSettled = false;
+
+    // 1. AUTH & REAL-TIME BALANCE
+    onAuthStateChanged(auth, (user) => {
+        if (!user) { window.location.href = "index.html"; return; }
+        uid = user.uid;
+        onValue(ref(db, `users/${uid}/balance`), (s) => {
+            balance = s.val() || 0;
+            document.getElementById("balanceDisplay").innerText = balance;
         });
     });
 
-    window.manageWD = async (uid, wdId, amt, status) => {
-        if (status === 'rejected') {
-            // REFUND the money back to user balance
-            await update(ref(db, `users/${uid}`), { balance: increment(amt) });
-            alert("Rejected and Refunded ₹" + amt);
-        } else {
-            alert("Withdrawal Approved!");
+    // 2. GLOBAL CLOCK (1-Minute Intervals)
+    setInterval(() => {
+        let now = new Date();
+        let totalSecs = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
+        let matchWindow = Math.floor(totalSecs / 60); 
+        let newMatchId = "M_" + now.toISOString().split('T')[0] + "_" + matchWindow;
+
+        if (currentMatchId !== newMatchId) {
+            currentMatchId = newMatchId;
+            resetRound();
         }
-        // Update the status so it disappears from the list
-        await update(ref(db, `transactions/withdrawals/${uid}/${wdId}`), { status: status });
+
+        let remaining = 60 - (totalSecs % 60);
+        document.getElementById("matchTimer").innerText = `00:${remaining < 10 ? '0'+remaining : remaining}`;
+
+        if (remaining <= 10) {
+            document.getElementById("lockMsg").innerText = "BETTING LOCKED ⏳";
+            document.getElementById("placeBetBtn").disabled = true;
+            document.getElementById("placeBetBtn").classList.add("disabled");
+            if (remaining <= 2 && !isSettled) checkResult();
+        } else {
+            document.getElementById("lockMsg").innerText = "";
+            if (!hasBetted) {
+                document.getElementById("placeBetBtn").disabled = false;
+                document.getElementById("placeBetBtn").classList.remove("disabled");
+            }
+        }
+    }, 1000);
+
+    window.selectColor = (c) => {
+        if (hasBetted) return;
+        selectedColor = c;
+        document.getElementById("btnRed").classList.toggle("disabled", c !== "RED");
+        document.getElementById("btnGreen").classList.toggle("disabled", c !== "GREEN");
+        document.getElementById("selectedDisplay").innerText = "Target: " + c;
+        document.getElementById("selectedDisplay").style.color = (c === "RED" ? "#ff4757" : "#2ed573");
     };
+
+    // 3. SECURE BETTING
+    window.placeBet = async () => {
+        const val = document.getElementById("betAmount").value;
+        let amt = parseInt(val);
+
+        if (!selectedColor) return alert("Please select a color!");
+        if (isNaN(amt) || amt < 10) return alert("Invalid Amount! Min ₹10");
+        if (amt > balance) return alert("Insufficient Balance!");
+        if (hasBetted) return;
+
+        hasBetted = true;
+        document.getElementById("placeBetBtn").disabled = true;
+
+        try {
+            await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
+            await set(ref(db, `matchBets/${currentMatchId}/${uid}`), {
+                color: selectedColor,
+                amount: amt,
+                status: "pending"
+            });
+            alert("Success! Bet of ₹" + amt + " confirmed.");
+        } catch (e) {
+            alert("Error placing bet. Check connection.");
+            hasBetted = false;
+        }
+    };
+
+    // 4. PAYOUT LOGIC
+    async function checkResult() {
+        const snap = await get(ref(db, `matches/${currentMatchId}`));
+        if (snap.exists()) {
+            isSettled = true;
+            processPayout(snap.val().result);
+        }
+    }
+
+    async function processPayout(winColor) {
+        const betSnap = await get(ref(db, `matchBets/${currentMatchId}/${uid}`));
+        const box = document.getElementById("resultBox");
+        box.style.display = "block";
+
+        if (betSnap.exists() && betSnap.val().status === "pending") {
+            const myBet = betSnap.val();
+            const won = (myBet.color === winColor);
+            await update(ref(db, `matchBets/${currentMatchId}/${uid}`), { status: "settled" });
+
+            if (won) {
+                let winAmt = myBet.amount * 2;
+                await update(ref(db, `users/${uid}`), { balance: increment(winAmt) });
+                box.innerHTML = `<h2 style='color:#2ed573'>${winColor} WON 🎉</h2><p>You received ₹${winAmt}</p>`;
+            } else {
+                box.innerHTML = `<h2 style='color:#ff4757'>${winColor} WON ❌</h2><p>Lost ₹${myBet.amount}</p>`;
+            }
+        } else {
+            box.innerHTML = `<h2>RESULT: ${winColor}</h2><p>No active bet found.</p>`;
+        }
+    }
+
+    function resetRound() {
+        hasBetted = false; isSettled = false; selectedColor = "";
+        document.getElementById("btnRed").classList.remove("disabled");
+        document.getElementById("btnGreen").classList.remove("disabled");
+        document.getElementById("resultBox").style.display = "none";
+        document.getElementById("selectedDisplay").innerText = "";
+        document.getElementById("betAmount").value = "";
+    }
 </script>
 </body>
 </html>
