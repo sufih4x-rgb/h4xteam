@@ -1,219 +1,205 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-<meta charset="UTF-8">
-<title>Admin Panel – H4X TEAM</title>
-<meta name="viewport" content="width=device-width, initial-scale=1">
-
+<title>ADMIN PANEL - H4XTEAM</title>
 <style>
-    body {
-        font-family: Arial, sans-serif;
-        background:#0d0d0d;
-        color:white;
-        margin:0;
-        padding:0;
-    }
-    .container {
-        width:95%;
-        margin:auto;
-        padding:20px;
-    }
-    h1 { color:#00ff9d; text-align:center; }
-    .box {
-        background:#111;
-        padding:15px;
-        border-radius:10px;
-        margin-top:20px;
-        border:1px solid #00ff9d;
-    }
-    input, button {
-        width:100%;
-        padding:10px;
-        margin:5px 0;
-        border-radius:6px;
-        border:none;
-    }
-    input {
-        background:#222;
-        color:#fff;
-        border:1px solid #00ff9d;
-    }
-    button {
-        background:#00ff9d;
-        color:black;
-        font-weight:bold;
-    }
-    .item {
-        background:#1a1a1a;
-        padding:10px;
-        border-radius:8px;
-        margin:7px 0;
-        border:1px solid #00ff9d50;
-    }
+body { background:#000; color:#0affff; font-family:Arial; padding:20px; }
+h1 { text-align:center; color:#0aff9d; }
+.section { margin-top:30px; padding:20px; border:1px solid #0affff; border-radius:10px; }
+button { padding:8px 15px; margin:5px; background:#0affff; color:#000; border:none; border-radius:6px; cursor:pointer; font-weight:bold; }
+table { width:100%; border-collapse:collapse; margin-top:15px; }
+th, td { border:1px solid #0affff; padding:10px; text-align:center; }
+input { width:200px; padding:10px; border-radius:6px; border:1px solid #0affff; background:#111; color:#0affff; }
+#loginBox { text-align:center; margin-top:120px; }
 </style>
 </head>
 <body>
 
-<div class="container">
+<h1>ADMIN PANEL</h1>
 
-    <h1>H4XTEAM ADMIN PANEL</h1>
-
-    <!-- LOGIN BOX -->
-    <div id="loginBox" class="box">
-        <h2>Admin Login</h2>
-        <input id="adminUser" placeholder="Admin Username">
-        <input id="adminPass" type="password" placeholder="Admin Password">
-        <button onclick="adminLogin()">LOGIN</button>
-    </div>
-
-    <!-- DASHBOARD -->
-    <div id="dashboard" class="box" style="display:none;">
-        <h2>Dashboard</h2>
-        <button onclick="loadDeposits()">Pending Deposits</button>
-        <button onclick="loadWithdraws()">Pending Withdrawals</button>
-        <button onclick="loadUsers()">All Users</button>
-    </div>
-
-    <!-- DISPLAY AREA -->
-    <div id="output" class="box" style="display:none;">
-        <h2 id="title"></h2>
-        <div id="list"></div>
-    </div>
-
+<div id="loginBox">
+    <h2>Enter Admin Password</h2>
+    <input type="password" id="adminPass" placeholder="Admin Password"><br><br>
+    <button onclick="adminLogin()">LOGIN</button>
 </div>
 
-<!-- FIREBASE -->
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
+<div id="panel" style="display:none;">
+    <h2>Welcome, Admin</h2>
 
-<script>
-    // 🔥 YOUR FIREBASE CONFIG — REPLACE WITH YOURS
-    const firebaseConfig = {
-      apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-      authDomain: "test-eb5e7.firebaseapp.com",
-      databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-      projectId: "test-eb5e7",
-      storageBucket: "test-eb5e7.appspot.com",
-      messagingSenderId: "366282855653",
-      appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-      measurementId: "G-ECKCTBLQJ8"
-    };
-    
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+    <!-- USERS -->
+    <div class="section">
+        <h2>All Users</h2>
+        <table id="usersTable">
+            <tr><th>User ID</th><th>Balance</th><th>Total Won</th><th>Deposits</th></tr>
+        </table>
+    </div>
 
-    // 🔐 FIXED ADMIN LOGIN
-    const ADMIN_USER = "H4XTEAMADMIN";
-    const ADMIN_PASS = "OK SEND";
+    <!-- DEPOSITS -->
+    <div class="section">
+        <h2>Pending Deposits</h2>
+        <table id="depositTable">
+            <tr><th>User ID</th><th>Amount</th><th>Pay</th><th>TXID</th><th>Action</th></tr>
+        </table>
+    </div>
 
-    function adminLogin() {
-        let u = adminUser.value;
-        let p = adminPass.value;
+    <!-- WITHDRAWS -->
+    <div class="section">
+        <h2>Pending Withdrawals</h2>
+        <table id="withdrawTable">
+            <tr><th>User ID</th><th>Amount</th><th>UPI</th><th>TXID</th><th>Action</th></tr>
+        </table>
+    </div>
+</div>
 
-        if (u === ADMIN_USER && p === ADMIN_PASS) {
-            loginBox.style.display = "none";
-            dashboard.style.display = "block";
-        } else {
-            alert("Wrong Admin Login!");
-        }
-    }
 
-    function loadDeposits() {
-        title.innerText = "Pending Deposits";
-        output.style.display = "block";
-        list.innerHTML = "";
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-        db.ref("deposits").orderByChild("status").equalTo("pending").once("value", snap => {
-            if (!snap.exists()) {
-                list.innerHTML = "<p>No Pending Deposits</p>";
-                return;
-            }
+const firebaseConfig = {
+ apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+ authDomain:"test-eb5e7.firebaseapp.com",
+ databaseURL:"https://test-eb5e7-default-rtdb.firebaseio.com",
+ projectId:"test-eb5e7",
+ storageBucket:"test-eb5e7.appspot.com",
+ messagingSenderId:"366282855653",
+ appId:"1:366282855653:web:dca7e000f5a22fb11f300c",
+ measurementId:"G-ECKCTBLQJ8"
+};
 
-            snap.forEach(d => {
-                let data = d.val();
-                list.innerHTML += `
-                <div class="item">
-                    <p><b>User:</b> ${data.userId}</p>
-                    <p><b>Amount:</b> ₹${data.amount}</p>
-                    <p><b>UTR:</b> ${data.utr}</p>
-                    <button onclick="approveDeposit('${d.key}', '${data.userId}', ${data.amount})">APPROVE</button>
-                    <button onclick="rejectDeposit('${d.key}')">REJECT</button>
-                </div>`;
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+const ADMIN_PASSWORD = "123456";   // <-- CHANGE THIS FOR SECURITY
+
+window.adminLogin = function () {
+    let pass = document.getElementById("adminPass").value;
+    if (pass !== ADMIN_PASSWORD) { alert("Wrong Password"); return; }
+
+    document.getElementById("loginBox").style.display = "none";
+    document.getElementById("panel").style.display = "block";
+
+    loadUsers();
+    loadDeposits();
+    loadWithdraws();
+};
+
+// ---------------- USERS -----------------
+function loadUsers() {
+    onValue(ref(db, "users"), snap => {
+        let table = document.getElementById("usersTable");
+        table.innerHTML = "<tr><th>User ID</th><th>Balance</th><th>Total Won</th><th>Deposits</th></tr>";
+
+        snap.forEach(user => {
+            let u = user.val();
+            table.innerHTML += `
+                <tr>
+                    <td>${user.key}</td>
+                    <td>₹${u.balance}</td>
+                    <td>₹${u.totalWon || 0}</td>
+                    <td>${u.deposits}</td>
+                </tr>
+            `;
+        });
+    });
+}
+
+// ---------------- DEPOSITS -----------------
+function loadDeposits() {
+    onValue(ref(db, "transactions/deposits"), snap => {
+        let table = document.getElementById("depositTable");
+        table.innerHTML = "<tr><th>User ID</th><th>Amount</th><th>Pay</th><th>TXID</th><th>Action</th></tr>";
+
+        snap.forEach(user => {
+            user.forEach(tx => {
+                let d = tx.val();
+
+                if (d.status !== "pending") return;
+
+                table.innerHTML += `
+                    <tr>
+                        <td>${user.key}</td>
+                        <td>₹${d.amount}</td>
+                        <td>₹${d.pay}</td>
+                        <td>${tx.key}</td>
+                        <td>
+                            <button onclick="approveDeposit('${user.key}','${tx.key}',${d.amount})">Approve</button>
+                            <button onclick="rejectDeposit('${user.key}','${tx.key}')">Reject</button>
+                        </td>
+                    </tr>
+                `;
             });
         });
-    }
+    });
+}
 
-    function approveDeposit(id, userId, amount) {
-        db.ref("users/" + userId + "/balance").transaction(bal => (bal || 0) + amount);
-        db.ref("deposits/" + id + "/status").set("approved");
-        alert("Deposit Approved");
-        loadDeposits();
-    }
+window.approveDeposit = function(uid, txid, amount) {
+    update(ref(db, "users/" + uid), {
+        balance: (Number(prompt("Enter new balance")) || 0)
+    });
 
-    function rejectDeposit(id) {
-        db.ref("deposits/" + id + "/status").set("rejected");
-        alert("Deposit Rejected");
-        loadDeposits();
-    }
+    update(ref(db, "transactions/deposits/" + uid + "/" + txid), {
+        status: "approved"
+    });
 
-    function loadWithdraws() {
-        title.innerText = "Pending Withdrawals";
-        output.style.display = "block";
-        list.innerHTML = "";
+    alert("Deposit Approved");
+};
 
-        db.ref("withdraws").orderByChild("status").equalTo("pending").once("value", snap => {
-            if (!snap.exists()) {
-                list.innerHTML = "<p>No Pending Withdrawals</p>";
-                return;
-            }
+window.rejectDeposit = function(uid, txid) {
+    update(ref(db, "transactions/deposits/" + uid + "/" + txid), {
+        status: "rejected"
+    });
+    alert("Deposit Rejected");
+};
 
-            snap.forEach(w => {
-                let data = w.val();
-                list.innerHTML += `
-                <div class="item">
-                    <p><b>User:</b> ${data.userId}</p>
-                    <p><b>Amount:</b> ₹${data.amount}</p>
-                    <button onclick="approveWithdraw('${w.key}', '${data.userId}', ${data.amount})">APPROVE</button>
-                    <button onclick="rejectWithdraw('${w.key}')">REJECT</button>
-                </div>`;
+// ---------------- WITHDRAWS -----------------
+function loadWithdraws() {
+    onValue(ref(db, "transactions/withdraws"), snap => {
+        let table = document.getElementById("withdrawTable");
+        table.innerHTML = "<tr><th>User ID</th><th>Amount</th><th>UPI</th><th>TXID</th><th>Action</th></tr>";
+
+        snap.forEach(user => {
+            user.forEach(tx => {
+                let w = tx.val();
+
+                if (w.status !== "pending") return;
+
+                table.innerHTML += `
+                    <tr>
+                        <td>${user.key}</td>
+                        <td>₹${w.amount}</td>
+                        <td>${w.upi}</td>
+                        <td>${tx.key}</td>
+                        <td>
+                            <button onclick="approveWithdraw('${user.key}','${tx.key}',${w.amount})">Approve</button>
+                            <button onclick="rejectWithdraw('${user.key}','${tx.key}')">Reject</button>
+                        </td>
+                    </tr>
+                `;
             });
         });
-    }
+    });
+}
 
-    function approveWithdraw(id, userId, amount) {
-        db.ref("users/" + userId + "/balance").transaction(bal => {
-            if ((bal || 0) >= amount) return bal - amount;
-            return bal;
-        });
+window.approveWithdraw = function(uid, txid, amount) {
+    update(ref(db, "users/" + uid), {
+        balance: (Number(prompt("Enter new balance")) || 0)
+    });
 
-        db.ref("withdraws/" + id + "/status").set("approved");
-        alert("Withdrawal Approved");
-        loadWithdraws();
-    }
+    update(ref(db, "transactions/withdraws/" + uid + "/" + txid), {
+        status: "approved"
+    });
 
-    function rejectWithdraw(id) {
-        db.ref("withdraws/" + id + "/status").set("rejected");
-        alert("Withdrawal Rejected");
-        loadWithdraws();
-    }
+    alert("Withdraw Approved");
+};
 
-    function loadUsers() {
-        title.innerText = "Users";
-        output.style.display = "block";
-        list.innerHTML = "";
+window.rejectWithdraw = function(uid, txid) {
+    update(ref(db, "transactions/withdraws/" + uid + "/" + txid), {
+        status: "rejected"
+    });
 
-        db.ref("users").once("value", snap => {
-            snap.forEach(u => {
-                let data = u.val();
-                list.innerHTML += `
-                <div class="item">
-                    <p><b>ID:</b> ${u.key}</p>
-                    <p><b>Name:</b> ${data.name || "N/A"}</p>
-                    <p><b>Balance:</b> ₹${data.balance || 0}</p>
-                </div>`;
-            });
-        });
-    }
+    alert("Withdraw Rejected");
+};
 </script>
 
 </body>
