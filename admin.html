@@ -1,61 +1,111 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>ADMIN PANEL - H4XTEAM</title>
+<title>H4XTEAM ADMIN PANEL</title>
+
 <style>
-body { background:#000; color:#0affff; font-family:Arial; padding:20px; }
-h1 { text-align:center; color:#0aff9d; }
-.section { margin-top:30px; padding:20px; border:1px solid #0affff; border-radius:10px; }
-button { padding:8px 15px; margin:5px; background:#0affff; color:#000; border:none; border-radius:6px; cursor:pointer; font-weight:bold; }
-table { width:100%; border-collapse:collapse; margin-top:15px; }
-th, td { border:1px solid #0affff; padding:10px; text-align:center; }
-input { width:200px; padding:10px; border-radius:6px; border:1px solid #0affff; background:#111; color:#0affff; }
-#loginBox { text-align:center; margin-top:120px; }
+body {
+    background:#000;
+    color:#0aff9d;
+    font-family:Arial;
+    padding:20px;
+}
+h1 {
+    text-align:center;
+    color:#00ffdd;
+    text-shadow:0 0 15px #00ffff;
+}
+.section {
+    margin-top:30px;
+    padding:20px;
+    border:2px solid #00ffaa;
+    border-radius:10px;
+    box-shadow:0 0 15px #00ffaa;
+}
+button {
+    background:#00ffaa;
+    border:none;
+    color:#000;
+    padding:8px 18px;
+    border-radius:6px;
+    font-weight:bold;
+    cursor:pointer;
+}
+table {
+    width:100%;
+    margin-top:15px;
+    border-collapse:collapse;
+}
+th, td {
+    border:1px solid #00ffaa;
+    padding:10px;
+    text-align:center;
+}
+input {
+    background:#000;
+    color:#0aff9d;
+    border:1px solid #00ffaa;
+    padding:6px;
+    border-radius:5px;
+}
+.action-btn {
+    padding:6px 12px;
+    margin:2px;
+}
+.green { background:#00ff99; }
+.red { background:#ff4444; color:#fff; }
 </style>
 </head>
+
 <body>
 
-<h1>ADMIN PANEL</h1>
+<h1>⚡ H4XTEAM ADMIN PANEL ⚡</h1>
 
-<div id="loginBox">
-    <h2>Enter Admin Password</h2>
-    <input type="password" id="adminPass" placeholder="Admin Password"><br><br>
-    <button onclick="adminLogin()">LOGIN</button>
+<div class="section">
+    <h2>All Users</h2>
+    <table id="userTable">
+        <tr>
+            <th>UID</th>
+            <th>Balance</th>
+            <th>Total Won</th>
+            <th>Deposits</th>
+            <th>Action</th>
+        </tr>
+    </table>
 </div>
 
-<div id="panel" style="display:none;">
-    <h2>Welcome, Admin</h2>
-
-    <!-- USERS -->
-    <div class="section">
-        <h2>All Users</h2>
-        <table id="usersTable">
-            <tr><th>User ID</th><th>Balance</th><th>Total Won</th><th>Deposits</th></tr>
-        </table>
-    </div>
-
-    <!-- DEPOSITS -->
-    <div class="section">
-        <h2>Pending Deposits</h2>
-        <table id="depositTable">
-            <tr><th>User ID</th><th>Amount</th><th>Pay</th><th>TXID</th><th>Action</th></tr>
-        </table>
-    </div>
-
-    <!-- WITHDRAWS -->
-    <div class="section">
-        <h2>Pending Withdrawals</h2>
-        <table id="withdrawTable">
-            <tr><th>User ID</th><th>Amount</th><th>UPI</th><th>TXID</th><th>Action</th></tr>
-        </table>
-    </div>
+<div class="section">
+    <h2>Pending Deposits</h2>
+    <table id="depositTable">
+        <tr>
+            <th>UID</th>
+            <th>Amount</th>
+            <th>Pay</th>
+            <th>TXID</th>
+            <th>Action</th>
+        </tr>
+    </table>
 </div>
 
+<div class="section">
+    <h2>Pending Withdrawals</h2>
+    <table id="withdrawTable">
+        <tr>
+            <th>UID</th>
+            <th>Amount</th>
+            <th>WID</th>
+            <th>Action</th>
+        </tr>
+    </table>
+</div>
 
 <script type="module">
+
+// Firebase Import
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+// Firebase Config
 const firebaseConfig = {
  apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
  authDomain:"test-eb5e7.firebaseapp.com",
@@ -70,136 +120,165 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-const ADMIN_PASSWORD = "123456";   // <-- CHANGE THIS FOR SECURITY
-
-window.adminLogin = function () {
-    let pass = document.getElementById("adminPass").value;
-    if (pass !== ADMIN_PASSWORD) { alert("Wrong Password"); return; }
-
-    document.getElementById("loginBox").style.display = "none";
-    document.getElementById("panel").style.display = "block";
-
-    loadUsers();
-    loadDeposits();
-    loadWithdraws();
-};
-
-// ---------------- USERS -----------------
+// ---------------- USERS SECTION ------------------
 function loadUsers() {
-    onValue(ref(db, "users"), snap => {
-        let table = document.getElementById("usersTable");
-        table.innerHTML = "<tr><th>User ID</th><th>Balance</th><th>Total Won</th><th>Deposits</th></tr>";
+    onValue(ref(db, "users/"), snapshot => {
+        let table = document.getElementById("userTable");
+        table.innerHTML = `
+            <tr>
+                <th>UID</th>
+                <th>Balance</th>
+                <th>Total Won</th>
+                <th>Deposits</th>
+                <th>Action</th>
+            </tr>
+        `;
 
-        snap.forEach(user => {
-            let u = user.val();
-            table.innerHTML += `
+        snapshot.forEach(user => {
+            let uid = user.key;
+            let data = user.val();
+
+            let row = `
                 <tr>
-                    <td>${user.key}</td>
-                    <td>₹${u.balance}</td>
-                    <td>₹${u.totalWon || 0}</td>
-                    <td>${u.deposits}</td>
+                    <td>${uid}</td>
+                    <td>₹${data.balance || 0}</td>
+                    <td>${data.totalWon || 0}</td>
+                    <td>${data.deposits || 0}</td>
+                    <td>
+                        <input id="add_${uid}" type="number" placeholder="Amount">
+                        <button class="green action-btn" onclick="addBalance('${uid}')">Add</button>
+                        <button class="red action-btn" onclick="minusBalance('${uid}')">Minus</button>
+                    </td>
                 </tr>
             `;
+
+            table.innerHTML += row;
         });
     });
 }
 
-// ---------------- DEPOSITS -----------------
-function loadDeposits() {
-    onValue(ref(db, "transactions/deposits"), snap => {
-        let table = document.getElementById("depositTable");
-        table.innerHTML = "<tr><th>User ID</th><th>Amount</th><th>Pay</th><th>TXID</th><th>Action</th></tr>";
+window.addBalance = function(uid){
+    let amt = Number(document.getElementById("add_"+uid).value);
+    if(!amt) return alert("Enter amount");
 
-        snap.forEach(user => {
+    update(ref(db,"users/"+uid), { balance: (Math.floor(Math.random()*1)+amt) }, { merge:true});
+    alert("Balance Updated");
+};
+
+window.minusBalance = function(uid){
+    let amt = Number(document.getElementById("add_"+uid).value);
+    if(!amt) return alert("Enter amount");
+
+    update(ref(db,"users/"+uid), { balance: -amt }, { merge:true});
+    alert("Balance Deducted");
+};
+
+
+// ---------------- DEPOSITS SECTION ------------------
+function loadDeposits(){
+    onValue(ref(db,"transactions/deposits/"), snapshot => {
+        let table = document.getElementById("depositTable");
+        table.innerHTML = `
+            <tr>
+                <th>UID</th>
+                <th>Amount</th>
+                <th>Pay</th>
+                <th>TXID</th>
+                <th>Action</th>
+            </tr>
+        `;
+
+        snapshot.forEach(user => {
+            let uid = user.key;
+
             user.forEach(tx => {
                 let d = tx.val();
-
-                if (d.status !== "pending") return;
-
-                table.innerHTML += `
-                    <tr>
-                        <td>${user.key}</td>
-                        <td>₹${d.amount}</td>
-                        <td>₹${d.pay}</td>
-                        <td>${tx.key}</td>
-                        <td>
-                            <button onclick="approveDeposit('${user.key}','${tx.key}',${d.amount})">Approve</button>
-                            <button onclick="rejectDeposit('${user.key}','${tx.key}')">Reject</button>
-                        </td>
-                    </tr>
-                `;
+                if(d.status === "pending"){
+                    let row = `
+                        <tr>
+                            <td>${uid}</td>
+                            <td>₹${d.amount}</td>
+                            <td>₹${d.pay}</td>
+                            <td>${tx.key}</td>
+                            <td>
+                                <button class="green action-btn" onclick="approveDeposit('${uid}','${tx.key}',${d.amount})">Approve</button>
+                                <button class="red action-btn" onclick="rejectDeposit('${uid}','${tx.key}')">Reject</button>
+                            </td>
+                        </tr>
+                    `;
+                    table.innerHTML += row;
+                }
             });
         });
     });
 }
 
-window.approveDeposit = function(uid, txid, amount) {
-    update(ref(db, "users/" + uid), {
-        balance: (Number(prompt("Enter new balance")) || 0)
-    });
-
-    update(ref(db, "transactions/deposits/" + uid + "/" + txid), {
-        status: "approved"
-    });
-
+window.approveDeposit = function(uid, txid, amount){
+    update(ref(db,"users/"+uid), { balance: amount }, { merge:true});
+    update(ref(db,"transactions/deposits/"+uid+"/"+txid), { status:"approved" });
     alert("Deposit Approved");
 };
 
-window.rejectDeposit = function(uid, txid) {
-    update(ref(db, "transactions/deposits/" + uid + "/" + txid), {
-        status: "rejected"
-    });
+window.rejectDeposit = function(uid, txid){
+    update(ref(db,"transactions/deposits/"+uid+"/"+txid), { status:"rejected" });
     alert("Deposit Rejected");
 };
 
-// ---------------- WITHDRAWS -----------------
-function loadWithdraws() {
-    onValue(ref(db, "transactions/withdraws"), snap => {
+
+// ---------------- WITHDRAWALS SECTION ------------------
+function loadWithdraw(){
+    onValue(ref(db,"transactions/withdrawals/"), snapshot => {
         let table = document.getElementById("withdrawTable");
-        table.innerHTML = "<tr><th>User ID</th><th>Amount</th><th>UPI</th><th>TXID</th><th>Action</th></tr>";
+        table.innerHTML = `
+            <tr>
+                <th>UID</th>
+                <th>Amount</th>
+                <th>WID</th>
+                <th>Action</th>
+            </tr>
+        `;
 
-        snap.forEach(user => {
-            user.forEach(tx => {
-                let w = tx.val();
+        snapshot.forEach(user => {
+            let uid = user.key;
 
-                if (w.status !== "pending") return;
-
-                table.innerHTML += `
-                    <tr>
-                        <td>${user.key}</td>
-                        <td>₹${w.amount}</td>
-                        <td>${w.upi}</td>
-                        <td>${tx.key}</td>
-                        <td>
-                            <button onclick="approveWithdraw('${user.key}','${tx.key}',${w.amount})">Approve</button>
-                            <button onclick="rejectWithdraw('${user.key}','${tx.key}')">Reject</button>
-                        </td>
-                    </tr>
-                `;
+            user.forEach(wd => {
+                let d = wd.val();
+                if(d.status === "pending"){
+                    let row = `
+                        <tr>
+                            <td>${uid}</td>
+                            <td>₹${d.amount}</td>
+                            <td>${wd.key}</td>
+                            <td>
+                                <button class="green action-btn" onclick="approveWithdraw('${uid}','${wd.key}',${d.amount})">Approve</button>
+                                <button class="red action-btn" onclick="rejectWithdraw('${uid}','${wd.key}')">Reject</button>
+                            </td>
+                        </tr>
+                    `;
+                    table.innerHTML += row;
+                }
             });
         });
     });
 }
 
-window.approveWithdraw = function(uid, txid, amount) {
-    update(ref(db, "users/" + uid), {
-        balance: (Number(prompt("Enter new balance")) || 0)
-    });
-
-    update(ref(db, "transactions/withdraws/" + uid + "/" + txid), {
-        status: "approved"
-    });
-
-    alert("Withdraw Approved");
+window.approveWithdraw = function(uid, wid, amount){
+    update(ref(db,"users/"+uid), { balance: -amount }, { merge:true});
+    update(ref(db,"transactions/withdrawals/"+uid+"/"+wid), { status:"approved" });
+    alert("Withdrawal Approved");
 };
 
-window.rejectWithdraw = function(uid, txid) {
-    update(ref(db, "transactions/withdraws/" + uid + "/" + txid), {
-        status: "rejected"
-    });
-
-    alert("Withdraw Rejected");
+window.rejectWithdraw = function(uid, wid){
+    update(ref(db,"transactions/withdrawals/"+uid+"/"+wid), { status:"rejected" });
+    alert("Withdrawal Rejected");
 };
+
+
+// Start loading everything
+loadUsers();
+loadDeposits();
+loadWithdraw();
+
 </script>
 
 </body>
