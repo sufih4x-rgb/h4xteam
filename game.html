@@ -2,88 +2,108 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>H4XTEAM GAME</title>
+<title>Red Green Game - H4XTEAM</title>
 
 <style>
     body {
         background: #000;
-        color: #0affd9;
+        color: #fff;
         font-family: Arial, sans-serif;
         text-align: center;
-        padding: 25px;
+        padding: 20px;
     }
 
     h1 {
-        color: #00ffaa;
-        text-shadow: 0 0 12px #00ffcc;
-        font-size: 34px;
+        color: #00ffcc;
+        text-shadow: 0 0 10px #00ffcc;
+        margin-bottom: 20px;
     }
 
-    .box {
-        padding: 20px;
-        background: #050505;
-        border: 1px solid #00eaff;
+    .btn {
+        width: 140px;
+        padding: 15px;
+        font-size: 20px;
+        font-weight: bold;
+        border: none;
         border-radius: 10px;
-        box-shadow: 0 0 20px #00eaff;
-        margin-top: 25px;
+        cursor: pointer;
+        margin: 10px;
+        box-shadow: 0 0 15px #00ffcc;
     }
+
+    .red { background: #ff0000; }
+    .green { background: #00ff00; color:#000; }
 
     input {
+        width: 60%;
         padding: 12px;
-        width: 220px;
-        font-size: 18px;
+        margin-top: 15px;
+        border-radius: 8px;
+        border: 2px solid #00ffcc;
         background: #000;
-        border: 2px solid #00ffa5;
-        color: #00ffa5;
-        border-radius: 8px;
-        margin-top: 10px;
-    }
-
-    button {
-        padding: 12px 30px;
-        margin-top: 20px;
-        font-size: 20px;
-        border-radius: 8px;
-        background: #00ffa5;
-        color: #000;
-        font-weight: bold;
-        cursor: pointer;
-        box-shadow: 0 0 20px #00ffa5;
-    }
-
-    #result {
-        display: none;
-        margin-top: 25px;
-        padding: 20px;
-        border: 2px solid #00eaff;
-        border-radius: 10px;
-        box-shadow: 0 0 15px #00eaff;
-        font-size: 22px;
+        color: #fff;
+        font-size: 18px;
+        text-align:center;
     }
 
     #timer {
         font-size: 22px;
+        margin-top: 20px;
         color: #00aaff;
-        margin-top: 15px;
         text-shadow: 0 0 10px #00aaff;
+    }
+
+    #resultBox {
+        margin-top: 25px;
+        font-size: 22px;
+        padding: 20px;
+        display: none;
+        border-radius: 12px;
+        border: 2px solid #00ffcc;
+        box-shadow: 0 0 15px #00ffcc;
     }
 </style>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js"></script>
 
-// ---------------- FIREBASE CONFIG -----------------
+</head>
+<body>
+
+<h1>RED – GREEN COLOUR GAME</h1>
+
+<h2>Balance: ₹<span id="balance">0</span></h2>
+
+<div>
+    <button class="btn red" onclick="selectColor('RED')">RED</button>
+    <button class="btn green" onclick="selectColor('GREEN')">GREEN</button>
+</div>
+
+<input type="number" id="betAmount" placeholder="Enter Bet Amount (5 - 1000)">
+
+<h3 id="chosenColor" style="margin-top:20px;"></h3>
+
+<button class="btn" style="background:#00eeff;" onclick="startGame()">PLAY</button>
+
+<div id="timer"></div>
+
+<div id="resultBox"></div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { getDatabase, ref, get, set, update, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
 const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
+ apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+ authDomain:"test-eb5e7.firebaseapp.com",
+ databaseURL:"https://test-eb5e7-default-rtdb.firebaseio.com",
+ projectId:"test-eb5e7",
+ storageBucket:"test-eb5e7.appspot.com",
+ messagingSenderId:"366282855653",
+ appId:"1:366282855653:web:dca7e000f5a22fb11f300c"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -92,128 +112,88 @@ const db = getDatabase(app);
 
 let uid = "";
 let balance = 0;
-let totalWon = 0;
-let winLimit = 0;
-let multiplier = 1.9;
+let selectedColor = "";
 
-// ---------------- LOAD USER -----------------
 onAuthStateChanged(auth, async (user) => {
-    if (!user) location.href = "index.html";
+    if (!user) window.location = "index.html";
     uid = user.uid;
 
-    const snap = await get(ref(db, "users/" + uid));
-    if (!snap.exists()) return;
-
-    let u = snap.val();
-
-    balance = u.balance || 0;
-    totalWon = u.totalWon || 0;
-
-    if (u.deposits === 1) winLimit = 200;
-    else if (u.deposits >= 5) winLimit = 500;
-    else winLimit = 0;
+    let snap = await get(ref(db, "users/" + uid + "/balance"));
+    if (snap.exists()) balance = snap.val();
 
     document.getElementById("balance").innerText = balance;
-    document.getElementById("totalWon").innerText = totalWon;
-    document.getElementById("maxWin").innerText = winLimit;
 });
 
-// ---------------- PLAY GAME -----------------
-window.playGame = function() {
+window.selectColor = function(color){
+    selectedColor = color;
+    document.getElementById("chosenColor").innerHTML =
+        "Selected: <b style='color:"+ (color==='RED'?'#ff0000':'#00ff00') +"'>" + color + "</b>";
+};
 
-    let bet = Number(document.getElementById("bet").value);
+window.startGame = function(){
+    let bet = Number(document.getElementById("betAmount").value);
 
-    if (bet < 5) return alert("Minimum bet is ₹5");
-    if (bet > 1000) return alert("Maximum bet is ₹1000");
-    if (bet > balance) return alert("Insufficient balance");
-    if (totalWon >= winLimit) return alert("Win limit reached!");
+    if (selectedColor === "") return alert("Choose RED or GREEN first!");
+    if (bet < 5 || bet > 1000) return alert("Bet must be between 5 and 1000");
+    if (bet > balance) return alert("Insufficient balance!");
 
-    document.getElementById("result").style.display = "none";
+    let sec = 30;
+    document.getElementById("timer").innerHTML = "Processing... " + sec + "s";
 
-    // 30 second countdown
-    let timeLeft = 30;
-    let timer = setInterval(() => {
-        document.getElementById("timer").innerText =
-            `Processing... ${timeLeft} seconds remaining ⏳`;
+    let countdown = setInterval(() => {
+        sec--;
+        document.getElementById("timer").innerHTML = "Processing... " + sec + "s";
 
-        timeLeft--;
-
-        if (timeLeft < 0) {
-            clearInterval(timer);
-            runGame(bet);
+        if (sec === 0) {
+            clearInterval(countdown);
+            revealResult(bet);
         }
     }, 1000);
 };
 
-// ---------------- GAME LOGIC -----------------
-function runGame(bet) {
+async function revealResult(bet){
 
-    let win = Math.random() > 0.5;
-    let profit = 0;
+    let winner = Math.random() > 0.5 ? "RED" : "GREEN";
+    let win = (selectedColor === winner);
+    let profit = win ? Math.floor(bet * 2) : -bet;
 
-    if (win) {
-        profit = Math.floor(bet * multiplier);
-
-        if (totalWon + profit > winLimit) {
-            profit = winLimit - totalWon;
-        }
-
-        balance += profit;
-        totalWon += profit;
-    } else {
-        balance -= bet;
-    }
-
-    update(ref(db, "users/" + uid), {
-        balance: balance,
-        totalWon: totalWon
-    });
-
+    balance += profit;
     document.getElementById("balance").innerText = balance;
-    document.getElementById("totalWon").innerText = totalWon;
 
-    let box = document.getElementById("result");
+    await update(ref(db, "users/" + uid), { balance: balance });
+
+    let gameRecord = {
+        user: uid,
+        bet: bet,
+        chosen: selectedColor,
+        winner: winner,
+        win: win,
+        profit: profit,
+        time: Date.now()
+    };
+
+    await push(ref(db, "games/" + uid), gameRecord);
+
+    let box = document.getElementById("resultBox");
     box.style.display = "block";
 
-    if (win) {
+    if (win){
         box.innerHTML = `
-            <span style='color:#00ffaa;font-size:26px;'>YOU WON 🎉</span><br><br>
+            <span style="color:#00ff99; font-size:26px;">YOU WON 🎉</span><br>
+            Winner: <b>${winner}</b><br>
             Profit: ₹${profit}<br>
-            New Balance: ₹${balance}<br>
-            Total Won: ₹${totalWon} / ₹${winLimit}
+            New Balance: ₹${balance}
         `;
     } else {
         box.innerHTML = `
-            <span style='color:#ff4444;font-size:26px;'>YOU LOST ❌</span><br><br>
+            <span style="color:#ff4444; font-size:26px;">YOU LOST ❌</span><br>
+            Winner: <b>${winner}</b><br>
             Lost: ₹${bet}<br>
-            New Balance: ₹${balance}<br>
-            Remaining Limit: ₹${winLimit - totalWon}
+            New Balance: ₹${balance}
         `;
     }
-
-    document.getElementById("timer").innerHTML = "";
 }
-
 </script>
-
-</head>
-
-<body>
-
-<h1>H4XTEAM COLOUR GAME</h1>
-
-<div class="box">
-    <h2>Balance: ₹<span id="balance">0</span></h2>
-    <h3>Total Won: ₹<span id="totalWon">0</span></h3>
-    <h4>Win Limit: ₹<span id="maxWin">0</span></h4>
-
-    <input id="bet" type="number" placeholder="Enter Bet Amount (5 - 1000)">
-    <br>
-    <button onclick="playGame()">PLAY</button>
-
-    <div id="timer"></div>
-    <div id="result"></div>
-</div>
 
 </body>
 </html>
