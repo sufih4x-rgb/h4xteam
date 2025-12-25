@@ -21,7 +21,6 @@
 
         .btn-withdraw { width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 20px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2); }
 
-        /* Full Screen Animation Overlays */
         .overlay { 
             position: fixed; top:0; left:0; width:100%; height:100%; 
             display:none; flex-direction:column; align-items:center; justify-content:center; 
@@ -35,9 +34,11 @@
         @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
         @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
 
-        .history-item { display: flex; justify-content: space-between; padding: 15px; background: #f8fafc; border-radius: 15px; margin-bottom: 10px; }
-        .status { font-size: 10px; padding: 4px 10px; border-radius: 20px; font-weight: 800; }
-        .pending { background: #fef3c7; color: #d97706; }
+        .history-item { display: flex; justify-content: space-between; padding: 15px; background: #f8fafc; border-radius: 15px; margin-bottom: 10px; font-size: 13px; font-weight: 600; }
+        .status { font-size: 10px; padding: 4px 10px; border-radius: 20px; font-weight: 800; text-transform: uppercase; }
+        .st-Pending { background: #fff7ed; color: #ea580c; }
+        .st-Approved { background: #ecfdf5; color: #059669; }
+        .st-Rejected { background: #fef2f2; color: #dc2626; }
     </style>
 </head>
 <body>
@@ -59,10 +60,10 @@
     </div>
 
     <button id="withdrawBtn" class="btn-withdraw" onclick="requestWithdraw()">Request Payout</button>
-    <a href="dashboard.html" style="display:block; margin-top:20px; color:#64748b; font-weight:700; text-decoration:none;">← Back</a>
+    <a href="dashboard.html" style="display:block; margin-top:20px; color:#64748b; font-weight:700; text-decoration:none; text-align: center;">← Back to Dashboard</a>
 
     <div style="margin-top: 40px; text-align: left;">
-        <label>Recent Payouts</label>
+        <label>My Recent Payouts</label>
         <div id="withdrawList"></div>
     </div>
 </div>
@@ -78,7 +79,7 @@
 <div id="congratsOverlay" class="overlay">
     <div class="popup">
         <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
-        <h2 style="color:var(--success); margin:0;">Congratulations!</h2>
+        <h2 style="color:var(--success); margin:0;">Request Sent!</h2>
         <p id="congratsMsg" style="color:#64748b; font-size:14px; margin: 15px 0; line-height: 1.6;"></p>
         <button onclick="closeCongrats()" style="width:100%; padding:15px; background:var(--success); color:white; border:none; border-radius:15px; font-weight:800; cursor:pointer;">Great, Thanks!</button>
     </div>
@@ -87,7 +88,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, update, increment, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, increment, set, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -101,57 +102,70 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let uid = "", userBalance = 0, lastWithdrawTime = 0;
+    let uid = "", userBalance = 0;
 
     onAuthStateChanged(auth, (user) => {
         if (!user) return window.location = "index.html";
         uid = user.uid;
 
+        // Sync Balance
         onValue(ref(db, "users/" + uid), (snap) => {
             if (snap.exists()) {
                 userBalance = snap.val().balance || 0;
-                lastWithdrawTime = snap.val().lastWithdraw || 0;
                 document.getElementById("balanceText").innerText = userBalance.toFixed(2);
             }
         });
 
-        // CHECK FOR PREVIOUS SUCCESS ON LOGIN/RETURN
-        checkReturningSuccess();
+        // Sync Withdraw History
+        onValue(ref(db, "withdrawals"), (snap) => {
+            let html = "";
+            snap.forEach(child => {
+                const w = child.val();
+                if(w.uid === uid) {
+                    html += `
+                    <div class="history-item">
+                        <span>₹${w.amount}</span>
+                        <span class="status st-${w.status}">${w.status}</span>
+                    </div>`;
+                }
+            });
+            document.getElementById("withdrawList").innerHTML = html || "<small style='color:#999'>No history yet</small>";
+        });
     });
-
-    function checkReturningSuccess() {
-        const lastWD = localStorage.getItem('last_wd_data');
-        if(lastWD) {
-            const data = JSON.parse(lastWD);
-            document.getElementById("congratsMsg").innerHTML = `Your last withdrawal of <b>₹${data.amt}</b> was successfully requested and sent to <b>${data.upi}</b>.`;
-            document.getElementById("congratsOverlay").style.display = "flex";
-            localStorage.removeItem('last_wd_data'); // Clear after showing
-        }
-    }
 
     window.requestWithdraw = async function() {
         let amt = Number(document.getElementById("amount").value);
         let upi = document.getElementById("upi").value.trim();
 
-        if (amt < 100 || amt > userBalance || !upi.includes("@")) return alert("Invalid details or balance!");
+        if (amt < 100) return alert("Minimum withdrawal is ₹100");
+        if (amt > userBalance) return alert("Insufficient balance!");
+        if (!upi.includes("@")) return alert("Please enter a valid UPI ID");
 
-        // Show Processing
         document.getElementById("processingOverlay").style.display = "flex";
 
         try {
-            let wid = "WD-" + Date.now();
-            await update(ref(db, "users/" + uid), { balance: increment(-amt), lastWithdraw: Date.now() });
-            await set(ref(db, `transactions/withdrawals/${uid}/${wid}`), { amount: amt, upi: upi, status: "pending", timestamp: Date.now() });
+            // 1. Deduct balance first (to prevent double withdrawal)
+            await update(ref(db, "users/" + uid), { balance: increment(-amt) });
 
-            // Store data for the "Congratulations" animation
-            localStorage.setItem('last_wd_data', JSON.stringify({amt, upi}));
+            // 2. Create the request in the central 'withdrawals' node
+            const newWDRef = push(ref(db, "withdrawals"));
+            await set(newWDRef, {
+                uid: uid,
+                amount: amt,
+                upi: upi,
+                status: "Pending", // For Admin Panel
+                timestamp: Date.now()
+            });
 
-            setTimeout(() => {
-                location.reload(); // Refresh to trigger the Returning Success logic
-            }, 2000);
+            document.getElementById("processingOverlay").style.display = "none";
+            document.getElementById("congratsMsg").innerHTML = `Withdrawal request for <b>₹${amt}</b> submitted. Your money will be sent to <b>${upi}</b> after approval.`;
+            document.getElementById("congratsOverlay").style.display = "flex";
+            
+            document.getElementById("amount").value = "";
+            document.getElementById("upi").value = "";
 
         } catch (e) {
-            alert(e.message);
+            alert("Error: " + e.message);
             document.getElementById("processingOverlay").style.display = "none";
         }
     };
