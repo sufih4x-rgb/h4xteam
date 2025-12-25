@@ -3,212 +3,232 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Admin Panel</title>
+    <title>Fixed Admin Panel</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <style>
         .tab-content { display: none; }
         .tab-content.active { display: block; }
-        .stat-card { transition: transform 0.2s; }
-        .stat-card:hover { transform: translateY(-5px); }
+        tr:nth-child(even) { background-color: #f8fafc; }
     </style>
 </head>
-<body class="bg-gray-50 font-sans">
+<body class="bg-gray-100 min-h-screen">
 
-    <div class="flex flex-col md:flex-row min-h-screen">
-        <div class="bg-slate-900 text-white w-full md:w-64 flex-shrink-0">
-            <div class="p-6 text-xl font-bold border-b border-slate-700 flex items-center">
-                <i class="fas fa-shield-alt mr-2 text-blue-500"></i> ADMIN CORE
-            </div>
-            <nav class="mt-4">
-                <a href="#" onclick="showTab('dashboard-tab')" class="block py-3 px-6 hover:bg-slate-800 border-l-4 border-blue-500 bg-slate-800"><i class="fas fa-tachometer-alt mr-3"></i> Dashboard</a>
-                <a href="#" onclick="showTab('users-tab')" class="block py-3 px-6 hover:bg-slate-800 border-l-4 border-transparent hover:border-blue-500"><i class="fas fa-users mr-3"></i> Manage Users</a>
-                <a href="#" onclick="showTab('withdraw-tab')" class="block py-3 px-6 hover:bg-slate-800 border-l-4 border-transparent hover:border-blue-500"><i class="fas fa-wallet mr-3"></i> Withdrawals</a>
-                <a href="#" onclick="showTab('deposit-tab')" class="block py-3 px-6 hover:bg-slate-800 border-l-4 border-transparent hover:border-blue-500"><i class="fas fa-university mr-3"></i> Deposits</a>
-                <a href="#" onclick="showTab('recharge-tab')" class="block py-3 px-6 hover:bg-slate-800 border-l-4 border-transparent hover:border-blue-500"><i class="fas fa-sim-card mr-3"></i> Recharges</a>
+    <div class="flex flex-col md:flex-row">
+        <div class="w-full md:w-64 bg-slate-900 text-white md:min-h-screen">
+            <div class="p-6 text-center border-b border-slate-700 font-bold text-xl">ADMIN PANEL</div>
+            <nav class="flex md:flex-col overflow-x-auto">
+                <button onclick="showTab('withdraw-tab')" class="p-4 hover:bg-slate-800 flex-1 text-left border-b border-slate-700"><i class="fas fa-wallet mr-2"></i> Withdraws</button>
+                <button onclick="showTab('deposit-tab')" class="p-4 hover:bg-slate-800 flex-1 text-left border-b border-slate-700"><i class="fas fa-university mr-2"></i> Deposits</button>
+                <button onclick="showTab('recharge-tab')" class="p-4 hover:bg-slate-800 flex-1 text-left border-b border-slate-700"><i class="fas fa-mobile-alt mr-2"></i> Recharges</button>
+                <button onclick="showTab('users-tab')" class="p-4 hover:bg-slate-800 flex-1 text-left border-b border-slate-700"><i class="fas fa-users mr-2"></i> User List</button>
             </nav>
         </div>
 
-        <div class="flex-1 p-6 md:p-10">
+        <div class="flex-1 p-6">
             
-            <div id="dashboard-tab" class="tab-content active">
-                <h2 class="text-3xl font-bold text-gray-800 mb-8">System Overview</h2>
-                
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-10">
-                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-blue-500">
-                        <p class="text-sm text-gray-500 font-bold uppercase">Total Users</p>
-                        <h3 id="stat-total-users" class="text-3xl font-black text-gray-800">0</h3>
-                    </div>
-                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-orange-500">
-                        <p class="text-sm text-gray-500 font-bold uppercase">Pending Withdraws</p>
-                        <h3 id="stat-withdraws" class="text-3xl font-black text-gray-800">0</h3>
-                    </div>
-                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-green-500">
-                        <p class="text-sm text-gray-500 font-bold uppercase">Pending Deposits</p>
-                        <h3 id="stat-deposits" class="text-3xl font-black text-gray-800">0</h3>
-                    </div>
-                    <div class="stat-card bg-white p-6 rounded-xl shadow-sm border-l-4 border-purple-500">
-                        <p class="text-sm text-gray-500 font-bold uppercase">Recharge Req</p>
-                        <h3 id="stat-recharges" class="text-3xl font-black text-gray-800">0</h3>
-                    </div>
-                </div>
-
-                <h3 class="text-xl font-bold text-gray-700 mb-4">Registered User List</h3>
-                <div class="bg-white rounded-xl shadow-sm border overflow-hidden">
+            <div id="withdraw-tab" class="tab-content active">
+                <h2 class="text-2xl font-bold mb-4">Pending Withdrawals</h2>
+                <div class="bg-white rounded-lg shadow overflow-x-auto">
                     <table class="w-full text-left">
-                        <thead class="bg-gray-100">
+                        <thead class="bg-gray-200">
                             <tr>
-                                <th class="p-4 text-sm font-bold">UID</th>
-                                <th class="p-4 text-sm font-bold">Name</th>
-                                <th class="p-4 text-sm font-bold">Balance</th>
-                                <th class="p-4 text-sm font-bold">Status</th>
+                                <th class="p-4">UID</th>
+                                <th class="p-4">Amount</th>
+                                <th class="p-4">UPI ID</th>
+                                <th class="p-4">Action</th>
                             </tr>
                         </thead>
-                        <tbody id="fullUserList" class="divide-y">
-                            </tbody>
+                        <tbody id="withdrawBody"><tr><td colspan="4" class="p-4 text-center text-gray-400">Loading data...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="deposit-tab" class="tab-content">
+                <h2 class="text-2xl font-bold mb-4">Pending Deposits</h2>
+                <div class="bg-white rounded-lg shadow overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-200">
+                            <tr>
+                                <th class="p-4">UID</th>
+                                <th class="p-4">Amount</th>
+                                <th class="p-4">Trx ID</th>
+                                <th class="p-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="depositBody"><tr><td colspan="4" class="p-4 text-center text-gray-400">Loading data...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div id="recharge-tab" class="tab-content">
+                <h2 class="text-2xl font-bold mb-4">SIM Recharges</h2>
+                <div class="bg-white rounded-lg shadow overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-200">
+                            <tr>
+                                <th class="p-4">Number</th>
+                                <th class="p-4">Amount/Plan</th>
+                                <th class="p-4">UID</th>
+                                <th class="p-4">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="rechargeBody"><tr><td colspan="4" class="p-4 text-center text-gray-400">Loading data...</td></tr></tbody>
                     </table>
                 </div>
             </div>
 
             <div id="users-tab" class="tab-content">
-                <h2 class="text-3xl font-bold mb-6">User Controls</h2>
-                <div class="bg-white p-8 rounded-xl shadow-md border max-w-2xl">
-                    <div class="flex gap-4">
-                        <input id="searchUid" type="text" placeholder="Paste User UID here..." class="flex-1 border-2 p-3 rounded-lg focus:border-blue-500 outline-none transition">
-                        <button onclick="searchUser()" class="bg-blue-600 text-white px-10 py-3 rounded-lg hover:bg-blue-700 font-bold">SEARCH</button>
-                    </div>
-                    <div id="userDetails" class="hidden mt-10 p-6 bg-gray-50 rounded-xl border-2 border-dashed border-gray-300">
-                        <div class="grid grid-cols-2 gap-6">
-                            <div><p class="text-gray-500 text-sm">Full Name</p><p id="uName" class="font-bold text-lg">-</p></div>
-                            <div><p class="text-gray-500 text-sm">Wallet Balance</p><p class="text-green-600 font-bold text-lg">$<span id="uBalance">0</span></p></div>
-                        </div>
-                        <div class="mt-8 flex items-center gap-4 bg-white p-4 rounded-lg shadow-inner">
-                            <input id="addAmount" type="number" placeholder="Enter Amount" class="w-full border p-2 rounded">
-                            <button onclick="updateBalance()" class="bg-green-500 text-white px-6 py-2 rounded font-bold whitespace-nowrap">ADD BALANCE</button>
-                            <button id="banBtn" onclick="toggleBan()" class="bg-red-500 text-white px-6 py-2 rounded font-bold whitespace-nowrap">BAN USER</button>
-                        </div>
-                    </div>
+                <h2 class="text-2xl font-bold mb-4">All Registered Users</h2>
+                <div class="bg-white rounded-lg shadow overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead class="bg-gray-200">
+                            <tr>
+                                <th class="p-4">Name/UID</th>
+                                <th class="p-4">Balance</th>
+                                <th class="p-4">Status</th>
+                                <th class="p-4">Control</th>
+                            </tr>
+                        </thead>
+                        <tbody id="userListBody"></tbody>
+                    </table>
                 </div>
             </div>
 
-            <div id="withdraw-tab" class="tab-content">
-                <h2 class="text-3xl font-bold mb-6">Withdrawal Queue</h2>
-                <div class="bg-white rounded-xl shadow overflow-hidden"><table class="w-full"><thead class="bg-slate-800 text-white"><tr><th class="p-4">UID</th><th class="p-4">Amount</th><th class="p-4">UPI/Details</th><th class="p-4">Actions</th></tr></thead><tbody id="withdrawList" class="text-center divide-y"></tbody></table></div>
-            </div>
-            </div>
+        </div>
     </div>
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-app.js";
-        import { getDatabase, ref, onValue, update, get, remove } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
+        import { getDatabase, ref, onValue, update, remove, get } from "https://www.gstatic.com/firebasejs/9.17.1/firebase-database.js";
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-            authDomain: "test-eb5e7.firebaseapp.com",
-            databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-            projectId: "test-eb5e7",
-            storageBucket: "test-eb5e7.appspot.com",
-            messagingSenderId: "366282855653",
-            appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-            measurementId: "G-ECKCTBLQJ8"
-        };
+       const firebaseConfig = {
+  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+  authDomain: "test-eb5e7.firebaseapp.com",
+  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+  projectId: "test-eb5e7",
+  storageBucket: "test-eb5e7.appspot.com",
+  messagingSenderId: "366282855653",
+  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+  measurementId: "G-ECKCTBLQJ8"
+};
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // UI Tabs
+        // --- Tab Switching ---
         window.showTab = (id) => {
             document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
             document.getElementById(id).classList.add('active');
         };
 
-        // --- GLOBAL DATA FETCHING ---
+        // --- Data Listeners ---
 
-        // 1. Get All Registered Users & Stats
-        onValue(ref(db, 'users'), (snapshot) => {
-            const userTable = document.getElementById('fullUserList');
-            const totalUsersLabel = document.getElementById('stat-total-users');
-            userTable.innerHTML = "";
-            let count = 0;
-
-            snapshot.forEach((child) => {
-                const u = child.val();
-                const uid = child.key;
-                count++;
-                userTable.innerHTML += `
-                    <tr>
-                        <td class="p-4 font-mono text-xs text-blue-600">${uid}</td>
-                        <td class="p-4 font-bold">${u.name || 'User'}</td>
-                        <td class="p-4 text-green-600 font-bold">$${u.balance || 0}</td>
-                        <td class="p-4"><span class="px-2 py-1 rounded-full text-xs font-bold ${u.status === 'Banned' ? 'bg-red-100 text-red-600' : 'bg-green-100 text-green-600'}">${u.status || 'Active'}</span></td>
-                    </tr>`;
-            });
-            totalUsersLabel.innerText = count;
-        });
-
-        // 2. Monitor Request Counts
-        const monitorNode = (path, elementId) => {
-            onValue(ref(db, path), (snapshot) => {
-                document.getElementById(elementId).innerText = snapshot.size || 0;
-            });
-        };
-        monitorNode('withdraws', 'stat-withdraws');
-        monitorNode('deposits', 'stat-deposits');
-        monitorNode('recharges', 'stat-recharges');
-
-        // --- USER SEARCH & ACTION ---
-        window.searchUser = async () => {
-            const uid = document.getElementById('searchUid').value.trim();
-            if(!uid) return;
-            const snap = await get(ref(db, `users/${uid}`));
-            if(snap.exists()) {
-                const u = snap.val();
-                document.getElementById('userDetails').classList.remove('hidden');
-                document.getElementById('uName').innerText = u.name || "Unknown";
-                document.getElementById('uBalance').innerText = u.balance || 0;
-                document.getElementById('banBtn').innerText = u.status === 'Banned' ? 'UNBAN USER' : 'BAN USER';
-            } else { alert("User UID not found in database."); }
-        };
-
-        window.updateBalance = async () => {
-            const uid = document.getElementById('searchUid').value;
-            const amt = parseFloat(document.getElementById('addAmount').value);
-            if(isNaN(amt)) return;
-            const snap = await get(ref(db, `users/${uid}`));
-            const newBal = (snap.val().balance || 0) + amt;
-            await update(ref(db, `users/${uid}`), { balance: newBal });
-            alert("Balance added!");
-            searchUser();
-        };
-
-        window.toggleBan = async () => {
-            const uid = document.getElementById('searchUid').value;
-            const snap = await get(ref(db, `users/${uid}`));
-            const newStatus = snap.val().status === 'Banned' ? 'Active' : 'Banned';
-            await update(ref(db, `users/${uid}`), { status: newStatus });
-            searchUser();
-        };
-        
-        // Load Withdrawals (Detailed)
-        onValue(ref(db, 'withdraws'), (snapshot) => {
-            const list = document.getElementById('withdrawList');
-            list.innerHTML = "";
-            snapshot.forEach(child => {
+        // 1. Withdraws
+        onValue(ref(db, 'withdraws'), (snap) => {
+            const body = document.getElementById('withdrawBody');
+            body.innerHTML = "";
+            if (!snap.exists()) body.innerHTML = "<tr><td colspan='4' class='p-4 text-center'>No pending withdraws</td></tr>";
+            snap.forEach(child => {
                 const d = child.val();
-                list.innerHTML += `
-                    <tr>
-                        <td class="p-4 text-xs font-mono">${d.uid}</td>
-                        <td class="p-4 font-bold">$${d.amount}</td>
-                        <td class="p-4 text-blue-600">${d.upi || 'N/A'}</td>
-                        <td class="p-4 space-x-2">
-                            <button onclick="approveWithdraw('${child.key}', '${d.uid}', ${d.amount})" class="bg-green-500 text-white px-3 py-1 rounded">Approve</button>
-                            <button onclick="removeReq('withdraws', '${child.key}')" class="bg-red-500 text-white px-3 py-1 rounded">Reject</button>
-                        </td>
-                    </tr>`;
+                body.innerHTML += `<tr>
+                    <td class="p-4 text-xs font-mono">${d.uid}</td>
+                    <td class="p-4 font-bold text-red-600">$${d.amount}</td>
+                    <td class="p-4 text-blue-600">${d.upi || 'N/A'}</td>
+                    <td class="p-4">
+                        <button onclick="actionReq('withdraws', '${child.key}', 'Approved')" class="bg-green-500 text-white px-3 py-1 rounded text-xs mr-1">Approve</button>
+                        <button onclick="actionReq('withdraws', '${child.key}', 'Rejected')" class="bg-red-500 text-white px-3 py-1 rounded text-xs">Reject</button>
+                    </td>
+                </tr>`;
             });
         });
 
-        window.removeReq = async (path, key) => { await remove(ref(db, `${path}/${key}`)); };
+        // 2. Deposits
+        onValue(ref(db, 'deposits'), (snap) => {
+            const body = document.getElementById('depositBody');
+            body.innerHTML = "";
+            if (!snap.exists()) body.innerHTML = "<tr><td colspan='4' class='p-4 text-center'>No pending deposits</td></tr>";
+            snap.forEach(child => {
+                const d = child.val();
+                body.innerHTML += `<tr>
+                    <td class="p-4 text-xs font-mono">${d.uid}</td>
+                    <td class="p-4 font-bold text-green-600">$${d.amount}</td>
+                    <td class="p-4 text-sm">${d.trxId || 'N/A'}</td>
+                    <td class="p-4">
+                        <button onclick="approveDeposit('${child.key}', '${d.uid}', ${d.amount})" class="bg-green-500 text-white px-3 py-1 rounded text-xs mr-1">Approve</button>
+                        <button onclick="actionReq('deposits', '${child.key}', 'Rejected')" class="bg-red-500 text-white px-3 py-1 rounded text-xs">Reject</button>
+                    </td>
+                </tr>`;
+            });
+        });
+
+        // 3. Recharges
+        onValue(ref(db, 'recharges'), (snap) => {
+            const body = document.getElementById('rechargeBody');
+            body.innerHTML = "";
+            if (!snap.exists()) body.innerHTML = "<tr><td colspan='4' class='p-4 text-center'>No recharge requests</td></tr>";
+            snap.forEach(child => {
+                const d = child.val();
+                body.innerHTML += `<tr>
+                    <td class="p-4 font-bold">${d.number}</td>
+                    <td class="p-4">${d.amount || d.plan}</td>
+                    <td class="p-4 text-xs">${d.uid}</td>
+                    <td class="p-4">
+                        <button onclick="actionReq('recharges', '${child.key}', 'Approved')" class="bg-blue-500 text-white px-3 py-1 rounded text-xs mr-1">Done</button>
+                        <button onclick="actionReq('recharges', '${child.key}', 'Rejected')" class="bg-red-500 text-white px-3 py-1 rounded text-xs">Reject</button>
+                    </td>
+                </tr>`;
+            });
+        });
+
+        // 4. Users (Ban/Unban)
+        onValue(ref(db, 'users'), (snap) => {
+            const body = document.getElementById('userListBody');
+            body.innerHTML = "";
+            snap.forEach(child => {
+                const u = child.val();
+                const isBanned = u.status === 'Banned';
+                body.innerHTML += `<tr>
+                    <td class="p-4 border-b">
+                        <div class="font-bold">${u.name || 'User'}</div>
+                        <div class="text-[10px] text-gray-400">${child.key}</div>
+                    </td>
+                    <td class="p-4 border-b font-bold text-green-600">$${u.balance || 0}</td>
+                    <td class="p-4 border-b">
+                        <span class="text-xs font-bold ${isBanned ? 'text-red-500' : 'text-green-500'}">${u.status || 'Active'}</span>
+                    </td>
+                    <td class="p-4 border-b">
+                        <button onclick="toggleUserBan('${child.key}', '${u.status}')" class="text-xs font-bold underline ${isBanned ? 'text-blue-500' : 'text-red-500'}">
+                            ${isBanned ? 'Unban' : 'Ban'}
+                        </button>
+                    </td>
+                </tr>`;
+            });
+        });
+
+        // --- Functions ---
+        window.actionReq = async (path, key, status) => {
+            if(confirm(`Mark as ${status}?`)) {
+                await remove(ref(db, `${path}/${key}`));
+                alert("Updated!");
+            }
+        };
+
+        window.approveDeposit = async (key, uid, amt) => {
+            const userRef = ref(db, `users/${uid}`);
+            const snap = await get(userRef);
+            if(snap.exists()){
+                const newBal = (snap.val().balance || 0) + parseFloat(amt);
+                await update(userRef, { balance: newBal });
+                await remove(ref(db, `deposits/${key}`));
+                alert("Deposit Approved & Balance Added!");
+            }
+        };
+
+        window.toggleUserBan = async (uid, currentStatus) => {
+            const newStatus = currentStatus === 'Banned' ? 'Active' : 'Banned';
+            await update(ref(db, `users/${uid}`), { status: newStatus });
+        };
 
     </script>
 </body>
