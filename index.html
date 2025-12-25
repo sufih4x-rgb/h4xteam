@@ -8,7 +8,7 @@
     <style>
         :root {
             --primary: #4361ee;
-            --primary-soft: #eef2ff;
+            --danger: #ff4d4d;
             --bg: #f4f7fe;
             --white: #ffffff;
             --text-dark: #1e293b;
@@ -24,12 +24,7 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-        }
-
-        .login-wrapper {
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
+            overflow: hidden;
         }
 
         .login-card {
@@ -38,176 +33,157 @@
             border-radius: 40px;
             box-shadow: 0 20px 40px rgba(0,0,0,0.04);
             text-align: center;
+            width: 100%;
+            max-width: 400px;
             border: 1px solid rgba(255,255,255,1);
+            position: relative;
+            transition: transform 0.3s ease;
         }
 
-        .brand-logo {
-            width: 70px;
-            height: 70px;
-            background: linear-gradient(135deg, #4361ee, #3f37c9);
-            color: white;
-            border-radius: 24px;
-            display: flex;
+        /* Shake animation for Ban */
+        .shake {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            50% { transform: translateX(10px); }
+            75% { transform: translateX(-10px); }
+        }
+
+        /* Ban Overlay Animation */
+        #banOverlay {
+            display: none;
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 40px;
+            z-index: 10;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
-            font-weight: 800;
-            margin: 0 auto 25px;
+            backdrop-filter: blur(5px);
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+        .brand-logo {
+            width: 70px; height: 70px;
+            background: linear-gradient(135deg, #4361ee, #3f37c9);
+            color: white; border-radius: 24px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 32px; font-weight: 800; margin: 0 auto 25px;
             box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3);
         }
 
-        h1 {
-            font-size: 28px;
-            font-weight: 800;
-            margin-bottom: 8px;
-            color: var(--text-dark);
-            letter-spacing: -0.5px;
-        }
-
-        .subtitle {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-bottom: 35px;
-        }
-
-        .input-box {
-            text-align: left;
-            margin-bottom: 20px;
-        }
-
-        label {
-            font-size: 11px;
-            font-weight: 800;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-left: 5px;
-            margin-bottom: 8px;
-            display: block;
-        }
-
-        input {
-            width: 100%;
-            padding: 16px 20px;
-            background: #f8fafc;
-            border: 2px solid #f1f5f9;
-            border-radius: 18px;
-            font-size: 15px;
-            font-weight: 600;
-            font-family: inherit;
-            box-sizing: border-box;
-            outline: none;
-            transition: 0.3s ease;
-        }
-
-        input:focus {
-            border-color: var(--primary);
-            background: #fff;
-            box-shadow: 0 8px 15px rgba(67, 97, 238, 0.05);
+        h1 { font-size: 26px; font-weight: 800; margin-bottom: 8px; }
+        .input-box { text-align: left; margin-bottom: 20px; }
+        label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 8px; display: block; }
+        
+        input { 
+            width: 100%; padding: 16px; background: #f8fafc; border: 2px solid #f1f5f9; 
+            border-radius: 18px; font-size: 15px; font-weight: 600; outline: none; box-sizing: border-box;
         }
 
         .login-btn {
-            width: 100%;
-            padding: 18px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 18px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.25);
-            transition: 0.3s;
-            margin-top: 10px;
+            width: 100%; padding: 18px; background: var(--primary); color: white;
+            border: none; border-radius: 18px; font-size: 16px; font-weight: 700;
+            cursor: pointer; transition: 0.3s; position: relative;
         }
 
-        .login-btn:active {
-            transform: scale(0.97);
+        /* Spinner */
+        .is-loading { color: transparent !important; pointer-events: none; }
+        .is-loading::after {
+            content: ""; position: absolute; width: 20px; height: 20px;
+            top: 50%; left: 50%; margin: -10px; border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white; border-radius: 50%; animation: spin 0.6s linear infinite;
         }
-
-        .links-area {
-            margin-top: 30px;
-            display: flex;
-            flex-direction: column;
-            gap: 12px;
-        }
-
-        .link-item {
-            font-size: 14px;
-            text-decoration: none;
-            font-weight: 700;
-            color: var(--primary);
-            transition: 0.2s;
-        }
-
-        .link-secondary {
-            font-weight: 500;
-            color: var(--text-muted);
-        }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
 
-<div class="login-wrapper">
-    <div class="login-card">
-        <div class="brand-logo">H</div>
-        <h1>Welcome Back</h1>
-        <p class="subtitle">Enter your credentials to continue</p>
-
-        <div class="input-box">
-            <label>Email Address</label>
-            <input id="email" type="email" placeholder="name@example.com">
-        </div>
-
-        <div class="input-box">
-            <label>Password</label>
-            <input id="pass" type="password" placeholder="••••••••">
-        </div>
-
-        <button class="login-btn" onclick="login()">Sign In</button>
-
-        <div class="links-area">
-            <a href="register.html" class="link-item">Create an account</a>
-            <a href="reset.html" class="link-item link-secondary">Forgot password?</a>
-        </div>
+<div class="login-card" id="mainCard">
+    <div id="banOverlay">
+        <div style="font-size: 50px;">🚫</div>
+        <h2 style="color: var(--danger); margin-bottom: 5px;">ACCESS REVOKED</h2>
+        <p style="color: var(--text-muted); font-size: 14px; padding: 0 20px;">Your account has been permanently banned from H4XTEAM.</p>
+        <button onclick="location.reload()" style="margin-top: 20px; background: none; border: none; color: var(--primary); font-weight: 800; cursor: pointer;">TRY ANOTHER ACCOUNT</button>
     </div>
+
+    <div class="brand-logo">H</div>
+    <h1>Welcome Back</h1>
+    <p style="color: var(--text-muted); margin-bottom: 30px;">Enter your credentials</p>
+
+    <div class="input-box">
+        <label>Email Address</label>
+        <input id="email" type="email" placeholder="admin@h4x.com">
+    </div>
+
+    <div class="input-box">
+        <label>Password</label>
+        <input id="pass" type="password" placeholder="••••••••">
+    </div>
+
+    <button id="loginBtn" class="login-btn" onclick="handleLogin()">Sign In</button>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
     const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
-};
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
+    const db = getDatabase(app);
 
-    window.login = function() {
-        let email = document.getElementById("email").value;
-        let pass = document.getElementById("pass").value;
+    window.handleLogin = async function() {
+        const email = document.getElementById("email").value;
+        const pass = document.getElementById("pass").value;
+        const btn = document.getElementById("loginBtn");
+        const card = document.getElementById("mainCard");
+        const overlay = document.getElementById("banOverlay");
 
-        if(!email || !pass) {
-            alert("Please enter both email and password");
-            return;
-        }
+        if(!email || !pass) return alert("Fill all fields");
 
-        signInWithEmailAndPassword(auth, email, pass)
-        .then(() => {
+        btn.classList.add("is-loading");
+
+        try {
+            // 1. Authenticate
+            const cred = await signInWithEmailAndPassword(auth, email, pass);
+            
+            // 2. Check Ban Status in Realtime Database
+            const userSnap = await get(ref(db, 'users/' + cred.user.uid));
+            
+            if (userSnap.exists() && userSnap.val().status === "banned") {
+                // Show Ban Animation
+                await signOut(auth);
+                btn.classList.remove("is-loading");
+                card.classList.add("shake");
+                setTimeout(() => {
+                    overlay.style.display = "flex";
+                }, 400);
+                return;
+            }
+
+            // 3. Success
             window.location = "dashboard.html";
-        })
-        .catch(e => {
-            alert("Login Failed: " + e.message);
-        });
-    }
+
+        } catch (e) {
+            btn.classList.remove("is-loading");
+            alert("Error: " + e.message);
+        }
+    };
 </script>
 </body>
 </html>
