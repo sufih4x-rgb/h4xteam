@@ -1,41 +1,139 @@
-<script>
-// ======= USER BALANCE SYSTEM =======
-let userBalance = parseFloat(localStorage.getItem("balance")) || 0;
-const balEl = document.getElementById("balanceDisplay");
-balEl.innerText = userBalance.toFixed(2);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Deposit | H4XTEAM</title>
+<style>
+    body {
+        background: #000;
+        color: #0ff;
+        font-family: Arial;
+        text-align: center;
+        padding: 20px;
+    }
+    h1 { color: #0ff; text-shadow: 0 0 15px #0ff; }
 
-// Update balance everywhere
-function updateBalance(amount) {
-    userBalance += amount;
-    localStorage.setItem("balance", userBalance);
-    balEl.innerText = userBalance.toFixed(2);
+    .box {
+        background: #111;
+        padding: 20px;
+        border-radius: 10px;
+        width: 90%;
+        max-width: 380px;
+        margin: auto;
+        box-shadow: 0 0 15px #0ff;
+    }
+
+    input, button {
+        width: 90%;
+        padding: 12px;
+        margin-top: 10px;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+    }
+
+    input {
+        background: #000;
+        color: #0ff;
+        border: 1px solid #0ff;
+    }
+
+    button {
+        background: #0ff;
+        color: #000;
+        font-weight: bold;
+        cursor: pointer;
+        box-shadow: 0 0 10px #0ff;
+    }
+    
+    #qrBox img {
+        width: 200px;
+        margin-top: 15px;
+        box-shadow: 0 0 15px #0ff;
+    }
+</style>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+</head>
+<body>
+
+<h1>Deposit Money</h1>
+
+<div class="box">
+    <h3>Enter Amount</h3>
+
+    <input id="amount" type="number" placeholder="Min 50 — Max 500">
+
+    <button onclick="generateDeposit()">Generate QR</button>
+
+    <div id="feeBox" style="margin-top:10px; color:#fff;"></div>
+    <div id="qrBox"></div>
+
+    <button onclick="saveDeposit()" style="margin-top:15px;">Submit Deposit</button>
+
+    <p id="msg" style="color:#0f0; margin-top:10px;"></p>
+
+    <a href="dashboard.html" style="color:#0ff;">⬅ Back to Dashboard</a>
+</div>
+
+<script>
+// ------------------------
+// QR + FEE CALCULATION
+// ------------------------
+function generateDeposit() {
+    let amount = Number(document.getElementById("amount").value);
+    let msg = document.getElementById("msg");
+
+    if (amount < 50 || amount > 500) {
+        msg.innerHTML = "Amount must be between ₹50 and ₹500";
+        msg.style.color = "red";
+        return;
+    }
+
+    let finalPay = amount * 1.05; // +5% fee
+    finalPay = finalPay.toFixed(2);
+
+    document.getElementById("feeBox").innerHTML =
+        `You must pay: <b>₹${finalPay}</b>`;
+
+    // Generate QR
+    let qr = new QRious({
+        element: document.createElement("img"),
+        value: `upi://pay?pa=9561998301@amazonpay&pn=H4XTEAM&am=${finalPay}&cu=INR`,
+        size: 200
+    });
+
+    let qrBox = document.getElementById("qrBox");
+    qrBox.innerHTML = "";
+    qrBox.appendChild(qr.element);
+
+    msg.innerHTML = "";
 }
 
-// ======= GAME LOGIC =======
-function playGame(choice) {
-    let bet = parseFloat(document.getElementById("betAmount").value);
+// ------------------------
+// SAVE DEPOSIT REQUEST
+// ------------------------
+function saveDeposit() {
+    let amount = Number(document.getElementById("amount").value);
 
-    // Validate rules
-    if (bet < 5) return alert("Minimum bet is ₹5");
-    if (bet > 1000) return alert("Maximum bet is ₹1000");
-    if (bet > userBalance) return alert("You do not have enough balance!");
-
-    updateBalance(-bet); // Deduct bet first
-
-    // Random winner color
-    let colors = ["red", "green"];
-    let result = colors[Math.floor(Math.random() * 2)];
-
-    const resultBox = document.getElementById("resultBox");
-
-    if (choice === result) {
-        let winAmount = bet * 1.9;
-        updateBalance(winAmount);
-        resultBox.innerHTML = `🎉 You WIN!<br> You get ₹${winAmount.toFixed(2)} <br> Result: ${result.toUpperCase()}`;
-        resultBox.style.color = "lime";
-    } else {
-        resultBox.innerHTML = `❌ You LOST!<br> Lost: ₹${bet.toFixed(2)} <br> Result: ${result.toUpperCase()}`;
-        resultBox.style.color = "red";
+    if (!amount || amount < 50) {
+        alert("Enter a valid amount first.");
+        return;
     }
+
+    let deposits = JSON.parse(localStorage.getItem("deposits") || "[]");
+
+    deposits.push({
+        amount: amount,
+        status: "Pending",
+        time: new Date().toLocaleString()
+    });
+
+    localStorage.setItem("deposits", JSON.stringify(deposits));
+
+    document.getElementById("msg").innerHTML =
+        "Deposit submitted! Waiting for admin approval.";
 }
 </script>
+
+</body>
+</html>
