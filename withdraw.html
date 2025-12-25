@@ -1,65 +1,44 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Withdraw - H4XTEAM</title>
-<style>
-    body{
-        background:#000;
-        color:#0affff;
-        font-family:Arial;
-        text-align:center;
-        padding-top:40px;
-    }
-    input{
-        width:80%;
-        padding:12px;
-        background:#111;
-        border:1px solid #0affff;
-        color:#0affff;
-        border-radius:8px;
-        margin-top:10px;
-    }
-    button{
-        padding:15px;
-        width:80%;
-        margin-top:20px;
-        background:#0affff;
-        color:#000;
-        border:none;
-        border-radius:8px;
-        font-weight:bold;
-        font-size:16px;
-    }
-</style>
+    <meta charset="UTF-8">
+    <title>Withdraw - H4XTEAM</title>
+    <style>
+        body { background:#000; color:#0affff; font-family:Arial; text-align:center; padding:20px; }
+        .container { max-width: 400px; margin: auto; padding-top: 20px; }
+        input { width:100%; padding:12px; background:#111; border:1px solid #0affff; color:#0affff; border-radius:8px; margin-top:15px; box-sizing: border-box; }
+        button { padding:15px; width:100%; margin-top:20px; background:#0affff; color:#000; border:none; border-radius:8px; font-weight:bold; font-size:16px; cursor: pointer; }
+        .back-btn { background: transparent; color: #0affff; border: 1px solid #0affff; margin-top: 10px; }
+        #msg { margin-top:25px; padding: 15px; border-radius: 8px; font-size: 14px; }
+    </style>
 </head>
 <body>
 
-<h1>Withdraw</h1>
+<div class="container">
+    <h1>WITHDRAW</h1>
+    <p id="bal" style="font-size:22px; color: #fff;">Balance: ₹<span id="balanceText">0</span></p>
 
-<p id="bal" style="font-size:20px;">Balance: ₹0</p>
+    <input id="amount" type="number" placeholder="Amount (₹100 - ₹10,000)">
+    <input id="upi" type="text" placeholder="Your UPI ID">
 
-<input id="amount" type="number" placeholder="Enter Withdraw Amount (100 - 10000)">
-<input id="upi" type="text" placeholder="Enter Your UPI ID">
+    <button id="withdrawBtn" onclick="requestWithdraw()">REQUEST WITHDRAW</button>
+    <button class="back-btn" onclick="window.location='dashboard.html'">GO BACK</button>
 
-<button onclick="requestWithdraw()">Request Withdraw</button>
-<button onclick="window.location='dashboard.html'">Back</button>
-
-<div id="msg" style="margin-top:25px;"></div>
+    <div id="msg"></div>
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, update, increment, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
+    apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+    authDomain: "test-eb5e7.firebaseapp.com",
+    databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+    projectId: "test-eb5e7",
+    storageBucket: "test-eb5e7.appspot.com",
+    appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -68,57 +47,72 @@ const db = getDatabase(app);
 
 let uid = "";
 let userBalance = 0;
+let lastWithdrawTime = 0;
 
-onAuthStateChanged(auth, async (user) => {
-    if (!user) window.location = "index.html";
+onAuthStateChanged(auth, (user) => {
+    if (!user) { window.location = "index.html"; return; }
     uid = user.uid;
 
-    // Fetch balance
-    let snap = await get(ref(db, "users/" + uid + "/balance"));
-    if (snap.exists()) {
-        userBalance = snap.val();
-        document.getElementById("bal").innerHTML = `Balance: ₹${userBalance}`;
-    }
+    // Real-time balance update
+    onValue(ref(db, "users/" + uid), (snap) => {
+        if (snap.exists()) {
+            userBalance = snap.val().balance || 0;
+            lastWithdrawTime = snap.val().lastWithdraw || 0;
+            document.getElementById("balanceText").innerText = userBalance;
+        }
+    });
 });
 
 window.requestWithdraw = async function(){
-
+    const btn = document.getElementById("withdrawBtn");
+    const msg = document.getElementById("msg");
     let amt = Number(document.getElementById("amount").value);
-    let upi = document.getElementById("upi").value;
+    let upi = document.getElementById("upi").value.trim();
 
-    if (amt < 100 || amt > 10000) {
-        alert("Withdraw amount must be between ₹100 - ₹10,000");
-        return;
+    // 1. Time Check (1 Hour Limit)
+    let now = Date.now();
+    let oneHour = 60 * 60 * 1000; // 3600000ms
+    if (now - lastWithdrawTime < oneHour) {
+        let minsLeft = Math.ceil((oneHour - (now - lastWithdrawTime)) / 60000);
+        return alert(`Please wait ${minsLeft} minutes before next withdrawal.`);
     }
 
-    if (upi.length < 5 || !upi.includes("@")) {
-        alert("Enter valid UPI ID");
-        return;
+    // 2. Validations
+    if (amt < 100 || amt > 10000) return alert("Enter ₹100 - ₹10,000");
+    if (!upi.includes("@")) return alert("Enter valid UPI ID");
+    if (userBalance < amt) return alert("Insufficient Balance!");
+
+    btn.disabled = true;
+    btn.innerText = "PROCESSING...";
+
+    try {
+        let wid = "WD" + now;
+
+        // 3. Subtract Balance & Update Last Withdraw Time
+        await update(ref(db, "users/" + uid), {
+            balance: increment(-amt),
+            lastWithdraw: now
+        });
+
+        // 4. Send to Admin (Correct Path: transactions/withdrawals/)
+        await set(ref(db, `transactions/withdrawals/${uid}/${wid}`), {
+            amount: amt,
+            upi: upi,
+            status: "pending",
+            time: now
+        });
+
+        msg.innerHTML = `<p style="color:#0aff9d;">Request Sent! Balance Deducted.</p>`;
+        alert("Withdrawal submitted successfully!");
+        
+    } catch (e) {
+        console.error(e);
+        alert("Error occurred. Try again.");
+    } finally {
+        btn.disabled = false;
+        btn.innerText = "REQUEST WITHDRAW";
     }
-
-    // Balance check
-    if (userBalance < amt) {
-        document.getElementById("msg").innerHTML =
-          `<p style='color:red;'>INSUFFICIENT BALANCE</p>`;
-        return;
-    }
-
-    let txid = "WD" + Math.floor(Math.random() * 9999999);
-
-    await set(ref(db, "transactions/withdraws/" + uid + "/" + txid), {
-        amount: amt,
-        upi: upi,
-        status: "pending",
-        time: Date.now()
-    });
-
-    document.getElementById("msg").innerHTML =
-        `<p>Your withdraw request of <b>₹${amt}</b> is submitted.</p>
-         <p>Status: <b>PENDING</b></p>`;
-
-    alert("Withdraw Request Sent Successfully!");
 };
 </script>
-
 </body>
 </html>
