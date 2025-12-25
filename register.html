@@ -117,8 +117,10 @@
             margin-top: 10px;
         }
 
-        button:active {
-            transform: scale(0.97);
+        button:disabled {
+            background: #cbd5e1;
+            cursor: not-allowed;
+            box-shadow: none;
         }
 
         .footer-link {
@@ -142,7 +144,7 @@
     <div class="auth-card">
         <div class="logo-area">H</div>
         <h1>Create Account</h1>
-        <p>Start your winning journey today.</p>
+        <p>A verification email will be sent to you.</p>
 
         <div class="input-group">
             <label>Email Address</label>
@@ -154,7 +156,7 @@
             <input id="pass" type="password" placeholder="Min. 6 characters">
         </div>
 
-        <button onclick="register()">Create My Account</button>
+        <button id="regBtn" onclick="register()">Create My Account</button>
 
         <a href="index.html" class="footer-link">
             <span>Already have an account?</span> Sign In
@@ -165,37 +167,51 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-   const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        storageBucket: "test-eb5e7.appspot.com",
+        messagingSenderId: "366282855653",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+        measurementId: "G-ECKCTBLQJ8"
+    };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    window.register = function() {
+    window.register = async function() {
         let email = document.getElementById("email").value;
         let pass = document.getElementById("pass").value;
+        let btn = document.getElementById("regBtn");
 
         if(!email || !pass) {
             alert("Please fill all fields");
             return;
         }
 
-        createUserWithEmailAndPassword(auth, email, pass)
-        .then(res => {
-            let uid = res.user.uid;
+        if(pass.length < 6) {
+            alert("Password must be at least 6 characters");
+            return;
+        }
 
-            set(ref(db, "users/" + uid), {
+        btn.disabled = true;
+        btn.innerText = "Sending Email...";
+
+        try {
+            // 1. Create the user
+            const res = await createUserWithEmailAndPassword(auth, email, pass);
+            const user = res.user;
+
+            // 2. Send Verification Link
+            await sendEmailVerification(user);
+
+            // 3. Save to Database
+            await set(ref(db, "users/" + user.uid), {
                 email: email,
                 balance: 0,
                 deposits: 0,
@@ -205,10 +221,18 @@
                 createdAt: Date.now()
             });
 
-            alert("Account created successfully!");
-            window.location = "dashboard.html";
-        })
-        .catch(e => alert(e.message));
+            // 4. Log out user immediately
+            // (Firebase logs users in automatically after signup, we must stop this)
+            await signOut(auth);
+
+            alert("Success! A verification link has been sent to your email. Please verify it to log in.");
+            window.location = "index.html";
+
+        } catch (error) {
+            btn.disabled = false;
+            btn.innerText = "Create My Account";
+            alert(error.message);
+        }
     }
 </script>
 </body>
