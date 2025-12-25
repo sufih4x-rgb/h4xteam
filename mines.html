@@ -9,189 +9,90 @@
             --primary: #4361ee;
             --surface: #ffffff;
             --bg: #f8f9fc;
-            --diamond: #00d4ff;
-            --mine: #ef476f;
             --success: #06d6a0;
+            --danger: #ef476f;
         }
 
-        body {
-            font-family: 'Inter', sans-serif;
-            background: var(--bg);
-            margin: 0;
-            display: flex;
-            justify-content: center;
-        }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; }
+        .game-shell { width: 100%; max-width: 480px; min-height: 100vh; background: var(--surface); padding: 20px; box-sizing: border-box; }
 
-        .game-shell {
-            width: 100%;
-            max-width: 480px;
-            min-height: 100vh;
-            background: var(--surface);
-            padding: 20px;
-            box-sizing: border-box;
-        }
+        /* Wallet Header */
+        .header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; color: white; padding: 15px; border-radius: 18px; margin-bottom: 20px; }
+        .balance-chip { background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 10px; font-weight: 800; color: #fbbf24; }
 
-        /* Top Bar */
-        .top-bar {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            background: #f1f3f9;
-            border-radius: 15px;
-            margin-bottom: 20px;
-        }
+        /* Level Selector */
+        .lvl-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
+        .lvl-btn { padding: 10px; border: 1px solid #e2e8f0; border-radius: 12px; background: white; font-weight: 700; cursor: pointer; font-size: 11px; }
+        .lvl-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-        .balance-box {
-            font-weight: 800;
-            color: var(--primary);
-        }
+        /* Grid */
+        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
+        .slot { aspect-ratio: 1; background: #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.2s; border: 2px solid transparent; }
+        .slot.diamond { background: #ecfeff; border-color: #06b6d4; animation: pop 0.3s; }
+        .slot.bomb { background: #fef2f2; border-color: #ef4444; }
+        
+        @keyframes pop { 0% { transform: scale(0.8); } 100% { transform: scale(1); } }
 
-        /* Betting Controls */
-        .controls {
-            background: #fff;
-            border: 2px solid #eee;
-            padding: 15px;
-            border-radius: 20px;
-            margin-bottom: 20px;
-        }
+        /* Betting Area */
+        .bet-area { background: #f8fafc; padding: 15px; border-radius: 20px; border: 1px solid #e2e8f0; }
+        input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; margin: 10px 0; font-weight: 700; }
+        .main-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; }
+        .btn-start { background: var(--primary); color: white; }
+        .btn-cashout { background: var(--success); color: white; display: none; }
 
-        .level-selector {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
+        /* History */
+        .history { margin-top: 25px; }
+        .hist-item { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; font-size: 13px; }
+        .win-txt { color: var(--success); font-weight: 700; }
+        .loss-txt { color: var(--danger); font-weight: 700; }
 
-        .lvl-btn {
-            padding: 8px;
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            background: #fff;
-            cursor: pointer;
-            font-size: 12px;
-            font-weight: 700;
-        }
+        /* Loader Animation */
+        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 20px; height: 20px; animation: spin 1s linear infinite; display: inline-block; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
-        .lvl-btn.active {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-
-        input[type="number"] {
-            width: 100%;
-            padding: 12px;
-            border-radius: 10px;
-            border: 1px solid #ddd;
-            margin-bottom: 10px;
-            box-sizing: border-box;
-        }
-
-        .play-btn {
-            width: 100%;
-            padding: 15px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 12px;
-            font-weight: 800;
-            cursor: pointer;
-        }
-
-        /* Game Grid */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 10px;
-            margin-top: 20px;
-            pointer-events: none;
-            opacity: 0.5;
-        }
-
-        .grid.active {
-            pointer-events: auto;
-            opacity: 1;
-        }
-
-        .slot {
-            aspect-ratio: 1;
-            background: #e2e8f0;
-            border-radius: 12px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 24px;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .slot.open { background: #fff; border: 2px solid #eee; pointer-events: none; }
-        .slot.win { background: #e0fdf4; border-color: var(--success); transform: scale(1.05); }
-        .slot.loss { background: #fdebee; border-color: var(--mine); animation: shake 0.3s; }
-
-        @keyframes shake {
-            0%, 100% { transform: translateX(0); }
-            25% { transform: translateX(-5px); }
-            75% { transform: translateX(5px); }
-        }
-
-        /* Notifications */
-        .overlay {
-            display: none;
-            position: fixed;
-            top: 50%; left: 50%;
-            transform: translate(-50%, -50%);
-            background: white;
-            padding: 30px;
-            border-radius: 25px;
-            box-shadow: 0 10px 50px rgba(0,0,0,0.2);
-            text-align: center;
-            z-index: 100;
-            width: 80%;
-        }
-
-        .cashout-btn {
-            background: var(--success);
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 10px;
-            margin-top: 10px;
-            font-weight: 700;
-            display: none;
-        }
+        .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.7); z-index:1000; justify-content:center; align-items:center; }
+        .modal { background:white; padding:30px; border-radius:24px; text-align:center; width:80%; max-width:320px; }
     </style>
 </head>
 <body>
 
 <div class="game-shell">
-    <div class="top-bar">
-        <div onclick="window.location.href='dashboard.html'" style="cursor:pointer">🔙</div>
-        <div class="balance-box">Wallet: ₹<span id="balanceDisplay">0.00</span></div>
+    <div class="header">
+        <span style="font-weight:700">MINES MASTER</span>
+        <div class="balance-chip">₹<span id="balanceDisplay">0.00</span></div>
     </div>
 
-    <div class="controls" id="gameControls">
-        <label style="font-size:12px; font-weight:700; color:#666">CHOOSE DIFFICULTY</label>
-        <div class="level-selector">
-            <button class="lvl-btn active" onclick="setLvl('easy', this)">EASY (3💣)</button>
-            <button class="lvl-btn" onclick="setLvl('medium', this)">MED (7💣)</button>
-            <button class="lvl-btn" onclick="setLvl('hard', this)">HARD (15💣)</button>
-        </div>
-        
-        <input type="number" id="betAmount" placeholder="Enter Bet (min ₹10)" value="10">
-        <button class="play-btn" id="startBtn" onclick="startGame()">START GAME</button>
-        <button class="cashout-btn" id="cashoutBtn" onclick="cashout()">CASHOUT (₹<span id="currentWin">0</span>)</button>
+    <div class="lvl-box">
+        <button class="lvl-btn active" onclick="changeLvl('easy', this)">EASY</button>
+        <button class="lvl-btn" onclick="changeLvl('medium', this)">MEDIUM</button>
+        <button class="lvl-btn" onclick="changeLvl('hard', this)">HARD</button>
     </div>
 
-    <div class="grid" id="gameGrid">
+    <div class="grid" id="gameGrid"></div>
+
+    <div class="bet-area">
+        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700">
+            <span>MULTIPLIER: <span id="multText" style="color:var(--primary)">1.00x</span></span>
+            <span>PROFIT: <span id="profitText" style="color:var(--success)">₹0.00</span></span>
         </div>
+        <input type="number" id="betInput" value="10" min="10">
+        <button id="startBtn" class="main-btn btn-start" onclick="startGame()">START GAME</button>
+        <button id="cashBtn" class="main-btn btn-cashout" onclick="cashout()">CASHOUT</button>
+    </div>
+
+    <div class="history">
+        <h3 style="font-size:14px; color:#64748b">RECENT ACTIVITY</h3>
+        <div id="historyList"></div>
+    </div>
 </div>
 
-<div id="gameAlert" class="overlay">
-    <h2 id="alertTitle"></h2>
-    <p id="alertMsg"></p>
-    <button class="play-btn" onclick="closeAlert()">Continue</button>
+<div id="alertOverlay" class="overlay">
+    <div class="modal">
+        <div id="modalIcon" style="font-size:50px"></div>
+        <h2 id="modalTitle"></h2>
+        <p id="modalDesc"></p>
+        <button class="main-btn btn-start" onclick="closeModal()">CONTINUE</button>
+    </div>
 </div>
 
 <script type="module">
@@ -199,7 +100,7 @@
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
+   const firebaseConfig = {
   apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
   authDomain: "test-eb5e7.firebaseapp.com",
   databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
@@ -214,149 +115,156 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let userBalance = 0;
+    let balance = 0;
     let currentLvl = 'easy';
     let isPlaying = false;
     let mines = [];
-    let openedCount = 0;
-    let bet = 0;
-    let potentialWin = 0;
+    let diamondsFound = 0;
+    let currentMult = 1.00;
+    let activeBet = 0;
 
-    // Load User Data
-    onAuthStateChanged(auth, (user) => {
-        if (!user) window.location.href = "index.html";
-        onValue(ref(db, "users/" + user.uid), (snap) => {
-            userBalance = snap.val().balance || 0;
-            document.getElementById("balanceDisplay").innerText = userBalance.toFixed(2);
+    onAuthStateChanged(auth, user => {
+        if(!user) return;
+        onValue(ref(db, `users/${user.uid}`), snap => {
+            balance = snap.val().balance || 0;
+            document.getElementById("balanceDisplay").innerText = balance.toFixed(2);
         });
     });
 
-    // Initialize Grid
-    const gridEl = document.getElementById("gameGrid");
+    const grid = document.getElementById("gameGrid");
     for(let i=0; i<20; i++) {
-        const slot = document.createElement("div");
-        slot.className = "slot";
-        slot.onclick = () => reveal(i, slot);
-        gridEl.appendChild(slot);
+        const div = document.createElement("div");
+        div.className = "slot";
+        div.onclick = () => handleMove(i, div);
+        grid.appendChild(div);
     }
 
-    window.setLvl = (lvl, btn) => {
+    window.changeLvl = (lvl, btn) => {
         if(isPlaying) return;
         currentLvl = lvl;
         document.querySelectorAll('.lvl-btn').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
-    };
+    }
 
     window.startGame = async () => {
-        bet = parseFloat(document.getElementById("betAmount").value);
-        if(bet < 10 || bet > userBalance) return alert("Invalid Bet Amount");
+        activeBet = parseFloat(document.getElementById("betInput").value);
+        if(activeBet < 10 || activeBet > balance) return alert("Invalid Balance");
 
-        // Deduct balance
-        await update(ref(db, "users/" + auth.currentUser.uid), { balance: increment(-bet) });
+        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(-activeBet) });
 
         isPlaying = true;
-        openedCount = 0;
-        potentialWin = bet;
+        diamondsFound = 0;
+        currentMult = 1.00;
         mines = [];
+        let count = currentLvl === 'easy' ? 3 : (currentLvl === 'medium' ? 7 : 15);
         
-        // Logic for Mines Count
-        let mineCount = currentLvl === 'easy' ? 3 : (currentLvl === 'medium' ? 7 : 15);
-        while(mines.length < mineCount) {
+        while(mines.length < count) {
             let r = Math.floor(Math.random() * 20);
             if(!mines.includes(r)) mines.push(r);
         }
 
         document.getElementById("startBtn").style.display = "none";
-        document.getElementById("cashoutBtn").style.display = "block";
-        document.getElementById("gameGrid").classList.add("active");
-        document.querySelectorAll(".slot").forEach(s => { s.className="slot"; s.innerText=""; });
-    };
-
-    window.reveal = (idx, el) => {
-        if(!isPlaying) return;
-
-        if(mines.includes(idx)) {
-            gameOver(false);
-            el.innerText = "💣";
-            el.classList.add("loss");
-        } else {
-            openedCount++;
-            calculateWin();
-            el.innerText = "💎";
-            el.classList.add("open", "win");
-
-            // Process Limit Check
-            if(potentialWin >= 200) {
-                isPlaying = false;
-                showProcessingError();
-            }
-        }
-    };
-
-    function calculateWin() {
-        if(currentLvl === 'easy') {
-            if(openedCount === 1) potentialWin = bet + 2; // 10 -> 12
-            else if(openedCount === 2) potentialWin = bet + 9; // 10 -> 19
-            else potentialWin += 3;
-        } 
-        else if(currentLvl === 'medium') {
-            if(openedCount === 1) potentialWin = bet * 2;
-            else if(openedCount === 2) potentialWin = (bet * 2) + 7;
-            else if(openedCount === 3) potentialWin = (bet * 2) + 14;
-            
-            if(openedCount >= 7) gameOver(false); // Medium Limit logic
-        }
-        else if(currentLvl === 'hard') {
-            if(openedCount === 1) potentialWin = bet + 24;
-            else if(openedCount === 2) potentialWin = bet + 30;
-            else if(openedCount === 3) potentialWin = bet + 50;
-            else if(openedCount === 4) potentialWin = bet + 70;
-        }
-        document.getElementById("currentWin").innerText = potentialWin.toFixed(2);
+        document.getElementById("cashBtn").style.display = "block";
+        document.getElementById("multText").innerText = "1.00x";
+        document.getElementById("profitText").innerText = "₹0.00";
+        document.querySelectorAll(".slot").forEach(s => s.className = "slot");
+        document.querySelectorAll(".slot").forEach(s => s.innerText = "");
     }
 
-    async function gameOver(isWin) {
-        isPlaying = false;
-        document.getElementById("gameGrid").classList.remove("active");
-        document.getElementById("startBtn").style.display = "block";
-        document.getElementById("cashoutBtn").style.display = "none";
+    window.handleMove = (idx, el) => {
+        if(!isPlaying || el.classList.contains('diamond')) return;
 
-        if(!isWin) {
-            showAlert("💥 BOOM!", "You hit a mine. Better luck next time!", "var(--mine)");
+        if(mines.includes(idx)) {
+            endGame(false);
+            el.innerText = "💣";
+            el.classList.add("bomb");
+        } else {
+            diamondsFound++;
+            applyAlgorithm();
+            el.innerText = "💎";
+            el.classList.add("diamond");
+
+            // Safety check for 200 Profit
+            if((activeBet * currentMult) - activeBet >= 200) {
+                isPlaying = false;
+                showProcessing();
+            }
         }
+    }
+
+    function applyAlgorithm() {
+        // RANDOM MULTIPLIER LOGIC
+        let step = 0;
+        if(currentLvl === 'easy') {
+            // Target 5x max
+            step = 1.15 + (Math.random() * 0.1); // Picks between 1.15 and 1.25
+        } else if(currentLvl === 'medium') {
+            // Target 5x max but faster starts
+            step = diamondsFound === 1 ? 2.1 : 1.2 + (Math.random() * 0.2);
+            if(diamondsFound >= 7) endGame(false); // Lose if open 7th
+        } else {
+            // Hard - Target 15x
+            step = diamondsFound === 1 ? 3.4 : 1.5 + (Math.random() * 0.5);
+        }
+
+        currentMult *= step;
+        
+        // Cap Multipliers
+        let cap = (currentLvl === 'hard') ? 15 : 5;
+        if(currentMult > cap) currentMult = cap;
+
+        document.getElementById("multText").innerText = currentMult.toFixed(2) + "x";
+        document.getElementById("profitText").innerText = "₹" + (activeBet * currentMult - activeBet).toFixed(2);
     }
 
     window.cashout = async () => {
-        if(!isPlaying || openedCount === 0) return;
+        if(!isPlaying || diamondsFound === 0) return;
+        const winAmount = activeBet * currentMult;
+        
         isPlaying = false;
+        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(winAmount) });
         
-        await update(ref(db, "users/" + auth.currentUser.uid), { balance: increment(potentialWin) });
-        showAlert("🎉 CONGRATS!", `You won ₹${potentialWin.toFixed(2)}`, "var(--success)");
-        
+        addHistory(winAmount, true);
+        showModal("🎉 WINNER", `You cashed out ₹${winAmount.toFixed(2)}`, "💎");
+        resetUI();
+    }
+
+    function endGame(win) {
+        isPlaying = false;
+        if(!win) {
+            addHistory(activeBet, false);
+            showModal("💥 EXPLOSION", "You hit a mine! Bet lost.", "💣");
+        }
+        resetUI();
+    }
+
+    function resetUI() {
         document.getElementById("startBtn").style.display = "block";
-        document.getElementById("cashoutBtn").style.display = "none";
-        document.getElementById("gameGrid").classList.remove("active");
-    };
-
-    function showProcessingError() {
-        const alert = document.getElementById("gameAlert");
-        alert.style.display = "block";
-        alert.style.borderTop = "10px solid var(--warning)";
-        document.getElementById("alertTitle").innerText = "⏳ PROCESSING...";
-        document.getElementById("alertMsg").innerHTML = "<div class='loader'></div>Wait, we are checking game integrity before payout. Please wait 1-2 minutes.";
+        document.getElementById("cashBtn").style.display = "none";
     }
 
-    function showAlert(title, msg, color) {
-        const alert = document.getElementById("gameAlert");
-        alert.style.display = "block";
-        alert.style.borderTop = `10px solid ${color}`;
-        document.getElementById("alertTitle").innerText = title;
-        document.getElementById("alertMsg").innerText = msg;
+    function addHistory(amt, isWin) {
+        const list = document.getElementById("historyList");
+        const div = document.createElement("div");
+        div.className = "hist-item";
+        div.innerHTML = `<span>Mines (${currentLvl.toUpperCase()})</span> 
+                         <span class="${isWin ? 'win-txt' : 'loss-txt'}">${isWin ? '+' : '-'}₹${amt.toFixed(2)}</span>`;
+        list.prepend(div);
+        if(list.children.length > 5) list.lastChild.remove();
     }
 
-    window.closeAlert = () => {
-        document.getElementById("gameAlert").style.display = "none";
-    };
+    function showProcessing() {
+        showModal("⏳ PROCESSING", "System checking game integrity. Please wait 2 minutes for security clearance.", "<div class='loader'></div>");
+    }
+
+    function showModal(title, desc, icon) {
+        document.getElementById("modalTitle").innerText = title;
+        document.getElementById("modalDesc").innerText = desc;
+        document.getElementById("modalIcon").innerHTML = icon;
+        document.getElementById("alertOverlay").style.display = "flex";
+    }
+
+    window.closeModal = () => document.getElementById("alertOverlay").style.display = "none";
 </script>
 
 </body>
