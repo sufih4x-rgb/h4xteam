@@ -1,62 +1,75 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>H4XTEAM - Login</title>
-<style>
-body{background:#000;font-family:Arial;color:#0affff;text-align:center;padding-top:50px}
-input,button{width:80%;padding:12px;margin:10px;border:none;border-radius:8px;font-size:16px}
-input{background:#111;color:#0affff;border:1px solid #0affff}
-button{background:#0affff;color:#000;font-weight:bold;cursor:pointer;box-shadow:0 0 10px #0affff}
-a{color:#0affff}
-</style>
+<title>Login • H4XTEAM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="stylesheet" href="global.css">
+
+<!-- Firebase -->
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.10/firebase-database.js"></script>
+
 </head>
 <body>
 
-<h1>H4XTEAM LOGIN</h1>
+<div class="box">
+    <h2>LOGIN</h2>
 
-<input id="email" type="email" placeholder="Email">
-<input id="password" type="password" placeholder="Password">
+    <input type="email" id="email" placeholder="Email">
+    <input type="password" id="password" placeholder="Password">
 
-<button onclick="login()">Login</button>
+    <button onclick="login()">LOGIN</button>
 
-<br>
-<a href="register.html">Create Account</a><br>
-<a href="reset.html">Forgot Password?</a>
+    <br><br>
+    <span class="link" onclick="location='register.html'">Create Account</span><br>
+    <span class="link" onclick="location='reset.html'">Forgot Password?</span>
+</div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getAuth, signInWithEmailAndPassword, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-import { getDatabase, ref, get, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-const firebaseConfig={
- apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
- authDomain:"test-eb5e7.firebaseapp.com",
- databaseURL:"https://test-eb5e7-default-rtdb.firebaseio.com",
- projectId:"test-eb5e7",
- storageBucket:"test-eb5e7.appspot.com",
- messagingSenderId:"366282855653",
- appId:"1:366282855653:web:dca7e000f5a22fb11f300c",
- measurementId:"G-ECKCTBLQJ8"
+<script>
+// ---------------- FIREBASE SETUP ----------------
+const firebaseConfig = {
+    apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+    authDomain: "test-eb5e7.firebaseapp.com",
+    databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+    projectId: "test-eb5e7",
+    storageBucket: "test-eb5e7.appspot.com",
+    messagingSenderId: "366282855653",
+    appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+    measurementId: "G-ECKCTBLQJ8"
 };
+firebase.initializeApp(firebaseConfig);
 
-const app=initializeApp(firebaseConfig);
-const auth=getAuth(app);
-const db=getDatabase(app);
+const auth = firebase.auth();
+const db = firebase.database();
 
-window.login=function(){
- let email=document.getElementById("email").value;
- let pass=document.getElementById("password").value;
+// ---------------- LOGIN FUNCTION ----------------
+function login() {
+    let email = document.getElementById("email").value.trim();
+    let pass = document.getElementById("password").value.trim();
 
- signInWithEmailAndPassword(auth,email,pass)
- .then(async (user)=>{
-   let uid=user.user.uid;
-   let deviceID = navigator.userAgent;
-   await update(ref(db,"users/"+uid),{ device:deviceID });
-   window.location="dashboard.html";
- })
- .catch(e=>alert("Login Failed: "+e.message));
+    if (!email || !pass) return alert("All fields required");
+
+    auth.signInWithEmailAndPassword(email, pass)
+    .then(user => {
+        let uid = user.user.uid;
+
+        // Log IP
+        fetch("https://api.ipify.org?format=json")
+        .then(r => r.json())
+        .then(ip => {
+            db.ref("ipLogs/" + uid).set({
+                ip: ip.ip,
+                timestamp: new Date().toLocaleString()
+            });
+        });
+
+        location = "dashboard.html";
+    })
+    .catch(err => alert(err.message));
 }
 </script>
+
 </body>
 </html>
