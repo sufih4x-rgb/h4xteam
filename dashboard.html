@@ -2,171 +2,152 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Dashboard - H4XTEAM</title>
+<title>H4XTEAM – Dashboard</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
 
 <style>
-    body {
-        margin: 0;
-        background: #000;
-        font-family: Arial, sans-serif;
-        color: #0ff;
-        text-align: center;
-    }
+body {
+    margin: 0;
+    background: #000;
+    color: #fff;
+    font-family: 'Poppins', sans-serif;
+}
+.container {
+    width: 92%;
+    margin: 20px auto;
+    padding: 20px;
+    background: rgba(20, 20, 20, 0.7);
+    border-radius: 12px;
+    box-shadow: 0 0 20px #00eaff;
+}
+h2 { text-align:center; }
 
-    .title {
-        font-size: 28px;
-        margin-top: 20px;
-        text-shadow: 0 0 15px #0ff;
-        font-weight: bold;
-    }
+/* Cards */
+.card {
+    background: rgba(30, 30, 30, 0.7);
+    padding: 20px;
+    margin: 15px 0;
+    border-radius: 12px;
+    box-shadow: 0 0 15px #00eaff;
+}
 
-    .balance-box {
-        margin: 30px auto;
-        width: 90%;
-        max-width: 400px;
-        background: #111;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 0 20px #0ff;
-        font-size: 20px;
-    }
+/* Navigation buttons */
+.btn {
+    width: 100%;
+    padding: 15px;
+    background: #00eaff;
+    color: #000;
+    border: none;
+    font-size: 17px;
+    margin: 8px 0;
+    border-radius: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 0 20px #00eaff;
+}
+.btn:hover { box-shadow: 0 0 30px #00eaff; }
 
-    .game-box {
-        width: 90%;
-        max-width: 400px;
-        margin: 30px auto;
-        background: #111;
-        padding: 20px;
-        border-radius: 12px;
-        box-shadow: 0 0 20px #0ff;
-    }
-
-    input {
-        width: 90%;
-        padding: 12px;
-        margin: 10px auto;
-        border: none;
-        border-radius: 8px;
-        background: #222;
-        color: #0ff;
-        box-shadow: 0 0 10px #0ff;
-    }
-
-    .btn {
-        padding: 12px;
-        border: none;
-        border-radius: 10px;
-        width: 45%;
-        color: #000;
-        background: #0ff;
-        cursor: pointer;
-        font-weight: bold;
-        box-shadow: 0 0 15px #0ff;
-        margin: 5px;
-    }
-
-    .nav {
-        position: fixed;
-        bottom: 0;
-        width: 100%;
-        background: #111;
-        padding: 10px 0;
-        display: flex;
-        justify-content: space-around;
-        border-top: 1px solid #0ff;
-        box-shadow: 0 0 15px #0ff;
-    }
-
-    .nav a {
-        color: #0ff;
-        text-decoration: none;
-        font-size: 16px;
-    }
-
+/* Logout */
+.logout {
+    width: 100%;
+    padding: 12px;
+    background: red;
+    border: none;
+    border-radius: 10px;
+    color: white;
+    font-size: 16px;
+    margin-top: 20px;
+    cursor: pointer;
+}
 </style>
 </head>
 
 <body>
 
-<div class="title">H4XTEAM DASHBOARD</div>
+<div class="container">
+    <h2>H4XTEAM Dashboard</h2>
 
-<div class="balance-box">
-    Balance: ₹<span id="balance">0</span>
+    <div class="card">
+        <p><b>Email:</b> <span id="email"></span></p>
+        <p><b>Balance:</b> ₹<span id="balance"></span></p>
+        <p><b>VIP Level:</b> <span id="vip"></span></p>
+        <p><b>Deposits:</b> <span id="depCount"></span></p>
+    </div>
+
+    <button class="btn" onclick="go('deposit.html')">Deposit</button>
+    <button class="btn" onclick="go('withdraw.html')">Withdraw</button>
+    <button class="btn" onclick="go('game.html')">Play Game (Red / Green)</button>
+    <button class="btn" onclick="go('profile.html')">Profile</button>
+    <button class="btn" onclick="go('settings.html')">Settings</button>
+    <button class="btn" onclick="go('processing.html')">Processing Page</button>
+
+    <button class="logout" onclick="logout()">Logout</button>
 </div>
 
-<div class="game-box">
-    <h2>Red / Green Betting</h2>
-
-    <input type="number" id="betAmount" placeholder="Enter bet amount (5 - 1000)">
-
-    <button class="btn" onclick="play('red')">Red</button>
-    <button class="btn" onclick="play('green')">Green</button>
-
-    <div id="gameMsg" style="margin-top:15px; font-size:16px;"></div>
-</div>
-
-<!-- Navigation Bar -->
-<div class="nav">
-    <a href="dashboard.html">Home</a>
-    <a href="deposit.html">Deposit</a>
-    <a href="withdraw.html">Withdraw</a>
-    <a href="profile.html">Profile</a>
-    <a href="settings.html">Settings</a>
-</div>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-auth.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-database.js"></script>
 
 <script>
-// CHECK LOGIN
-let active = localStorage.getItem("activeUser");
-if (!active) {
-    window.location.href = "index.html";
+// CONFIG
+const firebaseConfig = {
+  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+  authDomain: "test-eb5e7.firebaseapp.com",
+  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+  projectId: "test-eb5e7",
+  storageBucket: "test-eb5e7.appspot.com",
+  messagingSenderId: "366282855653",
+  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+  measurementId: "G-ECKCTBLQJ8"
+};
+
+// INIT
+const app = firebase.initializeApp(firebaseConfig);
+const auth = firebase.getAuth();
+const db = firebase.getDatabase();
+
+function go(page){
+    window.location = page;
 }
 
-// LOAD USER DATA
-let users = JSON.parse(localStorage.getItem("users"));
-let user = users[active];
+async function loadUser() {
+    firebase.onAuthStateChanged(auth, async (user) => {
+        if (!user) {
+            window.location = "index.html";
+            return;
+        }
 
-// DISPLAY BALANCE
-document.getElementById("balance").innerHTML = user.balance.toFixed(2);
+        const uid = user.uid;
 
-function play(choice) {
-    let bet = Number(document.getElementById("betAmount").value);
-    let gameMsg = document.getElementById("gameMsg");
+        // Check device
+        const localDev = localStorage.getItem("deviceId");
+        const snap = await firebase.get(firebase.ref(db, "users/" + uid));
+        const data = snap.val();
 
-    if (bet < 5 || bet > 1000) {
-        gameMsg.innerHTML = "<span style='color:red;'>Bet must be between 5 and 1000.</span>";
-        return;
-    }
+        if (!data) return;
 
-    if (bet > user.balance) {
-        gameMsg.innerHTML = "<span style='color:red;'>Insufficient balance.</span>";
-        return;
-    }
+        if (data.deviceId !== localDev) {
+            alert("You were logged out because account opened on another device.");
+            firebase.signOut(auth);
+            return;
+        }
 
-    // Deduct bet
-    user.balance -= bet;
+        email.innerHTML = data.email;
+        balance.innerHTML = data.balance;
+        vip.innerHTML = data.vipLevel;
+        depCount.innerHTML = data.depositCount;
+    });
+}
 
-    // Random outcome
-    let result = Math.random() < 0.5 ? "red" : "green";
+loadUser();
 
-    if (choice === result) {
-        let win = bet * 1.9; // ✔ NEW MULTIPLIER
-        user.balance += win;
-        user.wins += 1;
-
-        gameMsg.innerHTML =
-            `<span style='color:#0f0;'>You Won! Returned: ₹${win.toFixed(2)}</span>`;
-    } else {
-        gameMsg.innerHTML =
-            `<span style='color:red;'>You Lost!</span>`;
-    }
-
-    // SAVE DATA
-    users[active] = user;
-    localStorage.setItem("users", JSON.stringify(users));
-
-    // UPDATE BALANCE DISPLAY
-    document.getElementById("balance").innerHTML = user.balance.toFixed(2);
+function logout() {
+    firebase.signOut(auth).then(()=>{
+        window.location = "index.html";
+    });
 }
 </script>
 
