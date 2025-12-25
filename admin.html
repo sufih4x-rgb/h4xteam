@@ -33,14 +33,14 @@
         text-shadow: 0 0 10px #0ff;
     }
 
-    input, select {
+    input {
         width: 100%;
         padding: 12px;
         margin: 10px 0;
-        background: black;
+        background: #000;
         border: 1px solid #0ff;
         color: white;
-        border-radius: 5px;
+        border-radius: 6px;
         box-shadow: 0 0 10px #0ff;
     }
 
@@ -52,41 +52,33 @@
         color: black;
         font-weight: bold;
         border: none;
-        border-radius: 5px;
+        border-radius: 6px;
         cursor: pointer;
-        box-shadow: 0 0 12px #0ff;
-    }
-
-    button:hover {
-        background: #09d;
-        box-shadow: 0 0 20px #09d;
+        box-shadow: 0 0 14px #0ff;
     }
 
     .section {
-        background: rgba(10,10,10,0.7);
+        margin-top: 20px;
         border: 1px solid #0ff;
-        padding: 15px;
-        margin: 15px 0;
-        box-shadow: 0 0 10px #0ff;
+        padding: 12px;
+        box-shadow: 0 0 12px #0ff;
     }
 
-    .user-card {
+    .card {
         padding: 12px;
         border-bottom: 1px solid #0ff;
-        margin-bottom: 12px;
+        margin: 10px 0;
     }
 
     .small-btn {
-        padding: 6px 10px;
-        font-size: 14px;
-        margin: 5px;
-        display: inline-block;
         background: #0ff;
-        color: black;
+        padding: 6px 10px;
+        margin: 5px;
         border-radius: 4px;
+        color: black;
         cursor: pointer;
+        font-size: 14px;
     }
-
 </style>
 </head>
 <body>
@@ -113,9 +105,11 @@
 <!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-import { getDatabase, ref, get, update, remove, set } 
-from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+import { 
+    getDatabase, ref, get, update, remove, set 
+} from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
 
+// YOUR FIREBASE KEYS
 const firebaseConfig = {
   apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
   authDomain: "test-eb5e7.firebaseapp.com",
@@ -130,7 +124,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// --- ADMIN LOGIN ---
+// LOGIN
 function loginAdmin() {
     let pass = document.getElementById("adminPass").value;
     if (pass === "H4XTEAMADMIN") {
@@ -142,81 +136,79 @@ function loginAdmin() {
 }
 window.loginAdmin = loginAdmin;
 
-// --- LOAD USERS ---
+// LOAD USERS
 async function loadUsers() {
     const content = document.getElementById("content");
     content.innerHTML = "<h3>Loading Users...</h3>";
 
-    const snap = await get(ref(db, "users"));
-    if (!snap.exists()) return content.innerHTML = "No users found.";
+    let snap = await get(ref(db, "users"));
+    if (!snap.exists()) return content.innerHTML = "No users.";
 
     let html = "<h3>ALL USERS</h3>";
 
-    snap.forEach(user => {
-        let u = user.val();
-        let uid = user.key;
+    snap.forEach(u => {
+        let d = u.val();
+        let id = u.key;
 
         html += `
-        <div class="user-card">
-            <b>${u.email}</b><br>
-            UID: ${uid}<br>
-            Balance: ₹${u.balance}<br>
-            Deposits: ${u.deposits}<br>
-            VIP: ${u.vip}<br>
-            Lifetime Wins: ₹${u.lifetimeWins}<br>
-            Blocked: ${u.blocked}<br>
-            <button class="small-btn" onclick="editUser('${uid}')">EDIT</button>
-            <button class="small-btn" onclick="deleteUser('${uid}')">DELETE</button>
-        </div>`;
+            <div class='card'>
+                <b>${d.email}</b><br>
+                UID: ${id}<br>
+                Balance: ₹${d.balance}<br>
+                Deposits: ${d.deposits}<br>
+                Wins: ₹${d.lifetimeWins}<br>
+                VIP: ${d.vip}<br>
+                Blocked: ${d.blocked}<br>
+                <button class='small-btn' onclick="editUser('${id}')">EDIT</button>
+                <button class='small-btn' onclick="deleteUser('${id}')">DELETE</button>
+            </div>
+        `;
     });
 
     content.innerHTML = html;
 }
 window.loadUsers = loadUsers;
 
-// --- EDIT USER ---
+// EDIT USER
 async function editUser(uid) {
-    const userSnap = await get(ref(db, "users/" + uid));
-    if (!userSnap.exists()) return alert("User not found!");
+    let snap = await get(ref(db, "users/" + uid));
+    if (!snap.exists()) return alert("User missing!");
 
-    let u = userSnap.val();
+    let u = snap.val();
 
-    let newBalance = prompt("Enter new balance:", u.balance);
-    let newDeposits = prompt("Enter deposit count:", u.deposits);
-    let newWins = prompt("Enter lifetime wins:", u.lifetimeWins);
-    let newVIP = prompt("Enter VIP level (0-3):", u.vip);
-    let block = confirm("Block user? (OK = Yes, Cancel = No)");
+    let newBalance = prompt("Balance:", u.balance);
+    let newDeposit = prompt("Deposits:", u.deposits);
+    let newVIP = prompt("VIP (0-3):", u.vip);
+    let block = confirm("Block user? (OK = yes)");
 
-    update(ref(db, "users/" + uid), {
+    await update(ref(db, "users/" + uid), {
         balance: Number(newBalance),
-        deposits: Number(newDeposits),
-        lifetimeWins: Number(newWins),
+        deposits: Number(newDeposit),
         vip: Number(newVIP),
         blocked: block
     });
 
-    alert("Updated!");
+    alert("Updated.");
     loadUsers();
 }
 window.editUser = editUser;
 
 // DELETE USER
-function deleteUser(uid) {
-    if (!confirm("Delete this user?")) return;
-
-    remove(ref(db, "users/" + uid));
-    alert("Deleted!");
+async function deleteUser(uid) {
+    if (!confirm("Delete User?")) return;
+    await remove(ref(db, "users/" + uid));
+    alert("Deleted.");
     loadUsers();
 }
 window.deleteUser = deleteUser;
 
-// --- LOAD PENDING DEPOSITS ---
+// LOAD DEPOSITS
 async function loadDeposits() {
     const content = document.getElementById("content");
-    content.innerHTML = "<h3>Loading deposits...</h3>";
+    content.innerHTML = "Loading deposits...";
 
-    const snap = await get(ref(db, "pendingDeposits"));
-    if (!snap.exists()) return content.innerHTML = "No deposits.";
+    let snap = await get(ref(db, "pendingDeposits"));
+    if (!snap.exists()) return content.innerHTML = "No pending deposits.";
 
     let html = "<h3>PENDING DEPOSITS</h3>";
 
@@ -225,12 +217,13 @@ async function loadDeposits() {
         let id = d.key;
 
         html += `
-        <div class="user-card">
-            UID: ${x.uid}<br>
-            Amount: ₹${x.amount}<br>
-            <button class="small-btn" onclick="approveDeposit('${id}','${x.uid}',${x.amount})">APPROVE</button>
-            <button class="small-btn" onclick="rejectDeposit('${id}')">REJECT</button>
-        </div>`;
+            <div class="card">
+                UID: ${x.uid}<br>
+                Amount: ₹${x.amount}<br>
+                <button class='small-btn' onclick="approveDeposit('${id}','${x.uid}',${x.amount})">APPROVE</button>
+                <button class='small-btn' onclick="rejectDeposit('${id}')">REJECT</button>
+            </div>
+        `;
     });
 
     content.innerHTML = html;
@@ -239,37 +232,36 @@ window.loadDeposits = loadDeposits;
 
 // APPROVE DEPOSIT
 async function approveDeposit(id, uid, amount) {
-    const userSnap = await get(ref(db, "users/" + uid));
-    if (!userSnap.exists()) return alert("User missing!");
+    let snap = await get(ref(db, "users/" + uid));
+    if (!snap.exists()) return alert("User not found");
 
-    let balance = userSnap.val().balance;
-    let deposits = userSnap.val().deposits;
+    let u = snap.val();
 
-    update(ref(db, "users/" + uid), {
-        balance: balance + amount,
-        deposits: deposits + 1
+    await update(ref(db, "users/" + uid), {
+        balance: u.balance + amount,
+        deposits: u.deposits + 1
     });
 
-    remove(ref(db, "pendingDeposits/" + id));
-    alert("Deposit approved!");
+    await remove(ref(db, "pendingDeposits/" + id));
+    alert("Deposit Approved!");
     loadDeposits();
 }
 window.approveDeposit = approveDeposit;
 
 // REJECT DEPOSIT
-function rejectDeposit(id) {
-    remove(ref(db, "pendingDeposits/" + id));
-    alert("Rejected!");
+async function rejectDeposit(id) {
+    await remove(ref(db, "pendingDeposits/" + id));
+    alert("Rejected.");
     loadDeposits();
 }
 window.rejectDeposit = rejectDeposit;
 
-// --- LOAD WITHDRAWALS ---
+// LOAD WITHDRAWALS
 async function loadWithdrawals() {
     const content = document.getElementById("content");
     content.innerHTML = "Loading withdrawals...";
 
-    const snap = await get(ref(db, "pendingWithdrawals"));
+    let snap = await get(ref(db, "pendingWithdrawals"));
     if (!snap.exists()) return content.innerHTML = "No withdrawals.";
 
     let html = "<h3>PENDING WITHDRAWALS</h3>";
@@ -279,51 +271,55 @@ async function loadWithdrawals() {
         let id = w.key;
 
         html += `
-        <div class="user-card">
-            UID: ${x.uid}<br>
-            Amount: ₹${x.amount}<br>
-            UPI: ${x.upi}<br>
-            <button class="small-btn" onclick="approveWithdraw('${id}')">APPROVE</button>
-            <button class="small-btn" onclick="rejectWithdraw('${id}')">REJECT</button>
-        </div>`;
+            <div class='card'>
+                UID: ${x.uid}<br>
+                Amount: ₹${x.amount}<br>
+                UPI: ${x.upi}<br>
+                <button class='small-btn' onclick="approveWithdraw('${id}')">APPROVE</button>
+                <button class='small-btn' onclick="rejectWithdraw('${id}')">REJECT</button>
+            </div>
+        `;
     });
 
     content.innerHTML = html;
 }
 window.loadWithdrawals = loadWithdrawals;
 
-// APPROVE WITHDRAW
-function approveWithdraw(id) {
-    remove(ref(db, "pendingWithdrawals/" + id));
-    alert("Withdraw Approved!");
+// APPROVE W
+async function approveWithdraw(id) {
+    await remove(ref(db, "pendingWithdrawals/" + id));
+    alert("Withdrawal Approved!");
     loadWithdrawals();
 }
 window.approveWithdraw = approveWithdraw;
 
-function rejectWithdraw(id) {
-    remove(ref(db, "pendingWithdrawals/" + id));
-    alert("Withdraw Rejected!");
+// REJECT W
+async function rejectWithdraw(id) {
+    await remove(ref(db, "pendingWithdrawals/" + id));
+    alert("Rejected.");
     loadWithdrawals();
 }
 window.rejectWithdraw = rejectWithdraw;
 
-// --- IP LOGS ---
+// IP LOGS
 async function loadIPLogs() {
     const content = document.getElementById("content");
 
-    const snap = await get(ref(db, "ipLogs"));
+    let snap = await get(ref(db, "ipLogs"));
     if (!snap.exists()) return content.innerHTML = "No IP logs.";
 
     let html = "<h3>IP LOGS</h3>";
 
     snap.forEach(i => {
         let x = i.val();
+
         html += `
-        <div class="user-card">
-            UID: ${i.key}<br>
-            IP: ${x.ip}<br>
-            Last Login: ${x.timestamp}
-        </div>`;
+            <div class='card'>
+                UID: ${i.key}<br>
+                IP: ${x.ip}<br>
+                Time: ${x.timestamp}
+            </div>
+        `;
     });
 
     content.innerHTML = html;
