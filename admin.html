@@ -1,1 +1,778 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>H4XTEAM Admin Panel</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+/* -----------------------------------
+   GLOBAL NEON DARK THEME
+----------------------------------- */
+body {
+    margin: 0;
+    background: #000000;
+    font-family: Arial;
+    color: #00eaff;
+}
+
+h1, h2, h3 {
+    color: #00eaff;
+    text-shadow: 0 0 10px #00eaff;
+}
+
+button {
+    background: transparent;
+    border: 2px solid #00eaff;
+    padding: 10px 20px;
+    color: #00eaff;
+    cursor: pointer;
+    border-radius: 10px;
+    transition: 0.25s;
+}
+button:hover {
+    background: #00eaff;
+    color: #000;
+    box-shadow: 0 0 15px #00eaff;
+}
+
+input, select {
+    width: 90%;
+    padding: 10px;
+    margin-top: 5px;
+    margin-bottom: 15px;
+    background: #0a0a0a;
+    border: 1px solid #00eaff;
+    color: #00eaff;
+    border-radius: 8px;
+}
+
+.card {
+    border: 1px solid #00eaff;
+    padding: 15px;
+    margin: 10px;
+    border-radius: 12px;
+    box-shadow: 0 0 15px #00eaff55;
+}
+
+/* -----------------------------------
+   HIDE PANELS UNTIL LOGIN
+----------------------------------- */
+#adminArea {
+    display: none;
+}
+
+#loginBox {
+    margin-top: 80px;
+    text-align: center;
+}
+#loginBox input {
+    width: 70%;
+    text-align: center;
+}
+
+/* Flex layout */
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit,minmax(300px,1fr));
+}
+</style>
+</head>
+<body>
+
+<!-- SECRET ADMIN GATE -->
+<div id="loginBox">
+    <h1>H4XTEAM ADMIN LOGIN</h1>
+    <p>Enter Admin Secret Code:</p>
+    <input type="password" id="adminCodeInput" placeholder="Secret Code">
+    <br>
+    <button onclick="checkAdminCode()">ENTER</button>
+    <p id="loginStatus"></p>
+</div>
+
+<!-- MAIN ADMIN AREA -->
+<div id="adminArea">
+
+    <h1>H4XTEAM Admin Panel</h1>
+
+    <div class="grid">
+
+        <!-- USER SEARCH -->
+        <div class="card">
+            <h2>Search User</h2>
+            <input id="searchUID" placeholder="Enter User UID">
+            <button onclick="searchUser()">Search</button>
+            <p id="searchResult"></p>
+        </div>
+
+        <!-- MANUAL DEPOSIT -->
+        <div class="card">
+            <h2>Manual Deposit</h2>
+            <input id="md_uid" placeholder="User UID">
+            <input id="md_amount" type="number" placeholder="Amount">
+            <button onclick="manualDeposit()">Deposit</button>
+            <p id="md_status"></p>
+        </div>
+
+        <!-- MANUAL WITHDRAW -->
+        <div class="card">
+            <h2>Manual Withdraw</h2>
+            <input id="mw_uid" placeholder="User UID">
+            <input id="mw_amount" type="number" placeholder="Amount">
+            <button onclick="manualWithdraw()">Withdraw</button>
+            <p id="mw_status"></p>
+        </div>
+
+        <!-- DELETE USER -->
+        <div class="card">
+            <h2>Delete User</h2>
+            <input id="del_uid" placeholder="User UID">
+            <button onclick="deleteUser()">DELETE USER</button>
+            <p id="del_status"></p>
+        </div>
+
+        <!-- BALANCE CONTROL -->
+        <div class="card">
+            <h2>Update Balance</h2>
+            <input id="ub_uid" placeholder="User UID">
+            <input id="ub_amount" type="number" placeholder="New Balance">
+            <button onclick="updateBalance()">Update</button>
+            <p id="ub_status"></p>
+        </div>
+
+        <!-- GAME WIN CONTROL -->
+        <div class="card">
+            <h2>Game Result</h2>
+            <input id="gr_uid" placeholder="User UID">
+            <input id="gr_amount" type="number" placeholder="Winnings (auto ×1.9)">
+            <button onclick="gameWin()">Apply Win</button>
+            <p id="gr_status"></p>
+        </div>
+
+        <!-- VIEW LOGS -->
+        <div class="card">
+            <h2>View Logs</h2>
+            <button onclick="loadIPLogs()">Load IP Logs</button>
+            <pre id="ip_logs" style="color:#0f0;white-space:pre-wrap;"></pre>
+        </div>
+
+    </div>
+</div>
+
+<!-- FIREBASE + ADMIN JS -->
+<script type="module">
+/* -----------------------------------------------------
+   FIREBASE CONFIG (YOUR KEYS INSTALLED)
+------------------------------------------------------ */
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, update, get, child, remove } 
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig = {
+    apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+    authDomain: "test-eb5e7.firebaseapp.com",
+    databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+    projectId: "test-eb5e7",
+    storageBucket: "test-eb5e7.appspot.com",
+    messagingSenderId: "366282855653",
+    appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+    measurementId: "G-ECKCTBLQJ8"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+/* -----------------------------------------------------
+   SECRET ADMIN GATE
+------------------------------------------------------ */
+const ADMIN_SECRET = "S3CR3T-H4X-M4STER";
+
+window.checkAdminCode = function () {
+    const code = document.getElementById("adminCodeInput").value;
+
+    if (code === ADMIN_SECRET) {
+        document.getElementById("loginBox").style.display = "none";
+        document.getElementById("adminArea").style.display = "block";
+    } else {
+        document.getElementById("loginStatus").innerHTML = "❌ Wrong Code";
+    }
+};
+</script>
+
+<!-- NEXT PART JS LOADED BELOW -->
+<script>
+/*******************************************
+ * USER SEARCH
+ *******************************************/
+window.searchUser = async function () {
+    let uid = document.getElementById("searchUID").value;
+    let status = document.getElementById("searchResult");
+
+    if (!uid) return status.innerHTML = "❌ Enter UID";
+
+    const userRef = ref(db, "users/" + uid);
+
+    try {
+        let snap = await get(userRef);
+        if (!snap.exists()) {
+            status.innerHTML = "❌ User not found";
+            return;
+        }
+
+        let u = snap.val();
+
+        status.innerHTML = `
+            <b>UID:</b> ${uid}<br>
+            <b>Balance:</b> ₹${u.balance || 0}<br>
+            <b>Deposit Count:</b> ${u.deposits || 0}<br>
+            <b>VIP Level:</b> ${u.vip || 0}<br>
+            <b>Last IP:</b> ${u.last_ip || "N/A"}<br>
+            <b>Last Login:</b> ${u.last_login || "N/A"}<br>
+        `;
+    } catch (err) {
+        status.innerHTML = "⚠️ Error: " + err.message;
+    }
+};
+
+
+
+/*******************************************
+ * MANUAL DEPOSIT (ADMIN)
+ *******************************************/
+window.manualDeposit = async function () {
+    let uid = document.getElementById("md_uid").value;
+    let amt = Number(document.getElementById("md_amount").value);
+    let status = document.getElementById("md_status");
+
+    if (!uid || amt <= 0) return status.innerHTML = "❌ Missing fields";
+
+    try {
+        const userRef = ref(db, "users/" + uid);
+        let snap = await get(userRef);
+
+        if (!snap.exists()) {
+            return status.innerHTML = "❌ User not found";
+        }
+
+        let u = snap.val();
+        let newBal = (u.balance || 0) + amt;
+        let newDep = (u.deposits || 0) + 1;
+
+        // VIP Upgrade
+        let vip = u.vip || 0;
+        if (newDep === 1) vip = 1;
+        if (newDep === 3) vip = 2;
+
+        await update(userRef, {
+            balance: newBal,
+            deposits: newDep,
+            vip: vip
+        });
+
+        // Log transaction
+        let txid = "DEP" + Date.now();
+        await set(ref(db, "transactions/deposits/" + txid), {
+            uid: uid,
+            amount: amt,
+            timestamp: Date.now(),
+            type: "admin_manual"
+        });
+
+        status.innerHTML = `✅ Deposit Successful — New Balance ₹${newBal}`;
+    } catch (err) {
+        status.innerHTML = "⚠️ Error: " + err.message;
+    }
+};
+
+
+
+/*******************************************
+ * MANUAL WITHDRAW
+ *******************************************/
+window.manualWithdraw = async function () {
+    let uid = document.getElementById("mw_uid").value;
+    let amt = Number(document.getElementById("mw_amount").value);
+    let status = document.getElementById("mw_status");
+
+    if (!uid || amt <= 0) return status.innerHTML = "❌ Missing fields";
+
+    try {
+        const userRef = ref(db, "users/" + uid);
+        let snap = await get(userRef);
+
+        if (!snap.exists()) {
+            return status.innerHTML = "❌ User not found";
+        }
+
+        let u = snap.val();
+        if (u.balance < amt) {
+            return status.innerHTML = "❌ Not enough balance";
+        }
+
+        let newBal = u.balance - amt;
+
+        await update(userRef, {
+            balance: newBal
+        });
+
+        let txid = "WDR" + Date.now();
+        await set(ref(db, "transactions/withdraws/" + txid), {
+            uid: uid,
+            amount: amt,
+            timestamp: Date.now(),
+            status: "approved",
+            type: "admin_manual"
+        });
+
+        status.innerHTML = `✅ Withdraw Approved — New Balance ₹${newBal}`;
+    } catch (err) {
+        status.innerHTML = "⚠️ Error: " + err.message;
+    }
+};
+
+
+
+/*******************************************
+ * DELETE USER (Soft delete + backup)
+ *******************************************/
+window.deleteUser = async function () {
+    let uid = document.getElementById("del_uid").value;
+    let status = document.getElementById("del_status");
+
+    if (!uid) return status.innerHTML = "❌ Enter UID";
+
+    try {
+        let userRef = ref(db, "users/" + uid);
+        let snap = await get(userRef);
+
+        if (!snap.exists()) {
+            return status.innerHTML = "❌ User not found";
+        }
+
+        // Backup
+        await set(ref(db, "deleted_users/" + uid), snap.val());
+
+        // Delete original user
+        await remove(userRef);
+
+        status.innerHTML = "🗑️ User Deleted Successfully";
+    } catch (err) {
+        status.innerHTML = "⚠️ Error: " + err.message;
+    }
+};
+
+
+
+/*******************************************
+ * UPDATE BALANCE (ADMIN)
+ *******************************************/
+window.updateBalance = async function () {
+    let uid = document.getElementById("ub_uid").value;
+    let amt = Number(document.getElementById("ub_amount").value);
+    let status = document.getElementById("ub_status");
+
+    if (!uid || amt < 0) return status.innerHTML = "❌ Missing fields";
+
+    try {
+        await update(ref(db, "users/" + uid), {
+            balance: amt
+        });
+
+        status.innerHTML = "✅ Balance Updated";
+    } catch (err) {
+        status.innerHTML = "⚠️ " + err.message;
+    }
+};
+<!-- ==================== PART 3 — USER MANAGEMENT ==================== -->
+
+<!-- Users Table -->
+<h2>Manage Users</h2>
+<table border="1" cellpadding="10" width="100%">
+  <thead>
+    <tr>
+      <th>User ID</th>
+      <th>Email</th>
+      <th>Balance</th>
+      <th>Banned?</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody id="usersTable"></tbody>
+</table>
+
+<script>
+// Load all users into table
+function loadUsers() {
+    const usersRef = db.ref("users");
+    usersRef.on("value", snapshot => {
+        const table = document.getElementById("usersTable");
+        table.innerHTML = "";
+
+        snapshot.forEach(child => {
+            const user = child.val();
+            const uid = child.key;
+
+            const tr = document.createElement("tr");
+
+            tr.innerHTML = `
+                <td>${uid}</td>
+                <td>${user.email || "N/A"}</td>
+                <td>${user.balance ?? 0}</td>
+                <td>${user.banned ? "YES" : "NO"}</td>
+                <td>
+                    <button onclick="addBalance('${uid}')">+ Add Balance</button>
+                    <button onclick="deductBalance('${uid}')">- Deduct</button>
+                    <button onclick="toggleBan('${uid}', ${user.banned ? "true" : "false"})">
+                        ${user.banned ? "Unban" : "Ban"}
+                    </button>
+                    <button onclick="deleteUser('${uid}')">Delete</button>
+                </td>
+            `;
+
+            table.appendChild(tr);
+        });
+    });
+}
+loadUsers();
+
+
+// ------------------- MANUAL BALANCE ADD ---------------------
+function addBalance(uid) {
+    const amount = Number(prompt("Enter amount to ADD:"));
+    if (!amount || amount <= 0) return;
+
+    const ref = db.ref("users/" + uid + "/balance");
+    ref.transaction(balance => (balance || 0) + amount);
+    alert("Balance Added ✔");
+}
+
+// ------------------- MANUAL BALANCE DEDUCT -------------------
+function deductBalance(uid) {
+    const amount = Number(prompt("Enter amount to DEDUCT:"));
+    if (!amount || amount <= 0) return;
+
+    const ref = db.ref("users/" + uid + "/balance");
+    ref.transaction(balance => {
+        balance = balance || 0;
+        return balance - amount < 0 ? 0 : balance - amount;
+    });
+    alert("Balance Deducted ✔");
+}
+
+// ------------------- BAN / UNBAN USER ------------------------
+function toggleBan(uid, isBanned) {
+    db.ref("users/" + uid + "/banned").set(!isBanned);
+    alert(isBanned ? "User Unbanned ✔" : "User Banned ✔");
+}
+
+// ------------------- DELETE USER COMPLETELY ------------------
+function deleteUser(uid) {
+    if (!confirm("Delete user permanently?")) return;
+
+    db.ref("users/" + uid).remove()
+        .then(() => {
+            alert("User Deleted ✔");
+        });
+}
+
+</script>
+<!-- ==================== PART 4 — WITHDRAW + DEPOSIT ==================== -->
+
+<h2>Withdraw Requests</h2>
+<table border="1" width="100%" cellpadding="10">
+  <thead>
+    <tr>
+      <th>User</th>
+      <th>Amount</th>
+      <th>UPI / Bank</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="withdrawTable"></tbody>
+</table>
+
+<br>
+
+<h2>Deposit Requests</h2>
+<table border="1" width="100%" cellpadding="10">
+  <thead>
+    <tr>
+      <th>User</th>
+      <th>Amount</th>
+      <th>Screenshot</th>
+      <th>Status</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody id="depositTable"></tbody>
+</table>
+
+<script>
+// ==================== LOAD WITHDRAW REQUESTS ====================
+function loadWithdrawRequests() {
+    db.ref("withdrawRequests").on("value", snap => {
+        const table = document.getElementById("withdrawTable");
+        table.innerHTML = "";
+
+        snap.forEach(child => {
+            const req = child.val();
+            const id = child.key;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${req.uid}</td>
+                <td>₹${req.amount}</td>
+                <td>${req.upi || req.bank || "N/A"}</td>
+                <td>${req.status}</td>
+                <td>
+                    <button onclick="approveWithdraw('${id}', '${req.uid}', ${req.amount})">Approve</button>
+                    <button onclick="rejectWithdraw('${id}')">Reject</button>
+                </td>
+            `;
+            table.appendChild(tr);
+        });
+    });
+}
+loadWithdrawRequests();
+
+
+// ------------------- APPROVE WITHDRAW -------------------
+function approveWithdraw(requestId, uid, amount) {
+
+    // 1. Deduct balance from user's wallet
+    const userBalRef = db.ref("users/" + uid + "/balance");
+
+    userBalRef.transaction(balance => {
+        balance = balance || 0;
+        return balance - amount < 0 ? 0 : balance - amount;
+    });
+
+    // 2. Mark request approved
+    db.ref("withdrawRequests/" + requestId + "/status").set("approved");
+
+    alert("Withdraw Approved ✔");
+}
+
+
+// ------------------- REJECT WITHDRAW -------------------
+function rejectWithdraw(requestId) {
+    db.ref("withdrawRequests/" + requestId + "/status").set("rejected");
+    alert("Withdraw Rejected ✔");
+}
+
+
+// =======================================================
+// =================== DEPOSIT REQUESTS ===================
+// =======================================================
+
+function loadDepositRequests() {
+    db.ref("depositRequests").on("value", snap => {
+        const table = document.getElementById("depositTable");
+        table.innerHTML = "";
+
+        snap.forEach(child => {
+            const req = child.val();
+            const id = child.key;
+
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+                <td>${req.uid}</td>
+                <td>₹${req.amount}</td>
+                <td><a href="${req.screenshot}" target="_blank">View</a></td>
+                <td>${req.status}</td>
+                <td>
+                    <button onclick="approveDeposit('${id}', '${req.uid}', ${req.amount})">Approve</button>
+                    <button onclick="rejectDeposit('${id}')">Reject</button>
+                </td>
+            `;
+            table.appendChild(tr);
+        });
+    });
+}
+loadDepositRequests();
+
+
+// ------------------- APPROVE DEPOSIT -------------------
+function approveDeposit(requestId, uid, amount) {
+
+    // Add money to wallet
+    const userBalRef = db.ref("users/" + uid + "/balance");
+    userBalRef.transaction(balance => (balance || 0) + amount);
+
+    // Update status
+    db.ref("depositRequests/" + requestId + "/status").set("approved");
+
+    alert("Deposit Approved ✔");
+}
+
+
+// ------------------- REJECT DEPOSIT -------------------
+function rejectDeposit(requestId) {
+    db.ref("depositRequests/" + requestId + "/status").set("rejected");
+    alert("Deposit Rejected ✔");
+}
+</script>
+
+</script>
+<!-- ==================== PART 5 — SECURITY + STATS + LOGS + BAN ==================== -->
+
+<h2>Admin Controls</h2>
+
+<!-- Ban User -->
+<div style="margin-top:15px;">
+  <h3>Ban / Unban User</h3>
+  <input type="text" id="banUserId" placeholder="User UID">
+  <button onclick="banUser()">Ban</button>
+  <button onclick="unbanUser()">Unban</button>
+</div>
+
+<hr>
+
+<h2>System Stats</h2>
+<div id="statsBox" style="padding:15px; background:#f0f0f0; border-radius:8px; margin-bottom:20px;">
+  <p>Total Users: <b id="statUsers">0</b></p>
+  <p>Total Deposits: <b id="statDeposits">0</b></p>
+  <p>Total Withdraws: <b id="statWithdraws">0</b></p>
+  <p>Total Game Profit: <b id="statProfit">0</b></p>
+</div>
+
+<hr>
+
+<h2>Login & IP Logs</h2>
+
+<table width="100%" border="1" cellpadding="10">
+  <thead>
+    <tr>
+      <th>User</th>
+      <th>IP</th>
+      <th>Time</th>
+    </tr>
+  </thead>
+  <tbody id="ipTable"></tbody>
+</table>
+
+<script>
+
+/* ======================= ADMIN LOGIN PROTECTION ======================= */
+
+auth.onAuthStateChanged(user => {
+  if (!user || user.email !== "admin@gmail.com") {
+    alert("Access denied! Admin only.");
+    window.location.href = "index.html";
+  }
+});
+
+
+/* ========================= BAN / UNBAN USER ========================= */
+
+function banUser() {
+  const uid = document.getElementById('banUserId').value;
+  if (!uid) return alert("Enter UID");
+
+  db.ref("users/" + uid + "/banned").set(true);
+  alert("User Banned ✔");
+}
+
+function unbanUser() {
+  const uid = document.getElementById('banUserId').value;
+  if (!uid) return alert("Enter UID");
+
+  db.ref("users/" + uid + "/banned").set(false);
+  alert("User Unbanned ✔");
+}
+
+
+/* ========================= IP LOGGING ========================= */
+
+function logIP(uid) {
+  fetch("https://api.ipify.org?format=json")
+      .then(r => r.json())
+      .then(data => {
+          db.ref("ipLogs").push({
+            uid: uid,
+            ip: data.ip,
+            time: new Date().toLocaleString()
+          });
+      });
+}
+
+/* Auto-log admin session IP */
+auth.onAuthStateChanged(user => {
+  if (user) {
+    logIP(user.uid);
+  }
+});
+
+
+/* ========================= LOAD IP LOGS ========================= */
+
+db.ref("ipLogs").on("value", snap => {
+  const table = document.getElementById("ipTable");
+  table.innerHTML = "";
+
+  snap.forEach(child => {
+      const d = child.val();
+
+      const tr = document.createElement("tr");
+      tr.innerHTML = `
+        <td>${d.uid}</td>
+        <td>${d.ip}</td>
+        <td>${d.time}</td>
+      `;
+      table.appendChild(tr);
+  });
+});
+
+
+/* ========================= STATISTICS ========================= */
+
+function loadStats() {
+  
+  // Total Users
+  db.ref("users").on("value", snap => {
+      document.getElementById("statUsers").textContent = snap.numChildren();
+  });
+
+  // Total Deposits
+  db.ref("depositRequests").on("value", snap => {
+      let total = 0;
+      snap.forEach(child => {
+        if (child.val().status === "approved") {
+            total += parseFloat(child.val().amount);
+        }
+      });
+      document.getElementById("statDeposits").textContent = "₹" + total;
+  });
+
+  // Total Withdraws
+  db.ref("withdrawRequests").on("value", snap => {
+      let total = 0;
+      snap.forEach(child => {
+        if (child.val().status === "approved") {
+            total += parseFloat(child.val().amount);
+        }
+      });
+      document.getElementById("statWithdraws").textContent = "₹" + total;
+  });
+
+  // Game Profit (Total lost by users)
+  db.ref("gameHistory").on("value", snap => {
+      let profit = 0;
+      snap.forEach(child => {
+          const game = child.val();
+          if (game.result === "lose") {
+              profit += parseFloat(game.amount);
+          }
+      });
+      document.getElementById("statProfit").textContent = "₹" + profit;
+  });
+}
+
+loadStats();
+
+</script>
+
+</body>
+</html>
 
