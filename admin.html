@@ -12,50 +12,45 @@
             --success: #10b981;
             --danger: #ef4444;
             --warning: #f59e0b;
+            --info: #3b82f6;
             --bg: #f8fafc;
             --white: #ffffff;
-            --text-dark: #1e293b;
         }
 
-        body { background-color: var(--bg); color: var(--text-dark); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
+        body { background-color: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; height: 100vh; overflow: hidden; }
         
         /* Sidebar */
         .sidebar { width: 260px; background: var(--sidebar-bg); color: white; display: flex; flex-direction: column; padding: 20px 0; }
-        .sidebar-header { padding: 0 25px 30px; font-size: 22px; font-weight: 800; color: var(--primary); }
-        .nav-item { padding: 14px 25px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: #94a3b8; font-size: 14px; transition: 0.2s; }
+        .sidebar-header { padding: 0 25px 30px; font-size: 22px; font-weight: 800; color: var(--primary); border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .nav-item { padding: 14px 25px; display: flex; align-items: center; gap: 12px; cursor: pointer; color: #94a3b8; font-size: 13px; font-weight: 600; transition: 0.2s; }
         .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.05); color: white; }
         .nav-item.active { border-right: 4px solid var(--primary); color: white; }
 
         /* Main Content */
         .main-content { flex: 1; overflow-y: auto; display: flex; flex-direction: column; }
-        
-        /* Top Bar & Search */
         .top-bar { background: white; padding: 15px 30px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #e2e8f0; }
-        .search-container { position: relative; width: 400px; }
-        .search-container input { width: 100%; padding: 10px 15px; border-radius: 10px; border: 1px solid #e2e8f0; outline: none; font-family: inherit; }
+        .search-container input { width: 300px; padding: 10px 15px; border-radius: 8px; border: 1px solid #e2e8f0; outline: none; }
 
-        .content-body { padding: 30px; }
+        .content-body { padding: 25px; }
         .section { background: white; padding: 25px; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); display: none; }
         .section.active { display: block; animation: fadeIn 0.3s ease; }
         
-        .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-        .btn-group { display: flex; gap: 10px; }
-
         /* Tables */
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; }
         th { text-align: left; padding: 12px; background: #f1f5f9; font-size: 11px; text-transform: uppercase; color: #64748b; }
-        td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; }
 
-        /* Buttons & Badges */
-        button { padding: 8px 14px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; font-size: 11px; transition: 0.2s; }
-        button:active { transform: scale(0.95); }
-        .btn-success { background: var(--success); color: white; }
-        .btn-danger { background: var(--danger); color: white; }
-        .btn-primary { background: var(--primary); color: white; }
+        /* Badges & Buttons */
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        .badge-danger { background: #fee2e2; color: #b91c1c; }
+        .badge-success { background: #dcfce7; color: #15803d; }
+        .badge-sim { background: #e0e7ff; color: #4338ca; }
         
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; }
-        .badge-dep { background: #dcfce7; color: #166534; }
-        .badge-with { background: #fee2e2; color: #991b1b; }
+        button { padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; border: none; font-size: 11px; margin-right: 5px; transition: 0.2s; }
+        .btn-green { background: var(--success); color: white; }
+        .btn-red { background: var(--danger); color: white; }
+        .btn-warn { background: var(--warning); color: white; }
+        .btn-blue { background: var(--primary); color: white; }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         #loginOverlay { position: fixed; inset: 0; background: var(--sidebar-bg); z-index: 9999; display: flex; justify-content: center; align-items: center; }
@@ -64,68 +59,75 @@
 <body>
 
 <div id="loginOverlay">
-    <div style="background:white; padding:40px; border-radius:20px; text-align:center; width:300px;">
-        <h3>Admin Secure Login</h3>
-        <input type="password" id="adminPass" placeholder="Password" style="width:100%; padding:10px; margin:15px 0; border:1px solid #ddd; border-radius:8px;">
-        <button class="btn-primary" style="width:100%;" onclick="checkAuth()">Login</button>
+    <div style="background:white; padding:40px; border-radius:24px; text-align:center; width:300px;">
+        <h2 style="margin:0 0 20px 0;">🛡️ Admin Login</h2>
+        <input type="password" id="adminPass" placeholder="Admin PIN" style="width:100%; padding:12px; margin-bottom:15px; border:1px solid #ddd; border-radius:8px; box-sizing:border-box;">
+        <button class="btn-blue" style="width:100%; padding:15px;" onclick="checkAuth()">Login</button>
     </div>
 </div>
 
 <div class="sidebar">
-    <div class="sidebar-header">Elite Panel</div>
-    <div class="nav-item active" onclick="showTab(this, 'usersSec')">👥 User Manager</div>
-    <div class="nav-item" onclick="showTab(this, 'depSec')">📥 Recharge Requests</div>
-    <div class="nav-item" onclick="showTab(this, 'withSec')">📤 Withdrawals</div>
-    <div class="nav-item" onclick="showTab(this, 'histSec')">📜 Master Logs</div>
+    <div class="sidebar-header">H4X PANEL</div>
+    <div class="nav-item active" onclick="showTab(this, 'userSec')">👤 User Database</div>
+    <div class="nav-item" onclick="showTab(this, 'depSec')">📥 Deposit Approve</div>
+    <div class="nav-item" onclick="showTab(this, 'withSec')">📤 Withdraw Approve</div>
+    <div class="nav-item" onclick="showTab(this, 'simSec')">📱 SIM Requests</div>
+    <div class="nav-item" onclick="showTab(this, 'histSec')">📜 History Logs</div>
 </div>
 
 <div class="main-content">
     <div class="top-bar">
         <div class="search-container">
-            <input type="text" id="globalSearch" placeholder="Search by UID or Name..." onkeyup="filterData()">
+            <input type="text" id="globalSearch" placeholder="Search UID or Phone..." onkeyup="filterData()">
         </div>
-        <div id="stats">Total Liquid: <strong id="totalLiquid">₹0</strong></div>
+        <div id="totalStats" style="font-weight: 800; color: var(--primary);">System Online</div>
     </div>
 
     <div class="content-body">
-        <div id="usersSec" class="section active">
-            <div class="section-header">
-                <h2>User Database</h2>
-            </div>
+        <div id="userSec" class="section active">
+            <div style="margin-bottom:20px;"><h2>User Master Control</h2></div>
             <table>
-                <thead><tr><th>Name</th><th>UID</th><th>Balance</th><th>Action</th></tr></thead>
+                <thead><tr><th>User</th><th>Balance</th><th>Status</th><th>Actions</th></tr></thead>
                 <tbody id="userList"></tbody>
             </table>
         </div>
 
         <div id="depSec" class="section">
-            <div class="section-header">
-                <h2>Pending Recharges</h2>
-                <div class="btn-group">
-                    <button class="btn-success" onclick="bulkAction('deposits', 'Approved')">Approve All</button>
-                    <button class="btn-danger" onclick="bulkAction('deposits', 'Rejected')">Reject All</button>
-                </div>
-            </div>
+            <div style="margin-bottom:20px;"><h2>Wallet Deposits</h2></div>
             <table>
-                <thead><tr><th>UID</th><th>Amount</th><th>Method</th><th>Action</th></tr></thead>
+                <thead><tr><th>UID</th><th>Amount</th><th>Status</th><th>Control</th></tr></thead>
                 <tbody id="depList"></tbody>
             </table>
         </div>
 
         <div id="withSec" class="section">
-            <div class="section-header">
-                <h2>Pending Withdrawals</h2>
-            </div>
+            <div style="margin-bottom:20px;"><h2>Withdrawals</h2></div>
             <table>
-                <thead><tr><th>UID</th><th>Amount</th><th>Method</th><th>Action</th></tr></thead>
+                <thead><tr><th>UID</th><th>Amount</th><th>Method</th><th>Control</th></tr></thead>
                 <tbody id="withList"></tbody>
             </table>
         </div>
 
-        <div id="histSec" class="section">
-            <div class="section-header"><h2>Transaction History</h2></div>
+        <div id="simSec" class="section">
+            <div style="margin-bottom:20px;"><h2>SIM Recharge Requests</h2></div>
             <table>
-                <thead><tr><th>Date</th><th>Type</th><th>UID</th><th>Amount</th><th>Status</th></tr></thead>
+                <thead>
+                    <tr>
+                        <th>UID</th>
+                        <th>Mobile Number</th>
+                        <th>Operator</th>
+                        <th>Plan Price</th>
+                        <th>Control</th>
+                    </tr>
+                </thead>
+                <tbody id="simList"></tbody>
+            </table>
+        </div>
+
+        <div id="histSec" class="section">
+            <div style="margin-bottom:20px;"><h2>Transaction History</h2></div>
+            <table>
+                <thead><tr><th>Time</th><th>Type</th><th>Target</th><th>Amount</th><th>Status</th></tr></thead>
                 <tbody id="histList"></tbody>
             </table>
         </div>
@@ -150,97 +152,120 @@
     window.checkAuth = () => {
         if(document.getElementById("adminPass").value === "admin123") {
             document.getElementById("loginOverlay").style.display = "none";
-            startSystem();
-        } else alert("Invalid");
+            initSystem();
+        } else alert("Denied");
     };
 
-    window.showTab = (el, id) => {
+    window.showTab = (btn, id) => {
         document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
         document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-        el.classList.add('active');
+        btn.classList.add('active');
         document.getElementById(id).classList.add('active');
     };
 
-    function startSystem() {
-        // Users Observer
+    function initSystem() {
+        // 1. Users Observer
         onValue(ref(db, "users"), snap => {
-            let html = ""; let total = 0;
+            let html = "";
             snap.forEach(c => {
-                const u = c.val(); total += (u.balance || 0);
-                html += `<tr class="data-row" data-search="${u.displayName} ${c.key}">
-                    <td>${u.displayName || 'User'}</td><td>${c.key.slice(0,10)}</td>
+                const u = c.val();
+                const isFrozen = u.walletState === 'frozen';
+                const isBanned = u.status === 'banned';
+                html += `<tr class="t-row" data-search="${c.key} ${u.displayName}">
+                    <td><strong>${u.displayName || 'User'}</strong><br><small>${c.key.slice(0,10)}</small></td>
                     <td>₹${(u.balance || 0).toFixed(2)}</td>
-                    <td><button class="btn-primary" onclick="editUser('${c.key}')">Edit</button></td></tr>`;
+                    <td><span class="badge ${isBanned ? 'badge-danger' : 'badge-success'}">${isBanned ? 'BAN' : 'OK'}</span></td>
+                    <td>
+                        <button class="btn-green" onclick="manualRefill('${c.key}')">Recharge</button>
+                        <button class="btn-warn" onclick="toggleField('${c.key}','walletState','${isFrozen?'active':'frozen'}')">${isFrozen?'Unfreeze':'Freeze'}</button>
+                        <button class="btn-red" onclick="toggleField('${c.key}','status','${isBanned?'active':'banned'}')">${isBanned?'Unban':'Ban'}</button>
+                    </td></tr>`;
             });
             document.getElementById("userList").innerHTML = html;
-            document.getElementById("totalLiquid").innerText = "₹" + total.toLocaleString();
         });
 
-        // Request Observers
-        const observeReq = (path, target) => {
+        // 2. Deposit/Withdraw Observers (Simplified)
+        const loadRequests = (path, elId) => {
             onValue(ref(db, path), snap => {
                 let html = "";
                 snap.forEach(c => {
                     const d = c.val();
                     if(d.status === "Pending") {
-                        html += `<tr><td>${d.uid.slice(0,10)}</td><td>₹${d.amount}</td><td>${d.method || 'UPI'}</td>
-                        <td><button class="btn-success" onclick="process('${path}','${c.key}','${d.uid}',${d.amount},'Approved')">✔</button>
-                        <button class="btn-danger" onclick="process('${path}','${c.key}','${d.uid}',${d.amount},'Rejected')">✖</button></td></tr>`;
+                        html += `<tr><td>${d.uid.slice(0,10)}</td><td>₹${d.amount}</td><td>Pending</td>
+                        <td><button class="btn-green" onclick="handleTxn('${path}','${c.key}','${d.uid}',${d.amount},'Approved')">Approve</button>
+                        <button class="btn-red" onclick="handleTxn('${path}','${c.key}','${d.uid}',${d.amount},'Rejected')">Reject</button></td></tr>`;
                     }
                 });
-                document.getElementById(target).innerHTML = html || "<tr><td colspan='4'>No pending tasks</td></tr>";
+                document.getElementById(elId).innerHTML = html || "<tr><td colspan='4'>Clear</td></tr>";
             });
         };
-        observeReq("deposits", "depList");
-        observeReq("withdrawals", "withList");
+        loadRequests("deposits", "depList");
+        loadRequests("withdrawals", "withList");
 
-        // History Observer
-        onValue(ref(db, "history"), snap => {
+        // 3. SIM RECHARGE Observer
+        onValue(ref(db, "sim_requests"), snap => {
             let html = "";
-            let items = [];
-            snap.forEach(c => items.push(c.val()));
-            items.reverse().forEach(h => {
-                html += `<tr class="data-row" data-search="${h.uid}">
-                    <td style="font-size:10px">${new Date(h.time).toLocaleString()}</td>
-                    <td><span class="badge ${h.type === 'deposit' ? 'badge-dep' : 'badge-with'}">${h.type}</span></td>
-                    <td>${h.uid.slice(0,10)}</td><td>₹${h.amount}</td>
-                    <td style="color:${h.status === 'Approved' ? 'green' : 'red'}">${h.status}</td></tr>`;
+            snap.forEach(c => {
+                const s = c.val();
+                if(s.status === "Pending") {
+                    html += `<tr>
+                        <td>${s.uid.slice(0,8)}</td>
+                        <td><span class="badge badge-sim">${s.mobile}</span></td>
+                        <td>${s.operator}</td>
+                        <td>₹${s.amount}</td>
+                        <td>
+                            <button class="btn-green" onclick="handleSim('${c.key}','${s.uid}',${s.amount},'Approved')">Done</button>
+                            <button class="btn-red" onclick="handleSim('${c.key}','${s.uid}',${s.amount},'Rejected')">Fail</button>
+                        </td>
+                    </tr>`;
+                }
             });
-            document.getElementById("histList").innerHTML = html;
+            document.getElementById("simList").innerHTML = html || "<tr><td colspan='5'>No SIM Requests</td></tr>";
+        });
+
+        // 4. History
+        onValue(ref(db, "history"), snap => {
+            let list = []; snap.forEach(c => list.push(c.val()));
+            document.getElementById("histList").innerHTML = list.reverse().slice(0,30).map(h => `<tr>
+                <td>${new Date(h.time).toLocaleTimeString()}</td>
+                <td><span class="badge" style="background:#eee">${h.type}</span></td>
+                <td>${h.uid.slice(0,8)}</td><td>₹${h.amount}</td><td>${h.status}</td>
+            </tr>`).join("");
         });
     }
 
-    window.process = async (path, tid, uid, amt, status) => {
+    // LOGIC FUNCTIONS
+    window.toggleField = (uid, f, v) => update(ref(db, `users/${uid}`), { [f]: v });
+    
+    window.manualRefill = (uid) => {
+        const a = prompt("Amount:");
+        if(a) update(ref(db, `users/${uid}`), { balance: increment(parseFloat(a)) });
+    };
+
+    window.handleTxn = async (path, tid, uid, amt, status) => {
         if(status === "Approved") {
             const mod = path === 'deposits' ? amt : -amt;
             await update(ref(db, `users/${uid}`), { balance: increment(mod) });
         }
-        // Move to History
-        await update(ref(db, `history/${tid}`), { uid, amount: amt, type: path === 'deposits' ? 'deposit' : 'withdraw', status, time: Date.now() });
-        // Update original
+        await update(ref(db, `history/${tid}`), { uid, amount: amt, type: path.toUpperCase(), status, time: Date.now() });
         update(ref(db, `${path}/${tid}`), { status });
     };
 
-    window.bulkAction = async (path, status) => {
-        if(!confirm(`Are you sure you want to ${status} ALL pending ${path}?`)) return;
-        const snap = await get(ref(db, path));
-        snap.forEach(child => {
-            const d = child.val();
-            if(d.status === "Pending") process(path, child.key, d.uid, d.amount, status);
-        });
+    window.handleSim = async (tid, uid, amt, status) => {
+        // Usually SIM recharge deducts balance at time of request, 
+        // if rejected, you might want to refund the user.
+        if(status === "Rejected") {
+            await update(ref(db, `users/${uid}`), { balance: increment(amt) });
+        }
+        await update(ref(db, `history/${tid}`), { uid, amount: amt, type: 'SIM_RECHARGE', status, time: Date.now() });
+        update(ref(db, `sim_requests/${tid}`), { status });
     };
 
     window.filterData = () => {
         const q = document.getElementById("globalSearch").value.toLowerCase();
-        document.querySelectorAll(".data-row").forEach(row => {
-            const txt = row.getAttribute("data-search").toLowerCase();
-            row.style.display = txt.includes(q) ? "" : "none";
+        document.querySelectorAll(".t-row").forEach(r => {
+            r.style.display = r.getAttribute("data-search").toLowerCase().includes(q) ? "" : "none";
         });
-    };
-
-    window.editUser = (uid) => {
-        const amt = prompt("Change balance (positive to add, negative to sub):");
-        if(amt) update(ref(db, `users/${uid}`), { balance: increment(parseFloat(amt)) });
     };
 </script>
 </body>
