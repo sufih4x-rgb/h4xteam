@@ -1,12 +1,171 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Processing</title>
-<link rel="stylesheet" href="assets/css/neon.css">
-</head>
+<meta charset="UTF-8">
+<title>Processing - H4XTEAM</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+<style>
+    body{
+        background:#000;
+        color:#00eaff;
+        font-family:Arial;
+        text-align:center;
+        padding:20px;
+    }
+
+    h1{
+        font-size:32px;
+        text-shadow:0 0 12px #00eaff;
+    }
+
+    .section{
+        background:#0a0a0a;
+        border:1px solid #00eaff;
+        border-radius:12px;
+        padding:15px;
+        margin-top:20px;
+        box-shadow:0 0 12px #00eaff;
+        text-align:left;
+    }
+
+    .item{
+        padding:12px;
+        border-bottom:1px solid #00eaff;
+    }
+
+    .item:last-child{
+        border-bottom:none;
+    }
+
+    .pending{ color:yellow; }
+    .approved{ color:#00ff88; }
+    .rejected{ color:#ff4444; }
+
+    button{
+        margin-top:30px;
+        padding:15px;
+        width:80%;
+        background:#00eaff;
+        color:#000;
+        border:none;
+        border-radius:10px;
+        font-size:18px;
+        font-weight:bold;
+        cursor:pointer;
+        text-shadow:0 0 10px #fff;
+        box-shadow:0 0 15px #00eaff;
+    }
+</style>
+</head>
 <body>
-<h1>Processing Requests</h1>
-<p>Your deposits/withdrawals are under review.</p>
+
+<h1>Transaction Status</h1>
+
+<h2>Deposits</h2>
+<div id="depositList" class="section">Loading...</div>
+
+<h2>Withdrawals</h2>
+<div id="withdrawList" class="section">Loading...</div>
+
+<button onclick="window.location='dashboard.html'">Back</button>
+
+<script type="module">
+
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+import { 
+    getDatabase,
+    ref,
+    onValue
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+const firebaseConfig={
+ apiKey:"AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+ authDomain:"test-eb5e7.firebaseapp.com",
+ databaseURL:"https://test-eb5e7-default-rtdb.firebaseio.com",
+ projectId:"test-eb5e7",
+ storageBucket:"test-eb5e7.appspot.com",
+ messagingSenderId:"366282855653",
+ appId:"1:366282855653:web:dca7e000f5a22fb11f300c",
+ measurementId:"G-ECKCTBLQJ8"
+};
+
+const app=initializeApp(firebaseConfig);
+const auth=getAuth(app);
+const db=getDatabase(app);
+
+let uid="";
+
+onAuthStateChanged(auth,user=>{
+    if(!user){ window.location='index.html'; return; }
+    uid=user.uid;
+    loadDeposits();
+    loadWithdrawals();
+});
+
+// ---------------------- LOAD DEPOSIT STATUS ----------------------
+
+function loadDeposits(){
+    const refPath = ref(db,"transactions/deposits/"+uid);
+
+    onValue(refPath, snap=>{
+        let box = document.getElementById("depositList");
+
+        if(!snap.exists()){
+            box.innerHTML = "<p>No deposit history.</p>";
+            return;
+        }
+
+        let html="";
+
+        snap.forEach(item=>{
+            let x=item.val();
+            html+=`
+                <div class="item">
+                    <b>Amount:</b> ₹${x.amount}<br>
+                    <b>Paid:</b> ₹${x.pay}<br>
+                    <b>Status:</b> <span class="${x.status}">${x.status.toUpperCase()}</span><br>
+                    <b>TXID:</b> ${item.key}
+                </div>
+            `;
+        });
+
+        box.innerHTML = html;
+    });
+}
+
+// ---------------------- LOAD WITHDRAW STATUS ----------------------
+
+function loadWithdrawals(){
+    const refPath = ref(db,"transactions/withdraw/"+uid);
+
+    onValue(refPath, snap=>{
+        let box = document.getElementById("withdrawList");
+
+        if(!snap.exists()){
+            box.innerHTML = "<p>No withdrawal history.</p>";
+            return;
+        }
+
+        let html="";
+
+        snap.forEach(item=>{
+            let x=item.val();
+            html+=`
+                <div class="item">
+                    <b>Amount:</b> ₹${x.amount}<br>
+                    <b>UPI:</b> ${x.upi}<br>
+                    <b>Status:</b> <span class="${x.status}">${x.status.toUpperCase()}</span><br>
+                </div>
+            `;
+        });
+
+        box.innerHTML = html;
+    });
+}
+
+</script>
+
 </body>
 </html>
