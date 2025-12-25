@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chicken Road | H4XTEAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --bg: #0f172a;
+            --surface: #1e293b;
+            --text: #ffffff;
+            --accent: #fbbf24;
+            --danger: #ef4444;
+            --success: #22c55e;
+        }
+
+        body { 
+            background: var(--bg); 
+            color: var(--text); 
+            font-family: 'Plus Jakarta Sans', sans-serif; 
+            margin: 0; 
+            display: flex;
+            justify-content: center;
+            overflow-x: hidden;
+        }
+
+        .game-shell {
+            width: 100%;
+            max-width: 480px;
+            min-height: 100vh;
+            background: var(--bg);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Top Bar */
+        .game-header {
+            padding: 20px;
+            background: var(--surface);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            z-index: 10;
+        }
+
+        .wallet-pill {
+            background: #00000044;
+            padding: 10px 18px;
+            border-radius: 30px;
+            border: 1px solid rgba(255,255,255,0.1);
+            font-weight: 800;
+            color: var(--accent);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Road Visuals */
+        .road-container {
+            flex-grow: 1;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding: 80px 20px;
+            scroll-behavior: smooth;
+            position: relative;
+        }
+
+        .road-track {
+            display: inline-flex;
+            gap: 30px;
+            padding-bottom: 60px;
+        }
+
+        .step {
+            width: 85px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .mult-bubble {
+            background: var(--surface);
+            padding: 6px 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 800;
+            border: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .manhole {
+            width: 65px;
+            height: 65px;
+            background: #020617;
+            border: 4px solid #334155;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: 0.3s;
+            font-size: 24px;
+        }
+
+        .manhole.active { border-color: var(--primary); box-shadow: 0 0 20px var(--primary); }
+        .manhole.cleared { border-color: var(--success); background: #052e16; }
+        .manhole.failed { border-color: var(--danger); background: #450a0a; }
+
+        /* Chicken Player */
+        #chicken {
+            position: absolute;
+            font-size: 45px;
+            bottom: 120px;
+            left: -60px;
+            transition: 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            z-index: 5;
+            filter: drop-shadow(0 5px 15px rgba(0,0,0,0.5));
+        }
+
+        /* Animations */
+        @keyframes jump {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-40px) scale(1.1); }
+        }
+        .is-jumping { animation: jump 0.4s ease-in-out; }
+
+        /* Control Panel */
+        .panel {
+            background: var(--surface);
+            padding: 25px;
+            border-radius: 35px 35px 0 0;
+            box-shadow: 0 -10px 30px rgba(0,0,0,0.5);
+        }
+
+        .bet-input-wrap {
+            background: #0f172a;
+            border-radius: 20px;
+            padding: 5px;
+            display: flex;
+            margin-bottom: 20px;
+        }
+
+        .bet-input-wrap input {
+            flex-grow: 1;
+            background: transparent;
+            border: none;
+            color: white;
+            padding: 15px;
+            font-size: 20px;
+            font-weight: 800;
+            text-align: center;
+            outline: none;
+        }
+
+        .main-btn {
+            width: 100%;
+            padding: 20px;
+            border-radius: 20px;
+            border: none;
+            font-size: 18px;
+            font-weight: 800;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .btn-play { background: var(--primary); color: white; }
+        .btn-cash { background: var(--accent); color: #000; display: none; }
+        .main-btn:active { transform: scale(0.96); }
+
+        /* Win Modal */
+        #winModal {
+            display: none;
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            text-align: center;
+            z-index: 100;
+            animation: zoomIn 0.3s ease;
+        }
+        @keyframes zoomIn { from { transform: translate(-50%, -50%) scale(0); } }
+    </style>
+</head>
+<body>
+
+<div class="game-shell">
+    <div class="game-header">
+        <div style="font-weight: 900; font-size: 20px;">CHICKEN <span style="color:var(--primary)">ROAD</span></div>
+        <div class="wallet-pill">🪙 <span id="balanceDisplay">0.00</span></div>
+    </div>
+
+    <div class="road-container" id="viewport">
+        <div class="road-track" id="roadTrack"></div>
+        <div id="chicken">🍗</div>
+    </div>
+
+    <div id="winModal">
+        <h1 style="font-size: 60px; color: var(--accent); margin:0;">+ ₹<span id="winAmountDisplay">0</span></h1>
+        <p style="font-weight: 800; letter-spacing: 2px;">CASHED OUT!</p>
+    </div>
+
+    <div class="panel">
+        <div id="hintText" style="text-align:center; font-size:12px; margin-bottom:12px; color:#94a3b8; font-weight:700;">CHOOSE BET & START</div>
+        <div class="bet-input-wrap">
+            <input type="number" id="betAmount" value="100">
+        </div>
+        <button id="startBtn" class="main-btn btn-play" onclick="initGame()">Start Game</button>
+        <button id="cashBtn" class="main-btn btn-cash" onclick="processCashout()">Cash Out</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, onValue, update, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    let balance = 0;
+    let isPlaying = false;
+    let currentStep = 0;
+    let currentBet = 0;
+    
+    // --- PROFIT CONTROL VARIABLES ---
+    let sessionProfit = 0;
+    const forcedSequence = ['win', 'win', 'lose', 'lose', 'win', 'lose', 'win', 'lose', 'win', 'lose', 'lose', 'lose', 'lose', 'win', 'lose', 'win'];
+    let seqIndex = 0;
+
+    const mults = [1.12, 1.24, 1.38, 1.52, 1.70, 1.90, 2.12, 2.38, 2.65, 3.00, 3.40, 3.90, 4.50, 5.20, 6.10, 7.20, 8.50, 10.0, 12.0, 15.0];
+
+    onAuthStateChanged(auth, (user) => {
+        if (!user) return;
+        onValue(ref(db, `users/${user.uid}`), (snap) => {
+            if (snap.exists()) {
+                balance = snap.val().balance || 0;
+                document.getElementById("balanceDisplay").innerText = balance.toFixed(2);
+            }
+        });
+    });
+
+    function createRoad() {
+        const track = document.getElementById("roadTrack");
+        track.innerHTML = "";
+        mults.forEach((m, i) => {
+            const div = document.createElement("div");
+            div.className = "step";
+            div.innerHTML = `
+                <div class="mult-bubble">${m}x</div>
+                <div class="manhole" id="step-${i}" onclick="makeJump(${i})">🕳️</div>
+            `;
+            track.appendChild(div);
+        });
+    }
+
+    window.initGame = async () => {
+        const amt = parseFloat(document.getElementById("betAmount").value);
+        if (amt < 10 || amt > balance) return alert("Invalid Bet");
+
+        currentBet = amt;
+        currentStep = 0;
+        isPlaying = true;
+
+        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: balance - amt });
+
+        document.getElementById("startBtn").style.display = "none";
+        document.getElementById("cashBtn").style.display = "block";
+        document.getElementById("betAmount").disabled = true;
+        
+        createRoad();
+        document.getElementById("chicken").style.left = "-70px";
+        document.getElementById("chicken").innerText = "🍗";
+        updateActiveStep();
+    };
+
+    function updateActiveStep() {
+        document.querySelectorAll('.manhole').forEach(el => el.classList.remove('active'));
+        const next = document.getElementById(`step-${currentStep}`);
+        if (next) {
+            next.classList.add('active');
+            document.getElementById("hintText").innerText = `NEXT STEP: ${mults[currentStep]}x`;
+        }
+    }
+
+    window.makeJump = (index) => {
+        if (!isPlaying || index !== currentStep) return;
+
+        const chicken = document.getElementById("chicken");
+        const target = document.getElementById(`step-${index}`);
+        const rect = target.getBoundingClientRect();
+        const containerRect = document.getElementById("roadTrack").getBoundingClientRect();
+
+        chicken.classList.add('is-jumping');
+        chicken.style.left = (rect.left - containerRect.left + 10) + "px";
+
+        setTimeout(() => {
+            chicken.classList.remove('is-jumping');
+            
+            let failed = false;
+            // Profit Control Logic
+            if (sessionProfit >= 100) {
+                failed = (forcedSequence[seqIndex % forcedSequence.length] === 'lose');
+                seqIndex++;
+            } else {
+                failed = Math.random() < 0.15; // 15% random house edge
+            }
+
+            if (failed) {
+                handleLoss();
+            } else {
+                target.classList.add('cleared');
+                target.innerText = "✅";
+                currentStep++;
+                if (currentStep >= mults.length) processCashout();
+                else {
+                    updateActiveStep();
+                    document.getElementById("viewport").scrollLeft += 100;
+                }
+            }
+        }, 400);
+    };
+
+    function handleLoss() {
+        isPlaying = false;
+        document.getElementById("chicken").innerText = "💥";
+        document.getElementById(`step-${currentStep}`).classList.add('failed');
+        document.getElementById("hintText").innerText = "OOF! TRY AGAIN";
+        setTimeout(() => location.reload(), 2000);
+    }
+
+    window.processCashout = async () => {
+        if (!isPlaying || currentStep === 0) return;
+        isPlaying = false;
+
+        const win = currentBet * mults[currentStep - 1];
+        sessionProfit += (win - currentBet);
+
+        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: balance + win });
+        
+        push(ref(db, `users/${auth.currentUser.uid}/transactions`), {
+            type: "win",
+            amount: win.toFixed(2),
+            date: new Date().toLocaleString()
+        });
+
+        document.getElementById("winAmountDisplay").innerText = win.toFixed(2);
+        document.getElementById("winModal").style.display = "block";
+        setTimeout(() => location.reload(), 3000);
+    };
+
+    createRoad();
+</script>
+</body>
+</html>
