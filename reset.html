@@ -1,116 +1,196 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Password Reset - H4X TEAM</title>
-
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reset Password | H4XTEAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary: #4361ee;
+            --bg: #f4f7fe;
+            --white: #ffffff;
+            --text-dark: #1e293b;
+            --text-muted: #64748b;
+        }
+
         body {
+            background-color: var(--bg);
+            color: var(--text-dark);
+            font-family: 'Plus Jakarta Sans', sans-serif;
             margin: 0;
-            font-family: Arial, sans-serif;
-            background: #0a0a0a;
-            color: #fff;
             display: flex;
-            justify-content: center;
             align-items: center;
-            height: 100vh;
+            justify-content: center;
+            min-height: 100vh;
         }
 
-        .container {
-            width: 90%;
+        .auth-container {
+            width: 100%;
             max-width: 400px;
-            padding: 25px;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(0, 255, 200, 0.4);
-            border-radius: 10px;
-            box-shadow: 0 0 12px rgba(0, 255, 200, 0.5);
+            padding: 20px;
         }
 
-        h2 {
+        .auth-card {
+            background: var(--white);
+            padding: 45px 35px;
+            border-radius: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.04);
             text-align: center;
-            margin-bottom: 25px;
-            color: #00ffc8;
-            text-shadow: 0 0 10px #00ffc8;
         }
 
-        label {
-            display: block;
-            margin: 8px 0 5px;
-            color: #00e7ff;
+        .icon-header {
+            width: 70px;
+            height: 70px;
+            background: #fff1f2;
+            color: #ff4d4d;
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 30px;
+            margin: 0 auto 25px;
         }
+
+        h1 { font-size: 26px; font-weight: 800; margin-bottom: 10px; letter-spacing: -0.5px; }
+        p { font-size: 14px; color: var(--text-muted); line-height: 1.6; margin-bottom: 30px; }
 
         input {
             width: 100%;
-            padding: 12px;
-            border-radius: 6px;
-            border: none;
-            background: #0d0d0d;
-            color: #fff;
-            border: 1px solid rgba(0, 255, 200, 0.4);
-            margin-bottom: 15px;
-            font-size: 14px;
-        }
-
-        button {
-            width: 100%;
-            padding: 12px;
-            border: none;
-            background: #00ffc8;
-            color: #000;
-            font-weight: bold;
+            padding: 16px 20px;
+            background: #f8fafc;
+            border: 2px solid #f1f5f9;
+            border-radius: 18px;
             font-size: 15px;
-            border-radius: 6px;
+            font-weight: 600;
+            box-sizing: border-box;
+            outline: none;
+            transition: 0.3s;
+            margin-bottom: 20px;
+        }
+
+        input:focus { border-color: var(--primary); background: #fff; }
+
+        .btn-reset {
+            width: 100%;
+            padding: 18px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 18px;
+            font-size: 16px;
+            font-weight: 700;
             cursor: pointer;
-            transition: 0.2s;
-            box-shadow: 0 0 10px #00ffc8;
+            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.2);
+            transition: 0.3s;
         }
 
-        button:hover {
-            opacity: 0.8;
+        .btn-reset:disabled {
+            background: #cbd5e1;
+            box-shadow: none;
+            cursor: not-allowed;
         }
 
-        .back-login {
-            text-align: center;
-            margin-top: 15px;
+        .cooldown-text {
+            font-size: 12px;
+            color: #ef4444;
+            margin-top: 10px;
+            display: none;
+            font-weight: 600;
         }
 
-        .back-login a {
-            color: #00e7ff;
+        .footer-link {
+            margin-top: 25px;
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
             text-decoration: none;
-        }
-
-        .back-login a:hover {
-            text-shadow: 0 0 10px #00e7ff;
         }
     </style>
 </head>
-
 <body>
-    <div class="container">
-        <h2>Reset Password</h2>
 
-        <label>Email Address</label>
-        <input type="email" id="resetEmail" placeholder="Enter your registered email" />
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="icon-header">🔑</div>
+        <h1>Reset Password</h1>
+        <p>Enter your email to receive a recovery link.</p>
 
-        <button onclick="sendReset()">SEND RESET LINK</button>
+        <input type="email" id="resetEmail" placeholder="Enter your email">
 
-        <div class="back-login">
-            <a href="index.html">Back to Login</a>
-        </div>
+        <button class="btn-reset" id="resetBtn" onclick="sendReset()">Send Recovery Link</button>
+        <div id="cooldownMsg" class="cooldown-text">Wait before requesting again.</div>
+
+        <a href="index.html" class="footer-link">Return to Sign In</a>
     </div>
+</div>
 
-    <script>
-        function sendReset() {
-            const email = document.getElementById('resetEmail').value;
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getAuth, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-            if (email.trim() === '') {
-                alert("Please enter your email!");
-                return;
+   const firebaseConfig = {
+  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+  authDomain: "test-eb5e7.firebaseapp.com",
+  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+  projectId: "test-eb5e7",
+  storageBucket: "test-eb5e7.appspot.com",
+  messagingSenderId: "366282855653",
+  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+  measurementId: "G-ECKCTBLQJ8"
+};
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    // Cooldown Logic (1 Hour = 3600000ms)
+    const COOLDOWN_TIME = 60 * 60 * 1000; 
+
+    function checkCooldown() {
+        const lastReset = localStorage.getItem('lastResetRequest');
+        const btn = document.getElementById('resetBtn');
+        const msg = document.getElementById('cooldownMsg');
+
+        if (lastReset) {
+            const timePassed = Date.now() - parseInt(lastReset);
+            if (timePassed < COOLDOWN_TIME) {
+                const minsLeft = Math.ceil((COOLDOWN_TIME - timePassed) / 60000);
+                btn.disabled = true;
+                msg.style.display = 'block';
+                msg.innerText = `Try again in ${minsLeft} minutes.`;
+                return true;
             }
-
-            alert("If this email is registered, you will receive a reset link.");
         }
-    </script>
+        btn.disabled = false;
+        msg.style.display = 'none';
+        return false;
+    }
+
+    // Run check on page load
+    checkCooldown();
+
+    window.sendReset = function() {
+        const email = document.getElementById('resetEmail').value;
+
+        if (email.trim() === '') {
+            alert("Please enter your email.");
+            return;
+        }
+
+        if (checkCooldown()) return;
+
+        sendPasswordResetEmail(auth, email)
+        .then(() => {
+            // Success: Set timestamp
+            localStorage.setItem('lastResetRequest', Date.now().toString());
+            alert("Success! Check your email inbox.");
+            checkCooldown(); // Update UI
+        })
+        .catch((error) => {
+            alert("Error: " + error.message);
+        });
+    }
+</script>
 </body>
 </html>
