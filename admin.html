@@ -7,184 +7,130 @@
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #4361ee;
-            --success: #06d6a0;
-            --danger: #ff4d4d;
-            --warning: #ff9f1c;
-            --bg: #f4f7fe;
-            --white: #ffffff;
-            --text-dark: #1e293b;
-            --text-light: #64748b;
+            --primary: #4361ee; --success: #06d6a0; --danger: #ff4d4d; --warning: #ff9f1c;
+            --bg: #f4f7fe; --white: #ffffff; --text-dark: #1e293b; --text-light: #64748b;
         }
-
         body { background-color: var(--bg); color: var(--text-dark); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 20px; }
         .container { max-width: 1300px; margin: auto; }
-        
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: var(--white); padding: 20px; border-radius: 18px; box-shadow: 0 5px 15px rgba(0,0,0,0.02); border: 1px solid #edf2f7; }
-        .stat-card h3 { font-size: 12px; color: var(--text-light); text-transform: uppercase; margin: 0 0 10px 0; }
-        .stat-card div { font-size: 28px; font-weight: 800; color: var(--primary); }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .stat-card { background: var(--white); padding: 20px; border-radius: 18px; border: 1px solid #edf2f7; }
+        .stat-card h3 { font-size: 11px; color: var(--text-light); text-transform: uppercase; margin: 0; }
+        .stat-card div { font-size: 24px; font-weight: 800; color: var(--primary); }
 
-        .tabs { display: flex; gap: 10px; margin-bottom: 25px; overflow-x: auto; padding-bottom: 5px; }
-        .tab-btn { background: #e2e8f0; color: #64748b; padding: 12px 22px; border-radius: 12px; cursor: pointer; font-weight: 700; border: none; white-space: nowrap; transition: 0.3s; }
-        .tab-btn.active { background: var(--primary); color: white; box-shadow: 0 4px 12px rgba(67, 97, 238, 0.3); }
+        .tabs { display: flex; gap: 10px; margin-bottom: 25px; overflow-x: auto; }
+        .tab-btn { background: #e2e8f0; color: #64748b; padding: 12px 22px; border-radius: 12px; cursor: pointer; font-weight: 700; border: none; transition: 0.3s; }
+        .tab-btn.active { background: var(--primary); color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
 
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
-
         .section { background: var(--white); padding: 25px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.04); margin-bottom: 30px; }
-        .section-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; color: var(--text-dark); }
+        .section-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
         
-        .table-wrap { overflow-x: auto; }
         table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 15px; background: #f8fafc; font-size: 11px; color: var(--text-light); text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
-        td { padding: 15px; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; vertical-align: middle; }
+        th { text-align: left; padding: 12px; background: #f8fafc; font-size: 11px; color: var(--text-light); }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; }
 
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; }
-        .badge-active { background: #ecfdf5; color: #059669; }
-        .badge-banned { background: #fef2f2; color: #dc2626; }
-        .badge-frozen { background: #fff7ed; color: #ea580c; }
-
-        button { padding: 8px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; transition: 0.2s; font-size: 11px; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; }
+        .badge-danger { background: #fee2e2; color: #dc2626; }
+        
+        button { padding: 8px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 11px; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-green { background: var(--success); color: white; }
         .btn-red { background: var(--danger); color: white; }
-        .btn-orange { background: var(--warning); color: white; }
-
-        .chat-container { display: grid; grid-template-columns: 300px 1fr; height: 600px; background: white; border-radius: 24px; border: 1px solid #eee; overflow: hidden; }
-        .chat-sidebar { border-right: 1px solid #eee; background: #f9fafb; overflow-y: auto; }
-        .user-item { padding: 15px; border-bottom: 1px solid #eee; cursor: pointer; }
-        .user-item:hover { background: #f1f5f9; }
-        .user-item.active { background: #e0e7ff; border-left: 4px solid var(--primary); }
-        .chat-main { display: flex; flex-direction: column; }
-        .chat-msgs { flex: 1; padding: 20px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #fff; }
-        .bubble { max-width: 70%; padding: 10px 15px; border-radius: 15px; font-size: 13px; }
-        .bubble.admin { align-self: flex-end; background: var(--primary); color: white; border-bottom-right-radius: 2px; }
-        .bubble.user { align-self: flex-start; background: #f1f3f9; color: var(--text-dark); border-bottom-left-radius: 2px; }
         
+        /* Game Control Styles */
+        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .bet-box { background: #f8fafc; padding: 15px; border-radius: 15px; margin-bottom: 10px; }
+        .vol-text { font-weight: 800; color: var(--primary); float: right; }
+
         #loginOverlay { position: fixed; inset: 0; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 10000; }
-        .login-card { background: white; padding: 40px; border-radius: 30px; text-align: center; width: 320px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); }
-        input[type="password"], input[type="text"], select { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #e2e8f0; margin-bottom: 15px; box-sizing: border-box; }
+        .login-card { background: white; padding: 40px; border-radius: 30px; text-align: center; width: 320px; }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
     <div class="login-card">
-        <div style="font-size: 40px; margin-bottom: 10px;">🛡️</div>
-        <h2>Admin Portal</h2>
-        <input type="password" id="adminPass" placeholder="Enter System Password">
+        <h2>Admin Login</h2>
+        <input type="password" id="adminPass" placeholder="System Password" style="width:100%; padding:12px; margin:10px 0; border-radius:10px; border:1px solid #ddd;">
         <button class="btn-blue" style="width: 100%; padding: 15px;" onclick="checkAuth()">Login</button>
     </div>
 </div>
 
 <div class="container">
     <div class="stats-grid">
-        <div class="stat-card"><h3>Platform Balance</h3><div id="totalBal">₹0</div></div>
-        <div class="stat-card"><h3>Active Users</h3><div id="userCount">0</div></div>
-        <div class="stat-card"><h3>Pending Requests</h3><div id="pendingCount">0</div></div>
+        <div class="stat-card"><h3>Total Balance</h3><div id="totalBal">₹0</div></div>
+        <div class="stat-card"><h3>Users</h3><div id="userCount">0</div></div>
+        <div class="stat-card"><h3>30S Volume</h3><div id="vol30">₹0</div></div>
+        <div class="stat-card"><h3>1M Volume</h3><div id="vol60">₹0</div></div>
     </div>
 
     <div class="tabs">
         <button class="tab-btn active" onclick="showTab(event, 'users')">👥 Users</button>
+        <button class="tab-btn" onclick="showTab(event, 'masterGame')">🎮 Game Control</button>
         <button class="tab-btn" onclick="showTab(event, 'deposits')">📥 Deposits</button>
         <button class="tab-btn" onclick="showTab(event, 'withdrawals')">📤 Withdrawals</button>
-        <button class="tab-btn" onclick="showTab(event, 'recharges')">📱 Recharges</button>
         <button class="tab-btn" onclick="showTab(event, 'support')">💬 Support</button>
     </div>
 
     <div id="users" class="tab-content active">
         <div class="section">
             <div class="section-title">User Management</div>
-            <div class="table-wrap">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>User Name / Email</th>
-                            <th>Balance</th>
-                            <th>Status</th>
-                            <th>Wallet</th>
-                            <th>Master Control</th>
-                        </tr>
-                    </thead>
-                    <tbody id="userList"></tbody>
-                </table>
+            <table>
+                <thead><tr><th>User Info</th><th>Balance</th><th>Status</th><th>Control</th></tr></thead>
+                <tbody id="userList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="masterGame" class="tab-content">
+        <div class="section">
+            <div class="section-title">Live Result Fixer & Monitor</div>
+            <select id="controlMode" onchange="syncBets()" style="padding:10px; border-radius:10px; margin-bottom:20px;">
+                <option value="30">Mode: 30 Seconds</option>
+                <option value="60">Mode: 1 Minute</option>
+                <option value="300">Mode: 5 Minutes</option>
+            </select>
+            
+            <div class="game-grid">
+                <div class="card">
+                    <h3>📊 Live Bets (Current Round)</h3>
+                    <div class="bet-box">RED <span id="b_RED" class="vol-text">₹0</span></div>
+                    <div class="bet-box">GREEN <span id="b_GREEN" class="vol-text">₹0</span></div>
+                    <div class="bet-box">BIG <span id="b_BIG" class="vol-text">₹0</span></div>
+                    <div class="bet-box">SMALL <span id="b_SMALL" class="vol-text">₹0</span></div>
+                </div>
+                <div class="card">
+                    <h3>🎯 Manual Fix (Next Round)</h3>
+                    <div style="display:flex; gap:5px; margin-bottom:10px;">
+                        <button class="btn-red" style="flex:1" onclick="fixNext('targetColor','RED')">Force RED</button>
+                        <button class="btn-green" style="flex:1" onclick="fixNext('targetColor','GREEN')">Force GREEN</button>
+                    </div>
+                    <div style="display:flex; gap:5px; margin-bottom:10px;">
+                        <button class="btn-blue" style="flex:1; background:#fbbf24" onclick="fixNext('targetSize','BIG')">Force BIG</button>
+                        <button class="btn-blue" style="flex:1; background:#38bdf8" onclick="fixNext('targetSize','SMALL')">Force SMALL</button>
+                    </div>
+                    <input type="number" id="targetNum" placeholder="Force Number (0-9)" style="width:100%; padding:10px; margin-bottom:5px; border-radius:10px; border:1px solid #ddd;">
+                    <button class="btn-blue" style="width:100%" onclick="fixNext('targetNum', document.getElementById('targetNum').value)">Set Number</button>
+                </div>
             </div>
         </div>
     </div>
 
     <div id="deposits" class="tab-content">
-        <div class="section">
-            <div class="section-title">Pending Deposits (UTR Check)</div>
-            <div class="table-wrap">
-                <table>
-                    <thead><tr><th>User (Email)</th><th>Amount</th><th>UTR Number</th><th>Action</th></tr></thead>
-                    <tbody id="depList"></tbody>
-                </table>
-            </div>
-        </div>
+        <div class="section"><h3>Pending Deposits</h3><table><tbody id="depList"></tbody></table></div>
     </div>
-
     <div id="withdrawals" class="tab-content">
-        <div class="section">
-            <div class="section-title">Pending Withdrawals</div>
-            <div class="table-wrap">
-                <table>
-                    <thead><tr><th>User Detail</th><th>Amount</th><th>Withdrawal UPI</th><th>Action</th></tr></thead>
-                    <tbody id="withList"></tbody>
-                </table>
-            </div>
-        </div>
+        <div class="section"><h3>Pending Withdrawals</h3><table><tbody id="withList"></tbody></table></div>
     </div>
-
-    <div id="recharges" class="tab-content">
-        <div style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 20px;">
-            <div class="section">
-                <div class="section-title">Add Recharge Plan</div>
-                <label style="font-size: 12px; font-weight: bold;">Operator</label>
-                <select id="planOperator">
-                    <option value="Jio">Jio</option>
-                    <option value="Airtel">Airtel</option>
-                    <option value="VI">VI</option>
-                    <option value="BSNL">BSNL</option>
-                </select>
-                <input type="text" id="planName" placeholder="Plan Name/Benefit">
-                <input type="text" id="planValidity" placeholder="Validity (Days)">
-                <input type="text" id="planPrice" placeholder="Price (₹)">
-                <button class="btn-blue" style="width: 100%; padding: 12px;" onclick="addPlan()">Add Plan</button>
-            </div>
-
-            <div class="section">
-                <div class="section-title">Recharge Requests</div>
-                <div class="table-wrap">
-                    <table>
-                        <thead><tr><th>User</th><th>Mobile</th><th>Plan</th><th>Action</th></tr></thead>
-                        <tbody id="rechargeReqList"></tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
-
     <div id="support" class="tab-content">
-        <div class="chat-container">
-            <div class="chat-sidebar" id="chatList"></div>
-            <div class="chat-main">
-                <div id="chatHeader" style="padding:15px; background:#f8fafc; font-weight:800; border-bottom:1px solid #eee;">Select User</div>
-                <div class="chat-msgs" id="chatBox"></div>
-                <div style="padding:15px; border-top:1px solid #eee; display:flex; gap:10px;">
-                    <input type="text" id="adminReply" placeholder="Type a message..." style="flex:1; margin:0;">
-                    <button class="btn-blue" onclick="sendReply()">Send</button>
-                </div>
-            </div>
-        </div>
+        <div class="chat-container"><div class="chat-sidebar" id="chatList"></div><div class="chat-main"><div class="chat-msgs" id="chatBox"></div><div style="padding:15px; display:flex; gap:10px;"><input type="text" id="adminReply" style="flex:1"><button class="btn-blue" onclick="sendReply()">Send</button></div></div></div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, push, remove, serverTimestamp, increment, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, set, push, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -201,12 +147,6 @@
     window.checkAuth = () => {
         if(document.getElementById("adminPass").value === "admin123") {
             document.getElementById("loginOverlay").style.display = "none";
-            
-            // --- SET ADMIN ONLINE ---
-            set(ref(db, 'admin_status/isOnline'), true);
-            // Jab admin tab band karega, automatic offline ho jayega
-            onDisconnect(ref(db, 'admin_status/isOnline')).set(false);
-            
             initSystem();
         } else { alert("Wrong Password!"); }
     };
@@ -219,139 +159,114 @@
     };
 
     function initSystem() {
-        // --- USERS ---
+        // User List with forceLoss Control
         onValue(ref(db, "users"), snap => {
             let html = ""; let total = 0; let count = 0;
             snap.forEach(child => {
                 const u = child.val(); const uid = child.key;
                 total += (u.balance || 0); count++;
-                const isBanned = u.status === 'banned';
-                const isFrozen = u.walletState === 'frozen';
-                html += `<tr><td><strong>${u.displayName || 'No Name'}</strong><br><small>${u.email || 'No Email'}</small></td><td>₹${(u.balance || 0).toFixed(2)}</td><td><span class="badge ${isBanned ? 'badge-banned' : 'badge-active'}">${isBanned ? 'BANNED' : 'ACTIVE'}</span></td><td><span class="badge ${isFrozen ? 'badge-frozen' : 'badge-active'}">${isFrozen ? 'FROZEN' : 'OPEN'}</span></td><td><button class="${isBanned ? 'btn-green' : 'btn-red'}" onclick="updateProp('${uid}','status','${isBanned ? 'active' : 'banned'}')">${isBanned ? 'Unban' : 'Ban'}</button> <button class="btn-orange" onclick="updateProp('${uid}','walletState','${isFrozen ? 'active' : 'frozen'}')">${isFrozen ? 'Unfreeze' : 'Freeze'}</button> <button class="btn-blue" onclick="setBalance('${uid}')">Edit ₹</button></td></tr>`;
+                const isLoss = u.forceLoss === true;
+                html += `<tr>
+                    <td>${u.email || 'User'}</td>
+                    <td>₹${(u.balance || 0).toFixed(2)}</td>
+                    <td><span class="badge ${isLoss?'badge-danger':''}">${isLoss?'TARGETED':'NORMAL'}</span></td>
+                    <td>
+                        <button class="btn-red" onclick="toggleLoss('${uid}', ${isLoss})">${isLoss?'Untarget':'Target Loss'}</button>
+                        <button class="btn-blue" onclick="setBal('${uid}')">Edit ₹</button>
+                    </td>
+                </tr>`;
             });
             document.getElementById("userList").innerHTML = html;
-            document.getElementById("totalBal").innerText = "₹" + total.toLocaleString();
+            document.getElementById("totalBal").innerText = "₹" + total.toFixed(0);
             document.getElementById("userCount").innerText = count;
         });
 
-        // --- DEPOSITS ---
-        onValue(ref(db, "deposit_requests"), snap => {
-            let html = ""; let p = 0;
-            snap.forEach(child => {
-                const d = child.val();
-                if(d.status === "pending") {
-                    p++;
-                    html += `<tr><td><strong>${d.displayName || 'User'}</strong><br><small>${d.email || d.uid.substring(0,6)}</small></td><td>₹${d.amount}</td><td><code>${d.utr}</code></td><td><button class="btn-green" onclick="txn('deposit_requests','${child.key}','${d.uid}',${d.amount},'Approved')">Approve</button> <button class="btn-red" onclick="txn('deposit_requests','${child.key}','${d.uid}',${d.amount},'Rejected')">Reject</button></td></tr>`;
-                }
-            });
-            document.getElementById("depList").innerHTML = html || "<tr><td colspan='4'>No pending deposits</td></tr>";
-            document.getElementById("pendingCount").innerText = p;
-        });
+        syncBets();
+        loadTxns();
+        loadSupport();
+    }
 
-        // --- WITHDRAWALS ---
-        onValue(ref(db, "withdrawals"), snap => {
-            let html = "";
-            snap.forEach(child => {
-                const w = child.val();
-                if(w.status === "Pending") {
-                    html += `<tr>
-                        <td><strong>${w.displayName || 'User'}</strong><br><small>${w.email || 'No Email'}</small></td>
-                        <td>₹${w.amount}</td>
-                        <td style="color:var(--primary); font-weight:bold;">${w.upiId || w.upi || 'Not Provided'}</td>
-                        <td>
-                            <button class="btn-green" onclick="txn('withdrawals','${child.key}','${w.uid}',${w.amount},'Approved')">Paid</button> 
-                            <button class="btn-red" onclick="txn('withdrawals','${child.key}','${w.uid}',${w.amount},'Rejected')">Reject</button>
-                        </td>
-                    </tr>`;
-                }
-            });
-            document.getElementById("withList").innerHTML = html || "<tr><td colspan='4'>No pending withdrawals</td></tr>";
+    // LIVE BET MONITOR LOGIC
+    window.syncBets = () => {
+        const m = document.getElementById("controlMode").value;
+        const now = Math.floor(Date.now() / 1000);
+        const match = `${new Date().getMinutes()}_${Math.floor(now/m)}`;
+        
+        onValue(ref(db, `bets_${m}/${match}`), snap => {
+            let v = { RED:0, GREEN:0, BIG:0, SMALL:0 };
+            if(snap.exists()) {
+                snap.forEach(u => u.forEach(b => {
+                    const d = b.val();
+                    if(d.color) v[d.color] += d.amount;
+                    if(d.size) v[d.size] += d.amount;
+                }));
+            }
+            document.getElementById('b_RED').innerText = '₹'+v.RED;
+            document.getElementById('b_GREEN').innerText = '₹'+v.GREEN;
+            document.getElementById('b_BIG').innerText = '₹'+v.BIG;
+            document.getElementById('b_SMALL').innerText = '₹'+v.SMALL;
         });
+    };
 
-        // --- RECHARGES ---
-        onValue(ref(db, "recharge_requests"), snap => {
-            let html = "";
-            snap.forEach(child => {
-                const r = child.val();
-                if(r.status === "Pending") {
-                    html += `<tr><td><strong>${r.displayName || 'User'}</strong><br><small>${r.email || 'No Email'}</small></td><td>${r.mobile}</td><td>${r.operator} ₹${r.amount}</td><td><button class="btn-green" onclick="approveRecharge('${child.key}')">Done</button> <button class="btn-red" onclick="rejectRecharge('${child.key}','${r.uid}',${r.amount})">Refund</button></td></tr>`;
-                }
+    window.fixNext = (key, val) => {
+        const m = document.getElementById("controlMode").value;
+        update(ref(db, `admin_control/${m}`), { active: true, [key]: val });
+        alert("Next result fixed!");
+    };
+
+    window.toggleLoss = (uid, cur) => update(ref(db, `users/${uid}`), { forceLoss: !cur });
+    
+    window.setBal = (uid) => {
+        let a = prompt("New Balance:");
+        if(a) update(ref(db, `users/${uid}`), { balance: parseFloat(a) });
+    };
+
+    // DEPOSIT/WITHDRAWAL LOAD
+    function loadTxns() {
+        onValue(ref(db, "deposit_requests"), s => {
+            let h = ""; s.forEach(c => {
+                const d = c.val(); if(d.status==='pending') h += `<tr><td>${d.email}</td><td>₹${d.amount}</td><td>${d.utr}</td><td><button onclick="txn('deposit_requests','${c.key}','${d.uid}',${d.amount},'Approved')">Approve</button></td></tr>`;
             });
-            document.getElementById("rechargeReqList").innerHTML = html || "<tr><td colspan='4'>No pending recharges</td></tr>";
+            document.getElementById("depList").innerHTML = h;
         });
-
-        // --- SUPPORT CHAT (Updated to admin_chats) ---
-        onValue(ref(db, "admin_chats"), snap => {
-            const list = document.getElementById("chatList");
-            list.innerHTML = "";
-            snap.forEach(child => {
-                const uid = child.key;
-                const div = document.createElement("div");
-                div.className = `user-item ${activeChat === uid ? 'active' : ''}`;
-                div.innerHTML = `<strong>User ${uid.substring(0,8)}</strong><br><small>Feedback/Support</small>`;
-                div.onclick = () => loadChat(uid);
-                list.appendChild(div);
+        onValue(ref(db, "withdrawals"), s => {
+            let h = ""; s.forEach(c => {
+                const d = c.val(); if(d.status==='Pending') h += `<tr><td>${d.email}</td><td>₹${d.amount}</td><td>${d.upi}</td><td><button onclick="txn('withdrawals','${c.key}','${d.uid}',${d.amount},'Approved')">Pay</button></td></tr>`;
             });
+            document.getElementById("withList").innerHTML = h;
         });
     }
 
-    // --- SHARED LOGIC ---
-    window.updateProp = (uid, prop, val) => update(ref(db, `users/${uid}`), { [prop]: val });
-    window.setBalance = (uid) => {
-        const val = prompt("Enter new balance:");
-        if(val) update(ref(db, `users/${uid}`), { balance: parseFloat(val) });
-    };
-    window.txn = async (path, tid, uid, amt, status) => {
-        if(status === "Approved") {
-            const change = (path === 'deposit_requests') ? parseFloat(amt) : -parseFloat(amt);
-            await update(ref(db, `users/${uid}`), { balance: increment(change) });
+    window.txn = async (p, tid, uid, amt, st) => {
+        if(st==='Approved') {
+            const inc = (p==='deposit_requests')?amt:-amt;
+            await update(ref(db, `users/${uid}`), { balance: increment(inc) });
         }
-        await update(ref(db, `${path}/${tid}`), { status: status });
-        alert(`Transaction ${status}`);
-    };
-    window.addPlan = () => {
-        const op = document.getElementById("planOperator").value;
-        const name = document.getElementById("planName").value;
-        const val = document.getElementById("planValidity").value;
-        const price = document.getElementById("planPrice").value;
-        if(!name || !price) return alert("Fill all details");
-        push(ref(db, "recharge_plans"), { operator: op, name: name, validity: val, price: parseFloat(price) });
-        document.getElementById("planName").value = "";
-        document.getElementById("planPrice").value = "";
-    };
-    window.approveRecharge = (id) => update(ref(db, `recharge_requests/${id}`), { status: "Success" });
-    window.rejectRecharge = async (id, uid, amt) => {
-        await update(ref(db, `users/${uid}`), { balance: increment(parseFloat(amt)) });
-        await update(ref(db, `recharge_requests/${id}`), { status: "Refunded" });
+        await update(ref(db, `${p}/${tid}`), { status: st });
     };
 
-    window.loadChat = (uid) => {
-        activeChat = uid;
-        document.getElementById("chatHeader").innerText = "Support with User: " + uid;
-        onValue(ref(db, `admin_chats/${uid}`), snap => {
-            const box = document.getElementById("chatBox");
-            box.innerHTML = "";
-            snap.forEach(c => {
-                const m = c.val();
-                const role = m.role || m.sender; // handling both keys
-                box.innerHTML += `<div class="bubble ${role}">${m.text}</div>`;
+    function loadSupport() {
+        onValue(ref(db, "admin_chats"), s => {
+            const l = document.getElementById("chatList"); l.innerHTML = "";
+            s.forEach(c => {
+                const d = document.createElement("div"); d.className="user-item"; d.innerText = "User: "+c.key.substring(0,5);
+                d.onclick = () => { activeChat=c.key; loadMsgs(c.key); }; l.appendChild(d);
             });
-            box.scrollTop = box.scrollHeight;
         });
-    };
-
+    }
+    function loadMsgs(uid) {
+        onValue(ref(db, `admin_chats/${uid}`), s => {
+            const b = document.getElementById("chatBox"); b.innerHTML = "";
+            s.forEach(m => { b.innerHTML += `<div class="bubble ${m.val().role}">${m.val().text}</div>`; });
+        });
+    }
     window.sendReply = () => {
-        const inp = document.getElementById("adminReply");
-        if(!inp.value || !activeChat) return;
-        // Updated to use 'role' as 'admin' to match dashboard logic
-        push(ref(db, `admin_chats/${activeChat}`), { 
-            text: inp.value, 
-            role: "admin", 
-            timestamp: serverTimestamp() 
-        });
-        inp.value = "";
+        const i = document.getElementById("adminReply");
+        if(i.value && activeChat) {
+            push(ref(db, `admin_chats/${activeChat}`), { text: i.value, role: "admin", timestamp: serverTimestamp() });
+            i.value = "";
+        }
     };
 </script>
-
 </body>
 </html>
