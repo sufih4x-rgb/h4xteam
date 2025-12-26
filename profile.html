@@ -16,150 +16,40 @@
             --text-muted: #64748b;
         }
 
-        body {
-            background-color: var(--bg);
-            color: var(--text-dark);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            margin: 0;
-            display: flex;
-            justify-content: center;
-        }
+        body { background-color: var(--bg); color: var(--text-dark); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; justify-content: center; }
+        .profile-wrapper { width: 100%; max-width: 480px; min-height: 100vh; padding-bottom: 50px; }
 
-        .profile-wrapper {
-            width: 100%;
-            max-width: 480px;
-            min-height: 100vh;
-            padding-bottom: 50px;
-        }
-
-        /* Premium Header */
-        .profile-header {
-            background: linear-gradient(135deg, #4361ee, #3f37c9);
-            padding: 50px 25px 100px;
-            text-align: center;
-            color: white;
-            border-bottom-left-radius: 40px;
-            border-bottom-right-radius: 40px;
-            box-shadow: 0 10px 30px rgba(67, 97, 238, 0.2);
-        }
-
-        .avatar-container {
-            width: 90px;
-            height: 90px;
-            background: rgba(255, 255, 255, 0.2);
-            backdrop-filter: blur(10px);
-            border: 2px solid rgba(255, 255, 255, 0.4);
-            border-radius: 30px;
-            margin: 0 auto 15px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            font-weight: 800;
-            text-shadow: 0 4px 10px rgba(0,0,0,0.1);
-        }
-
+        /* Header */
+        .profile-header { background: linear-gradient(135deg, #4361ee, #3f37c9); padding: 50px 25px 100px; text-align: center; color: white; border-bottom-left-radius: 40px; border-bottom-right-radius: 40px; }
+        .avatar-container { width: 90px; height: 90px; background: rgba(255, 255, 255, 0.2); backdrop-filter: blur(10px); border: 2px solid rgba(255, 255, 255, 0.4); border-radius: 30px; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 36px; font-weight: 800; }
         .user-email { font-size: 18px; font-weight: 700; margin-bottom: 5px; }
-        .user-uid { font-size: 11px; opacity: 0.7; letter-spacing: 1px; font-family: monospace; }
+        .user-uid { font-size: 11px; opacity: 0.7; letter-spacing: 1px; }
 
-        /* Floating Wallet Card */
-        .wallet-card {
-            background: var(--white);
-            margin: -60px 20px 25px;
-            padding: 25px;
-            border-radius: 30px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.06);
-            text-align: center;
-            border: 1px solid rgba(255,255,255,1);
-        }
-
-        .bal-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; }
+        /* Wallet */
+        .wallet-card { background: var(--white); margin: -60px 20px 25px; padding: 25px; border-radius: 30px; box-shadow: 0 20px 40px rgba(0,0,0,0.06); text-align: center; }
+        .bal-label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
         .bal-value { font-size: 38px; font-weight: 800; color: var(--text-dark); margin: 10px 0; }
         
-        .vip-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 5px;
-            background: #fff9e6;
-            color: #d97706;
-            padding: 6px 16px;
-            border-radius: 12px;
-            font-size: 12px;
-            font-weight: 800;
-        }
+        /* VIP Style */
+        .vip-badge { display: inline-flex; align-items: center; gap: 5px; background: #fff9e6; color: #d97706; padding: 6px 16px; border-radius: 12px; font-size: 12px; font-weight: 800; }
+        .vip-benefit { font-size: 10px; color: var(--success); margin-top: 5px; font-weight: 600; }
 
-        /* Stats Grid */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 15px;
-            padding: 0 20px;
-        }
-
-        .stat-item {
-            background: var(--white);
-            padding: 20px;
-            border-radius: 24px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.02);
-            border: 1px solid #f1f5f9;
-        }
-
+        /* Stats */
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; padding: 0 20px; }
+        .stat-item { background: var(--white); padding: 20px; border-radius: 24px; border: 1px solid #f1f5f9; }
         .stat-name { font-size: 11px; font-weight: 700; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase; }
         .stat-val { font-size: 18px; font-weight: 800; }
 
-        /* Navigation Menu */
+        /* Menu */
         .menu-section { padding: 30px 20px; }
         .menu-title { font-size: 14px; font-weight: 800; color: var(--text-muted); margin-bottom: 15px; padding-left: 5px; }
-        
-        .menu-card {
-            background: var(--white);
-            border-radius: 25px;
-            overflow: hidden;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.02);
-            border: 1px solid #f1f5f9;
-        }
-
-        .menu-link {
-            display: flex;
-            align-items: center;
-            padding: 18px 20px;
-            text-decoration: none;
-            color: var(--text-dark);
-            font-weight: 600;
-            border-bottom: 1px solid #f8fafc;
-            transition: 0.2s;
-        }
-
+        .menu-card { background: var(--white); border-radius: 25px; overflow: hidden; border: 1px solid #f1f5f9; }
+        .menu-link { display: flex; align-items: center; padding: 18px 20px; text-decoration: none; color: var(--text-dark); font-weight: 600; border-bottom: 1px solid #f8fafc; transition: 0.2s; }
         .menu-link:last-child { border: none; }
         .menu-link:active { background: #f1f5f9; }
+        .icon-circle { width: 36px; height: 36px; background: #f1f5f9; border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 15px; font-size: 18px; }
 
-        .icon-circle {
-            width: 36px;
-            height: 36px;
-            background: #f1f5f9;
-            border-radius: 10px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 15px;
-            font-size: 18px;
-        }
-
-        .logout-btn {
-            width: calc(100% - 40px);
-            margin: 10px 20px;
-            padding: 18px;
-            background: #fff1f2;
-            color: var(--danger);
-            border: none;
-            border-radius: 20px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .logout-btn:active { transform: scale(0.98); background: #fee2e2; }
+        .logout-btn { width: calc(100% - 40px); margin: 10px 20px; padding: 18px; background: #fff1f2; color: var(--danger); border: none; border-radius: 20px; font-size: 16px; font-weight: 700; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -168,7 +58,7 @@
     <div class="profile-header">
         <div class="avatar-container" id="avatar">H</div>
         <div class="user-email" id="email-text">Loading...</div>
-        <div class="user-uid" id="uid-text">UID: 000000000000</div>
+        <div class="user-uid" id="uid-text">UID: 000000</div>
     </div>
 
     <div class="wallet-card">
@@ -177,6 +67,7 @@
         <div class="vip-badge">
             <span>⭐</span> VIP LEVEL <span id="vip-val">0</span>
         </div>
+        <div class="vip-benefit" id="vip-msg">Play more to unlock VIP 1</div>
     </div>
 
     <div class="stats-grid">
@@ -205,6 +96,9 @@
             <a href="settings.html" class="menu-link">
                 <div class="icon-circle">⚙️</div> Settings
             </a>
+            <a href="transactions.html" class="menu-link" style="color: var(--primary);">
+                <div class="icon-circle">📜</div> Transaction History
+            </a>
         </div>
     </div>
 
@@ -214,55 +108,80 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-   const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
     onAuthStateChanged(auth, user => {
-        if (!user) {
-            window.location = "index.html";
-            return;
-        }
+        if (!user) { window.location = "index.html"; return; }
 
-        // Basic Auth Info
         document.getElementById("email-text").innerText = user.email;
-        document.getElementById("uid-text").innerText = "UID: " + user.uid.toUpperCase();
+        document.getElementById("uid-text").innerText = "UID: " + user.uid.toUpperCase().substring(0,12);
         document.getElementById("avatar").innerText = user.email.charAt(0).toUpperCase();
 
-        // Real-time Database Stats
         const userRef = ref(db, "users/" + user.uid);
         onValue(userRef, (snapshot) => {
             const data = snapshot.val();
             if (data) {
+                const wins = data.lifetimeWins || 0;
+                const deposits = data.deposits || 0;
+                
+                // VIP Logic: 1000=L1, 5000=L2, 10000=L3... up to L10
+                let currentVip = 0;
+                if(wins >= 50000) currentVip = 10;
+                else if(wins >= 40000) currentVip = 9;
+                else if(wins >= 30000) currentVip = 8;
+                else if(wins >= 20000) currentVip = 7;
+                else if(wins >= 15000) currentVip = 6;
+                else if(wins >= 12000) currentVip = 5;
+                else if(wins >= 10000) currentVip = 4;
+                else if(wins >= 8000) currentVip = 3;
+                else if(wins >= 5000) currentVip = 2;
+                else if(wins >= 1000) currentVip = 1;
+
+                // Update VIP in Database if changed
+                if(data.vip !== currentVip) {
+                    update(userRef, { vip: currentVip });
+                }
+
+                // UI Updates
                 document.getElementById("bal-val").innerText = (data.balance || 0).toLocaleString('en-IN', {minimumFractionDigits: 2});
-                document.getElementById("vip-val").innerText = data.vip || 0;
-                document.getElementById("dep-val").innerText = data.deposits || 0;
-                document.getElementById("win-val").innerText = "₹" + (data.lifetimeWins || 0).toLocaleString('en-IN');
+                document.getElementById("vip-val").innerText = currentVip;
+                document.getElementById("dep-val").innerText = deposits;
+                document.getElementById("win-val").innerText = "₹" + wins.toLocaleString('en-IN');
+
+                // VIP Benefit Message
+                const msgBox = document.getElementById("vip-msg");
+                if(currentVip >= 1) {
+                    if(deposits >= 1) {
+                        msgBox.innerText = "✅ VIP Benefit: ₹50 Monthly Claim Active";
+                        msgBox.style.color = "var(--success)";
+                    } else {
+                        msgBox.innerText = "❌ Deposit 1 time to claim VIP Monthly ₹50";
+                        msgBox.style.color = "var(--danger)";
+                    }
+                } else {
+                    msgBox.innerText = "Win ₹" + (1000 - wins) + " more for VIP 1 benefits";
+                }
             }
         });
     });
 
     window.triggerLogout = function() {
         if (confirm("Are you sure you want to log out?")) {
-            signOut(auth).then(() => {
-                window.location = "index.html";
-            });
+            signOut(auth).then(() => { window.location = "index.html"; });
         }
     };
 </script>
-
 </body>
 </html>
