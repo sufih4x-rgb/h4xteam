@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transactions | H4XTEAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --success: #06d6a0;
+            --danger: #ef476f;
+            --warning: #facc15;
+            --bg: #f8fafc;
+            --white: #ffffff;
+            --text-main: #1e293b;
+            --text-muted: #64748b;
+        }
+
+        body { background-color: var(--bg); color: var(--text-main); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; justify-content: center; }
+        .app-container { width: 100%; max-width: 480px; min-height: 100vh; background: var(--bg); position: relative; }
+
+        /* Header Styles */
+        .header { background: var(--white); padding: 25px 20px; display: flex; align-items: center; gap: 15px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+        .back-btn { font-size: 24px; text-decoration: none; color: var(--text-main); background: #f1f5f9; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+        .header h1 { font-size: 20px; font-weight: 800; margin: 0; }
+
+        /* Custom Tabs */
+        .tabs-container { display: flex; gap: 10px; padding: 15px 20px; overflow-x: auto; white-space: nowrap; scrollbar-width: none; }
+        .tabs-container::-webkit-scrollbar { display: none; }
+        .tab { padding: 10px 20px; background: var(--white); border-radius: 15px; font-size: 13px; font-weight: 700; color: var(--text-muted); cursor: pointer; border: 1px solid #f1f5f9; transition: 0.3s; }
+        .tab.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2); }
+
+        /* Transaction List */
+        .list-container { padding: 10px 20px 100px; }
+        .transaction-card { 
+            background: var(--white); padding: 16px; border-radius: 20px; margin-bottom: 12px; 
+            display: flex; align-items: center; justify-content: space-between; 
+            border: 1px solid #f1f5f9; transition: 0.2s;
+        }
+        .transaction-card:active { transform: scale(0.98); }
+
+        .info-box { display: flex; align-items: center; gap: 15px; }
+        .icon-box { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        
+        .details h4 { margin: 0; font-size: 14px; font-weight: 700; }
+        .details p { margin: 4px 0 0; font-size: 11px; color: var(--text-muted); font-weight: 600; }
+
+        .amount-box { text-align: right; }
+        .amt { font-size: 15px; font-weight: 800; }
+        .status { font-size: 10px; font-weight: 800; text-transform: uppercase; padding: 4px 8px; border-radius: 6px; margin-top: 5px; display: inline-block; }
+
+        /* Status Colors */
+        .success-bg { background: #ecfdf5; color: var(--success); }
+        .danger-bg { background: #fef2f2; color: var(--danger); }
+        .warning-bg { background: #fffbeb; color: #d97706; }
+        .win-txt { color: var(--success); }
+        .lose-txt { color: var(--danger); }
+
+        /* Empty State */
+        .empty-state { text-align: center; padding: 50px 20px; display: none; }
+        .empty-state img { width: 120px; opacity: 0.5; margin-bottom: 15px; }
+        .empty-state p { color: var(--text-muted); font-weight: 600; }
+    </style>
+</head>
+<body>
+
+<div class="app-container">
+    <div class="header">
+        <a href="dashboard.html" class="back-btn">←</a>
+        <h1>Transactions</h1>
+    </div>
+
+    <div class="tabs-container">
+        <div class="tab active" onclick="filterData('all', this)">All History</div>
+        <div class="tab" onclick="filterData('deposit', this)">Deposits</div>
+        <div class="tab" onclick="filterData('withdraw', this)">Withdrawals</div>
+        <div class="tab" onclick="filterData('game', this)">Game Win/Loss</div>
+    </div>
+
+    <div class="list-container" id="transactionList">
+        <div id="loading" style="text-align: center; padding: 20px; color: var(--text-muted); font-weight: 600;">Loading Transactions...</div>
+        
+        <div class="empty-state" id="emptyState">
+            <img src="https://cdn-icons-png.flaticon.com/512/7486/7486744.png" alt="empty">
+            <p>No transaction history found.</p>
+        </div>
+
+        <div id="dataContent"></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    let allTransactions = [];
+
+    onAuthStateChanged(auth, user => {
+        if (!user) { window.location = "index.html"; return; }
+
+        // Fetching data from Firebase
+        const transRef = ref(db, `transactions/${user.uid}`);
+        onValue(transRef, (snapshot) => {
+            document.getElementById('loading').style.display = 'none';
+            const data = snapshot.val();
+            
+            if (!data) {
+                document.getElementById('emptyState').style.display = 'block';
+                return;
+            }
+
+            // Convert Object to Array and Sort by Date
+            allTransactions = Object.keys(data).map(key => ({
+                id: key,
+                ...data[key]
+            })).sort((a, b) => b.timestamp - a.timestamp);
+
+            renderList(allTransactions);
+        });
+    });
+
+    function renderList(list) {
+        const container = document.getElementById('dataContent');
+        const empty = document.getElementById('emptyState');
+        container.innerHTML = "";
+
+        if (list.length === 0) {
+            empty.style.display = 'block';
+            return;
+        }
+        empty.style.display = 'none';
+
+        list.forEach(item => {
+            const date = new Date(item.timestamp).toLocaleString();
+            let icon = "💰";
+            let iconBg = "#f1f5f9";
+            let typeTitle = item.type.toUpperCase();
+            let amtClass = "";
+            let statusClass = "success-bg";
+
+            // Dynamic Styling based on type
+            if(item.type === 'deposit') { icon = "📥"; iconBg = "#e0e7ff"; }
+            else if(item.type === 'withdraw') { icon = "📤"; iconBg = "#ffedd5"; }
+            else if(item.type === 'win') { icon = "🏆"; iconBg = "#dcfce7"; amtClass = "win-txt"; }
+            else if(item.type === 'lose') { icon = "📉"; iconBg = "#fee2e2"; amtClass = "lose-txt"; }
+
+            if(item.status === 'pending') statusClass = "warning-bg";
+            if(item.status === 'failed') statusClass = "danger-bg";
+
+            const card = `
+                <div class="transaction-card">
+                    <div class="info-box">
+                        <div class="icon-box" style="background: ${iconBg}">${icon}</div>
+                        <div class="details">
+                            <h4>${item.title || typeTitle}</h4>
+                            <p>${date}</p>
+                        </div>
+                    </div>
+                    <div class="amount-box">
+                        <div class="amt ${amtClass}">${item.type === 'lose' ? '-' : '+'}${(item.amount || 0).toFixed(2)}</div>
+                        <div class="status ${statusClass}">${item.status || 'Success'}</div>
+                    </div>
+                </div>
+            `;
+            container.innerHTML += card;
+        });
+    }
+
+    window.filterData = (filter, el) => {
+        // Tab UI Update
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+
+        // Filtering Logic
+        if(filter === 'all') {
+            renderList(allTransactions);
+        } else if(filter === 'game') {
+            const filtered = allTransactions.filter(t => t.type === 'win' || t.type === 'lose');
+            renderList(filtered);
+        } else {
+            const filtered = allTransactions.filter(t => t.type === filter);
+            renderList(filtered);
+        }
+    };
+</script>
+
+</body>
+</html>
