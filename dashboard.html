@@ -33,7 +33,7 @@
         .wallet-card { margin: 10px 20px; padding: 25px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 24px; color: white; position: relative; overflow: hidden; }
         .balance-val { font-size: 40px; font-weight: 800; margin: 10px 0; display: block; }
 
-        /* Action Grid with Emojis */
+        /* Action Grid */
         .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 25px 20px; }
         .action-item { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; text-align: center; }
         .icon-circle { width: 55px; height: 55px; background: #fff; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
@@ -48,7 +48,6 @@
         .game-img-box { width: 65px; height: 65px; background: #f8f9fc; border-radius: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .game-img-box img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* ALL GAMES ANIMATED BUTTON */
         .btn-all-games {
             width: 100%; padding: 18px; margin-top: 5px; border-radius: 20px; border: none;
             background: linear-gradient(90deg, #4361ee, #3f37c9, #4361ee);
@@ -61,6 +60,31 @@
         }
         @keyframes gradientMove { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
         @keyframes glowPulse { 0% { box-shadow: 0 0 5px rgba(67, 97, 238, 0.4); } 50% { box-shadow: 0 0 20px rgba(67, 97, 238, 0.7); } 100% { box-shadow: 0 0 5px rgba(67, 97, 238, 0.4); } }
+
+        /* --- FLOATING CHAT UI --- */
+        #chat-float-btn {
+            position: fixed; bottom: 20px; right: 20px; width: 60px; height: 60px;
+            background: var(--primary); color: white; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 28px; box-shadow: 0 10px 25px rgba(67, 97, 238, 0.4);
+            cursor: pointer; z-index: 3000; transition: 0.3s;
+        }
+        #chat-float-btn:hover { transform: scale(1.1); }
+
+        #chat-window {
+            position: fixed; bottom: 90px; right: 20px; width: 320px; height: 400px;
+            background: white; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15);
+            display: none; flex-direction: column; overflow: hidden; z-index: 3000;
+            border: 1px solid #eee;
+        }
+        #chat-header { background: var(--primary); color: white; padding: 15px; font-weight: 700; display: flex; justify-content: space-between; }
+        #chat-messages { flex: 1; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #f9fafb; }
+        .msg { padding: 8px 12px; border-radius: 12px; font-size: 13px; max-width: 80%; }
+        .msg.user { background: var(--primary); color: white; align-self: flex-end; }
+        .msg.admin { background: #e5e7eb; color: var(--text-main); align-self: flex-start; }
+        #chat-input-area { padding: 10px; display: flex; gap: 5px; border-top: 1px solid #eee; }
+        #chat-input { flex: 1; border: 1px solid #ddd; padding: 8px 12px; border-radius: 20px; outline: none; }
+        #send-chat { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 20px; cursor: pointer; }
 
         /* Sidebar UI */
         .sidebar { position: fixed; top: 0; left: -100%; width: 80%; max-width: 320px; height: 100%; background: white; z-index: 2000; transition: 0.3s ease; padding: 30px 20px; box-sizing: border-box; }
@@ -84,6 +108,19 @@
     <button class="nav-btn" onclick="location.href='withdraw.html'">📤 Withdraw Funds</button>
     <button class="nav-btn" onclick="location.href='deposit.html'">📥 Deposit Cash</button>
     <button class="nav-btn" style="margin-top: 20px; background: #fff1f2; color: var(--danger); border-color: #ffe4e6;" onclick="logout()">Logout</button>
+</div>
+
+<div id="chat-float-btn" onclick="toggleChat()">💬</div>
+<div id="chat-window">
+    <div id="chat-header">
+        <span>Admin Support</span>
+        <span onclick="toggleChat()" style="cursor:pointer">✕</span>
+    </div>
+    <div id="chat-messages"></div>
+    <div id="chat-input-area">
+        <input type="text" id="chat-input" placeholder="Type a message...">
+        <button id="send-chat">Send</button>
+    </div>
 </div>
 
 <div class="app-shell">
@@ -149,7 +186,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, push, set, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -168,10 +205,17 @@
         document.getElementById('sidebarOverlay').classList.toggle('active');
     };
 
+    window.toggleChat = () => {
+        const win = document.getElementById('chat-window');
+        win.style.display = (win.style.display === 'flex') ? 'none' : 'flex';
+    };
+
     window.logout = () => signOut(auth).then(() => location.href = 'index.html');
 
     onAuthStateChanged(auth, user => {
         if (!user) return location.href = 'index.html';
+        
+        // Dashboard Data
         onValue(ref(db, `users/${user.uid}`), snap => {
             const d = snap.val() || {};
             const name = d.displayName || user.email.split('@')[0];
@@ -184,6 +228,38 @@
             document.getElementById('avatarLarge').innerText = initial;
             document.getElementById('userAvatarSmall').innerText = initial;
         });
+
+        // Chat Logic
+        const chatMsgDiv = document.getElementById('chat-messages');
+        const chatInput = document.getElementById('chat-input');
+        const sendBtn = document.getElementById('send-chat');
+
+        // Listen for new messages
+        onValue(ref(db, `admin_chats/${user.uid}`), (snapshot) => {
+            chatMsgDiv.innerHTML = '';
+            snapshot.forEach((child) => {
+                const msgData = child.val();
+                const div = document.createElement('div');
+                div.className = `msg ${msgData.role}`;
+                div.innerText = msgData.text;
+                chatMsgDiv.appendChild(div);
+            });
+            chatMsgDiv.scrollTop = chatMsgDiv.scrollHeight;
+        });
+
+        // Send message
+        sendBtn.onclick = () => {
+            const text = chatInput.value.trim();
+            if(!text) return;
+            const chatRef = ref(db, `admin_chats/${user.uid}`);
+            const newMsgRef = push(chatRef);
+            set(newMsgRef, {
+                text: text,
+                role: 'user',
+                timestamp: serverTimestamp()
+            });
+            chatInput.value = '';
+        };
     });
 </script>
 </body>
