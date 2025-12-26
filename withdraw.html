@@ -3,97 +3,71 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Withdraw | H4XTEAM</title>
+    <title>Safe Withdraw | H4XTEAM</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #4361ee; --bg: #f4f7fe; --white: #ffffff; --text-dark: #1e293b; --success: #06d6a0; }
-        body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; justify-content: center; overflow-x: hidden; }
-
+        :root { --primary: #4361ee; --bg: #f4f7fe; --white: #ffffff; --success: #06d6a0; --danger: #ff4d4d; }
+        body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; justify-content: center; }
         .withdraw-container { width: 100%; max-width: 480px; background: var(--white); padding: 20px; min-height: 100vh; box-sizing: border-box; }
-
-        .balance-card { background: linear-gradient(135deg, #1e293b, #4361ee); color: white; padding: 30px; border-radius: 30px; text-align: center; margin-bottom: 25px; box-shadow: 0 10px 30px rgba(67, 97, 238, 0.2); }
-        .balance-card h1 { font-size: 36px; margin: 10px 0 0; font-weight: 800; }
-
-        .input-group { margin-bottom: 20px; text-align: left; }
-        label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-left: 10px; display: block; margin-bottom: 8px; }
         
-        input { width: 100%; padding: 18px; border: 2px solid #f1f5f9; background: #f8fafc; border-radius: 20px; font-size: 16px; font-weight: 700; outline: none; box-sizing: border-box; transition: 0.3s; }
-        input:focus { border-color: var(--primary); background: #fff; }
+        .balance-card { background: linear-gradient(135deg, #1e293b, #4361ee); color: white; padding: 25px; border-radius: 25px; text-align: center; margin-bottom: 25px; }
+        .balance-card h1 { font-size: 32px; margin: 10px 0 0; }
 
-        .btn-withdraw { width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 20px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2); transition: 0.3s; }
-        .btn-withdraw:disabled { background: #cbd5e1; cursor: not-allowed; }
-
-        .overlay { 
-            position: fixed; top:0; left:0; width:100%; height:100%; 
-            display:none; flex-direction:column; align-items:center; justify-content:center; 
-            z-index: 2000; backdrop-filter: blur(10px); background: rgba(255,255,255,0.8);
-            animation: fadeIn 0.4s ease;
-        }
-
-        .popup { background: white; padding: 40px 30px; border-radius: 35px; width: 85%; max-width: 350px; text-align: center; box-shadow: 0 20px 40px rgba(0,0,0,0.1); border: 1px solid #f1f5f9; }
-
-        .loader { width: 50px; height: 50px; border: 5px solid #f3f3f3; border-top: 5px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity:0; } to { opacity:1; } }
-
-        .history-item { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f8fafc; border-radius: 15px; margin-bottom: 10px; font-size: 13px; font-weight: 600; }
-        .status { font-size: 10px; padding: 4px 10px; border-radius: 20px; font-weight: 800; text-transform: uppercase; }
+        .input-group { margin-bottom: 15px; }
+        label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px; display: block; }
         
-        /* Matching Admin Panel Statuses */
-        .st-Pending { background: #fff7ed; color: #ea580c; }
-        .st-Approved { background: #ecfdf5; color: #059669; }
-        .st-Paid { background: #ecfdf5; color: #059669; }
-        .st-Rejected { background: #fef2f2; color: #dc2626; }
+        input { width: 100%; padding: 15px; border: 2px solid #f1f5f9; background: #f8fafc; border-radius: 15px; font-size: 15px; font-weight: 700; outline: none; box-sizing: border-box; }
+        input:focus { border-color: var(--primary); }
+
+        .status-msg { font-size: 12px; margin-top: 5px; font-weight: 700; display: none; }
+        .msg-success { color: var(--success); }
+        .msg-error { color: var(--danger); }
+
+        .btn-withdraw { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 15px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 20px; }
+        .btn-withdraw:disabled { background: #cbd5e1; opacity: 0.7; }
+        
+        .safe-badge { background: #f0f3ff; color: var(--primary); padding: 10px; border-radius: 12px; font-size: 12px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
     </style>
 </head>
 <body>
 
 <div class="withdraw-container">
     <div class="balance-card">
-        <label style="color: rgba(255,255,255,0.8)">Withdrawable Balance</label>
+        <label style="color: rgba(255,255,255,0.7)">Available Balance</label>
         <h1>₹<span id="balanceText">0.00</span></h1>
     </div>
 
-    <div class="input-group">
-        <label>Amount (Min ₹100)</label>
-        <input id="amount" type="number" placeholder="Enter Amount">
+    <div class="safe-badge">
+        <span>🛡️</span> Security Check: UPI typing errors are blocked.
     </div>
 
     <div class="input-group">
-        <label>UPI Address</label>
-        <input id="upi" type="text" placeholder="example@upi">
+        <label>Withdraw Amount</label>
+        <input id="amount" type="number" placeholder="Min ₹100">
     </div>
 
-    <button id="withdrawBtn" class="btn-withdraw" onclick="requestWithdraw()">Request Payout</button>
-    <a href="dashboard.html" style="display:block; margin-top:20px; color:#64748b; font-weight:700; text-decoration:none; text-align: center;">← Back to Dashboard</a>
-
-    <div style="margin-top: 40px; text-align: left;">
-        <label>My Recent Payouts</label>
-        <div id="withdrawList"></div>
+    <div class="input-group">
+        <label>Enter UPI ID</label>
+        <input id="upi1" type="text" placeholder="example@ybl" oninput="validateUPI()">
     </div>
-</div>
 
-<div id="processingOverlay" class="overlay">
-    <div class="popup">
-        <div class="loader"></div>
-        <h2 style="margin:0;">Processing...</h2>
-        <p style="color:#64748b; font-size:14px;">Please wait while we secure your transaction.</p>
+    <div class="input-group">
+        <label>Confirm UPI ID</label>
+        <input id="upi2" type="text" placeholder="Re-enter UPI ID" oninput="validateUPI()">
+        <div id="matchMsg" class="status-msg"></div>
     </div>
-</div>
 
-<div id="congratsOverlay" class="overlay">
-    <div class="popup">
-        <div style="font-size: 60px; margin-bottom: 10px;">✅</div>
-        <h2 style="color:var(--success); margin:0;">Request Sent!</h2>
-        <p id="congratsMsg" style="color:#64748b; font-size:14px; margin: 15px 0; line-height: 1.6;"></p>
-        <button onclick="closeCongrats()" style="width:100%; padding:15px; background:var(--success); color:white; border:none; border-radius:15px; font-weight:800; cursor:pointer;">Great, Thanks!</button>
-    </div>
+    <button id="withdrawBtn" class="btn-withdraw" onclick="processWithdraw()" disabled>SUBMIT REQUEST</button>
+    
+    <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: 20px;">
+        Money will be sent to the verified UPI handle only.
+    </p>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, update, increment, set, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, increment, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -107,100 +81,77 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let uid = "", userBalance = 0, userEmail = "", userName = "";
+    let uid = "", userBal = 0, uEmail = "", uName = "";
 
     onAuthStateChanged(auth, (user) => {
         if (!user) return window.location = "index.html";
         uid = user.uid;
-        userEmail = user.email || "No Email";
-
-        // Sync User Data & Balance
-        onValue(ref(db, "users/" + uid), (snap) => {
-            if (snap.exists()) {
-                const data = snap.val();
-                userBalance = data.balance || 0;
-                userName = data.displayName || "User";
-                document.getElementById("balanceText").innerText = userBalance.toFixed(2);
+        uEmail = user.email;
+        onValue(ref(db, "users/" + uid), snap => {
+            if(snap.exists()){
+                userBal = snap.val().balance || 0;
+                uName = snap.val().displayName || "User";
+                document.getElementById("balanceText").innerText = userBal.toFixed(2);
             }
-        });
-
-        // Sync Withdraw History
-        onValue(ref(db, "withdrawals"), (snap) => {
-            let html = "";
-            let historyArr = [];
-            snap.forEach(child => {
-                const w = child.val();
-                if(w.uid === uid) {
-                    historyArr.push(w);
-                }
-            });
-            
-            // Sort history to show newest first
-            historyArr.sort((a,b) => b.timestamp - a.timestamp);
-
-            historyArr.forEach(w => {
-                html += `
-                <div class="history-item">
-                    <div>
-                        <span style="display:block">₹${w.amount}</span>
-                        <small style="color:#94a3b8; font-size:10px;">${new Date(w.timestamp).toLocaleDateString()}</small>
-                    </div>
-                    <span class="status st-${w.status}">${w.status}</span>
-                </div>`;
-            });
-            document.getElementById("withdrawList").innerHTML = html || "<small style='color:#999; display:block; text-align:center;'>No history yet</small>";
         });
     });
 
-    window.requestWithdraw = async function() {
-        let amtInput = document.getElementById("amount");
-        let upiInput = document.getElementById("upi");
-        let btn = document.getElementById("withdrawBtn");
+    window.validateUPI = () => {
+        const u1 = document.getElementById("upi1").value.trim().toLowerCase();
+        const u2 = document.getElementById("upi2").value.trim().toLowerCase();
+        const msg = document.getElementById("matchMsg");
+        const btn = document.getElementById("withdrawBtn");
 
-        let amt = Number(amtInput.value);
-        let upi = upiInput.value.trim();
+        // Simple Regex for UPI validation (Check for @)
+        const upiPattern = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
 
-        if (amt < 100) return alert("Minimum withdrawal is ₹100");
-        if (amt > userBalance) return alert("Insufficient balance!");
-        if (!upi.includes("@")) return alert("Please enter a valid UPI ID (e.g. name@apl)");
+        msg.style.display = "block";
 
-        // Disable button & show loader
-        btn.disabled = true;
-        document.getElementById("processingOverlay").style.display = "flex";
-
-        try {
-            // 1. Deduct balance first
-            await update(ref(db, "users/" + uid), { balance: increment(-amt) });
-
-            // 2. Create the request with full details for Admin
-            const newWDRef = push(ref(db, "withdrawals"));
-            await set(newWDRef, {
-                uid: uid,
-                email: userEmail,
-                displayName: userName,
-                amount: amt,
-                upiId: upi, // Important: Matches Admin Panel field
-                status: "Pending",
-                timestamp: Date.now()
-            });
-
-            document.getElementById("processingOverlay").style.display = "none";
-            document.getElementById("congratsMsg").innerHTML = `Withdrawal request for <b>₹${amt}</b> submitted. Your money will be sent to <b>${upi}</b> within 24 hours.`;
-            document.getElementById("congratsOverlay").style.display = "flex";
-            
-            amtInput.value = "";
-            upiInput.value = "";
-
-        } catch (e) {
-            alert("Error: " + e.message);
-            document.getElementById("processingOverlay").style.display = "none";
-        } finally {
+        if (!upiPattern.test(u1)) {
+            msg.innerText = "❌ Invalid UPI Format (Example: name@ybl)";
+            msg.className = "status-msg msg-error";
+            btn.disabled = true;
+        } else if (u1 !== u2) {
+            msg.innerText = "❌ UPI IDs do not match";
+            msg.className = "status-msg msg-error";
+            btn.disabled = true;
+        } else {
+            msg.innerText = "✅ UPI Matched & Validated";
+            msg.className = "status-msg msg-success";
             btn.disabled = false;
         }
     };
 
-    window.closeCongrats = () => {
-        document.getElementById("congratsOverlay").style.display = "none";
+    window.processWithdraw = async () => {
+        const amt = Number(document.getElementById("amount").value);
+        const upi = document.getElementById("upi1").value.trim().toLowerCase();
+
+        if (amt < 100) return alert("Min withdraw is ₹100");
+        if (amt > userBal) return alert("Insufficient balance!");
+
+        try {
+            document.getElementById("withdrawBtn").disabled = true;
+            document.getElementById("withdrawBtn").innerText = "Submitting...";
+
+            // Deduct balance
+            await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
+
+            // Push to withdrawals
+            await push(ref(db, "withdrawals"), {
+                uid: uid,
+                email: uEmail,
+                displayName: uName,
+                amount: amt,
+                upiId: upi,
+                status: "Pending",
+                timestamp: Date.now()
+            });
+
+            alert("Request sent successfully! Funds will arrive shortly.");
+            location.reload();
+        } catch (e) {
+            alert("Error: " + e.message);
+        }
     };
 </script>
 </body>
