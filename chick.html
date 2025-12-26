@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chicken Road: 15 Plates</title>
+    <title>Chicken Road: Custom Risk</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -19,50 +19,49 @@
 
         .app-container { width: 100%; max-width: 480px; height: 100vh; display: flex; flex-direction: column; background: #020617; }
 
-        /* Header & Difficulty */
         .header { padding: 10px 20px; background: #0f172a; border-bottom: 1px solid #1e293b; }
         .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
         .balance-badge { background: #000; padding: 5px 15px; border-radius: 20px; border: 2px solid var(--accent); color: var(--accent); font-weight: 800; }
         
         .mode-selector { display: flex; gap: 5px; }
-        .mode-btn { flex: 1; padding: 8px; border: 1px solid #334155; background: #1e293b; color: #94a3b8; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 800; }
+        .mode-btn { flex: 1; padding: 10px; border: 1px solid #334155; background: #1e293b; color: #94a3b8; border-radius: 8px; cursor: pointer; font-size: 10px; font-weight: 800; transition: 0.3s; }
         .mode-btn.active { background: #4f46e5; color: #fff; border-color: #4f46e5; }
 
-        /* Game Arena */
         .arena { 
             flex-grow: 1; position: relative; overflow-x: auto; display: flex; align-items: center; 
-            background: linear-gradient(to bottom, var(--grass), #020617 30%, #020617 70%, var(--grass));
+            background: linear-gradient(to bottom, var(--grass), #020617 35%, #020617 65%, var(--grass));
             scrollbar-width: none;
         }
         .arena::-webkit-scrollbar { display: none; }
         
         .road {
-            position: absolute; width: 3500px; height: 130px; background: var(--road);
+            position: absolute; width: 4500px; height: 140px; background: var(--road);
             border-top: 4px solid #4a5568; border-bottom: 4px solid #4a5568;
-            display: flex; align-items: center; padding-left: 60px; gap: 65px;
+            display: flex; align-items: center; padding-left: 60px; gap: 70px;
         }
 
         .plate {
-            min-width: 70px; height: 70px; background: #1a202c; border: 3px solid #4a5568;
+            min-width: 75px; height: 75px; background: #1a202c; border: 3px solid #4a5568;
             border-radius: 12px; position: relative; display: flex; align-items: center; 
             justify-content: center; cursor: pointer; transition: 0.3s;
         }
         .plate.cleared { background: #059669; border-color: #34d399; }
         .plate.failed { background: #991b1b; border-color: #f87171; }
-        .plate-mult { position: absolute; top: -25px; font-size: 12px; font-weight: 800; }
+        
+        .plate-mult { position: absolute; top: -28px; font-size: 11px; font-weight: 800; color: #cbd5e1; }
 
-        #chicken {
-            position: absolute; width: 60px; height: 60px; z-index: 100;
+        #chicken-box {
+            position: absolute; width: 65px; height: 65px; z-index: 100;
             transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-            pointer-events: none; left: 65px;
+            pointer-events: none; left: 65px; display: flex; align-items: center; justify-content: center;
         }
+        #chicken-img { width: 100%; height: 100%; object-fit: contain; }
 
-        /* Controls */
         .controls { background: #0f172a; padding: 20px; border-radius: 25px 25px 0 0; }
         .input-grp { background: #000; border: 1px solid #334155; padding: 12px; border-radius: 12px; display: flex; margin-bottom: 15px; }
         .input-grp input { background: transparent; border: none; color: #fff; width: 100%; font-size: 18px; font-weight: 800; outline: none; }
         
-        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; }
+        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; font-size: 15px; }
         .btn-start { background: #4f46e5; color: #fff; }
         .btn-cash { background: var(--accent); color: #000; display: none; }
     </style>
@@ -76,25 +75,29 @@
             <div class="balance-badge">₹<span id="bal">0.00</span></div>
         </div>
         <div class="mode-selector">
-            <button class="mode-btn active" onclick="setMode('easy')">NORMAL (19x)</button>
-            <button class="mode-btn" onclick="setMode('hard')">HARD (50x)</button>
+            <button class="mode-btn active" id="m-easy" onclick="setMode('easy')">EASY (25%)</button>
+            <button class="mode-btn" id="m-medium" onclick="setMode('medium')">MEDIUM (40%)</button>
+            <button class="mode-btn" id="m-hard" onclick="setMode('hard')">HARD (70%)</button>
         </div>
     </div>
 
     <div class="arena" id="arena">
         <div class="road" id="road">
-            <div class="plate" id="p--1" style="background:#4a5568">Start</div>
+            <div class="plate" id="p--1" style="background:#4a5568; font-size:10px">START</div>
         </div>
-        <img id="chicken" src="https://i.ibb.co/vYm0YfS/chicken-side.png" alt="chicken">
+        <div id="chicken-box">
+            <img id="chicken-img" src="https://cdn-icons-png.flaticon.com/512/2632/2632839.png" onerror="this.src='https://img.icons8.com/emoji/96/000000/chicken-emoji.png'">
+        </div>
     </div>
 
     <div class="controls">
+        <div id="status" style="text-align:center; font-size:11px; color:#94a3b8; margin-bottom:8px;">READY TO RUN?</div>
         <div class="input-grp">
             <span style="color:var(--accent); margin-right:10px;">₹</span>
             <input type="number" id="betInput" value="10" min="10">
         </div>
-        <button id="sBtn" class="btn btn-start" onclick="beginGame()">🚀 START MISSION</button>
-        <button id="cBtn" class="btn btn-cash" onclick="collect()">💰 COLLECT</button>
+        <button id="sBtn" class="btn btn-start" onclick="beginGame()">🚀 START RUN</button>
+        <button id="cBtn" class="btn btn-cash" onclick="collect()">💰 COLLECT ₹0</button>
     </div>
 </div>
 
@@ -118,15 +121,25 @@
     let uBal = 0, playing = false, step = -1, bet = 0, mode = 'easy';
 
     const config = {
-        easy: [1.2, 1.7, 2.3, 3.5, 4.0, 4.8, 4.99, 5.5, 6.11, 8.1, 10.1, 12.5, 14.0, 16.5, 19.0],
-        hard: [2.0, 3.5, 5.0, 7.5, 10.0, 12.5, 15.0, 18.0, 22.0, 26.0, 30.0, 35.0, 40.0, 45.0, 50.0]
+        easy: {
+            mults: [1.2, 1.7, 2.3, 3.5, 4.0, 4.8, 4.99, 5.5, 6.11, 8.1, 10.1, 12.5, 14.0, 16.5, 19.0],
+            risk: 0.25 // 25% Risk as requested
+        },
+        medium: {
+            mults: [1.5, 2.5, 4.0, 6.0, 8.5, 11.0, 15.0, 20.0, 26.0, 33.0, 40.0, 50.0, 65.0, 80.0, 100.0],
+            risk: 0.40 // 40% Risk as requested
+        },
+        hard: {
+            mults: [2.0, 5.0, 10.0, 18.0, 30.0, 50.0, 80.0, 120.0, 180.0, 250.0, 350.0, 500.0, 750.0, 1000.0, 2500.0],
+            risk: 0.70 // 70% Risk as requested
+        }
     };
 
     window.setMode = (m) => {
         if(playing) return;
         mode = m;
         document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        event.target.classList.add('active');
+        document.getElementById(`m-${m}`).classList.add('active');
         initRoad();
     };
 
@@ -142,8 +155,8 @@
 
     function initRoad() {
         const road = document.getElementById("road");
-        road.innerHTML = '<div class="plate" id="p--1" style="background:#4a5568">Start</div>';
-        config[mode].forEach((m, i) => {
+        road.innerHTML = '<div class="plate" id="p--1" style="background:#4a5568; font-size:10px">START</div>';
+        config[mode].mults.forEach((m, i) => {
             const p = document.createElement("div");
             p.className = "plate";
             p.id = `p-${i}`;
@@ -155,14 +168,13 @@
 
     window.beginGame = async () => {
         const amt = parseFloat(document.getElementById("betInput").value);
-        if (amt < 10 || amt > uBal) return alert("Check Balance");
+        if (amt < 10 || amt > uBal) return alert("Insufficient Balance!");
 
         bet = amt; playing = true; step = -1;
         await update(ref(db, `users/${auth.currentUser.uid}`), { balance: uBal - amt });
 
         document.getElementById("sBtn").style.display = "none";
         document.getElementById("cBtn").style.display = "block";
-        document.getElementById("cBtn").innerText = "💰 COLLECT";
         initRoad();
         moveChicken(-1);
     };
@@ -172,18 +184,18 @@
         moveChicken(i);
 
         setTimeout(() => {
-            let risk = mode === 'hard' ? 0.35 : 0.20;
+            let currentRisk = config[mode].risk;
             
-            // RIGGING LOGIC: Profit capping at ₹80
-            if (uBal > 80) risk = 0.85; 
-            if (i > 5) risk += 0.10;
+            // RIGGING LOGIC
+            if (uBal > 80) currentRisk = 0.88; // More aggressive if user is in profit
+            if (i > 8) currentRisk += 0.05;
 
-            if (Math.random() < risk) {
-                fail(i);
+            if (Math.random() < currentRisk) {
+                die(i);
             } else {
                 step = i;
                 document.getElementById(`p-${i}`).classList.add('cleared');
-                const win = (bet * config[mode][i]).toFixed(2);
+                const win = (bet * config[mode].mults[i]).toFixed(2);
                 document.getElementById("cBtn").innerText = `💰 COLLECT ₹${win}`;
                 if(i === 14) collect();
             }
@@ -191,29 +203,29 @@
     };
 
     function moveChicken(i) {
-        const c = document.getElementById("chicken");
+        const cBox = document.getElementById("chicken-box");
         const p = document.getElementById(`p-${i}`);
-        c.style.transform = "translateY(-60px) rotate(10deg)";
-        c.style.left = (p.offsetLeft + 5) + "px";
+        cBox.style.transform = "translateY(-60px) rotate(15deg)";
+        cBox.style.left = (p.offsetLeft + 5) + "px";
         setTimeout(() => {
-            c.style.transform = "translateY(0)";
+            cBox.style.transform = "translateY(0)";
             document.getElementById("arena").scrollLeft = p.offsetLeft - 100;
         }, 400);
     }
 
-    function fail(i) {
+    function die(i) {
         playing = false;
         document.getElementById(`p-${i}`).classList.add('failed');
-        document.getElementById("chicken").style.filter = "brightness(0.5) sepia(1)";
+        document.getElementById("chicken-img").style.filter = "grayscale(1) brightness(0.4)";
         setTimeout(() => location.reload(), 1500);
     }
 
     window.collect = async () => {
         if (!playing || step < 0) return;
         playing = false;
-        const win = bet * config[mode][step];
+        const win = bet * config[mode].mults[step];
         await update(ref(db, `users/${auth.currentUser.uid}`), { balance: uBal + win });
-        alert(`Congratulations! You won ₹${win.toFixed(2)}`);
+        alert(`You won ₹${win.toFixed(2)}!`);
         location.reload();
     };
 
