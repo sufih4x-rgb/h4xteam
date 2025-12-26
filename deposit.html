@@ -48,6 +48,16 @@
         .steps { background: #fef2f2; padding: 15px; border-radius: 15px; margin-top: 20px; border: 1px solid #fee2e2; }
         .step-item { display: flex; gap: 10px; font-size: 12px; margin-bottom: 8px; color: #991b1b; font-weight: 600; }
         .step-num { background: #ef476f; color: #fff; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
+
+        /* Naya History & Status Style */
+        .history-section { margin-top: 35px; border-top: 2px dashed #f1f5f9; padding-top: 20px; }
+        .history-row { background: #f8fafc; padding: 15px; border-radius: 16px; margin-bottom: 12px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        .hist-info b { display: block; font-size: 15px; color: #1e293b; }
+        .hist-info small { color: #64748b; font-size: 11px; font-weight: 600; }
+        .status-pill { padding: 5px 12px; border-radius: 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        .pill-pending { background: #fff7ed; color: #9a3412; }
+        .pill-approved { background: #ecfdf5; color: #065f46; }
+        .pill-rejected { background: #fef2f2; color: #991b1b; }
     </style>
 </head>
 <body>
@@ -85,14 +95,20 @@
             <button class="btn-submit" id="subBtn" onclick="submitDeposit()">SUBMIT DEPOSIT</button>
         </div>
     </div>
+
+    <div class="history-section">
+        <label style="margin-bottom: 15px; display: block;">Deposit History</label>
+        <div id="depositHistory">
+            <p style="text-align:center; font-size:12px; color:#94a3b8;">No deposits yet.</p>
+        </div>
+    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, push, serverTimestamp, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, serverTimestamp, get, onValue, query, orderByChild, equalTo, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // --- CONFIGURATION START ---
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
         authDomain: "test-eb5e7.firebaseapp.com",
@@ -101,16 +117,55 @@
         appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
     };
 
-    const MY_UPI_ID = "9561998301@amazonpay"; // <--- APNA REAL UPI ID DALEIN
+    const MY_UPI_ID = "9561998301@amazonpay"; 
     const MERCHANT_NAME = "H4X TEAM";
-    // --- CONFIGURATION END ---
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
     let userObj = null;
-    onAuthStateChanged(auth, u => { if(!u) location.href='index.html'; else userObj = u; });
+    onAuthStateChanged(auth, u => { 
+        if(!u) location.href='index.html'; 
+        else {
+            userObj = u;
+            loadDepositHistory();
+        }
+    });
+
+    // History & Popup Logic
+    function loadDepositHistory() {
+        const depRef = query(ref(db, "deposit_requests"), orderByChild("uid"), equalTo(userObj.uid));
+        onValue(depRef, snap => {
+            let html = "";
+            if(snap.exists()){
+                snap.forEach(child => {
+                    const data = child.val();
+                    const status = data.status || "pending";
+                    const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
+                    
+                    // Notification Logic
+                    if(status === "Approved" && !data.userNotified) {
+                        alert("💰 Deposit Confirmed!\n₹" + data.amount + " has been added to your wallet.");
+                        update(ref(db, `deposit_requests/${child.key}`), { userNotified: true });
+                    } else if(status === "Rejected" && !data.userNotified) {
+                        alert("❌ Deposit Rejected!\nUTR: " + data.utr + "\nReason: " + (data.reason || "Invalid UTR or Payment not received."));
+                        update(ref(db, `deposit_requests/${child.key}`), { userNotified: true });
+                    }
+
+                    html = `
+                    <div class="history-row">
+                        <div class="hist-info">
+                            <b>₹${data.amount.toFixed(2)}</b>
+                            <small>UTR: ${data.utr}</small>
+                        </div>
+                        <span class="status-pill pill-${status.toLowerCase()}">${statusLabel}</span>
+                    </div>` + html;
+                });
+                document.getElementById("depositHistory").innerHTML = html;
+            }
+        });
+    }
 
     window.generateQR = () => {
         const amt = document.getElementById('depAmt').value;
@@ -146,7 +201,6 @@
         subBtn.innerText = "CHECKING UTR...";
 
         try {
-            // --- DUPLICATE UTR SYSTEM ---
             const depositRef = ref(db, `deposit_requests`);
             const snapshot = await get(depositRef);
             
@@ -162,24 +216,26 @@
             }
 
             if (isDuplicate) {
-                alert("🚨 STOP! This UTR has already been used. Fraud attempts will lead to permanent ban.");
+                alert("🚨 STOP! This UTR has already been used.");
                 subBtn.disabled = false;
                 subBtn.innerText = "SUBMIT DEPOSIT";
                 return;
             }
 
-            // --- SAVE REQUEST ---
             await push(ref(db, `deposit_requests`), {
                 uid: userObj.uid,
                 email: userObj.email,
                 amount: parseFloat(amt),
                 utr: utr,
                 status: "pending",
+                userNotified: false,
                 timestamp: serverTimestamp()
             });
 
-            alert("✅ Request Submitted Successfully!\nOur team will verify and add balance in 10-30 minutes.");
-            location.href = 'dashboard.html';
+            alert("✅ Deposit request submitted!");
+            document.getElementById('utrInp').value = "";
+            subBtn.disabled = false;
+            subBtn.innerText = "SUBMIT DEPOSIT";
 
         } catch (e) {
             alert("Error: " + e.message);
