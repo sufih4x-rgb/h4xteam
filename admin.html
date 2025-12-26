@@ -124,10 +124,10 @@
 
     <div id="deposits" class="tab-content">
         <div class="section">
-            <div class="section-title">Pending Deposits</div>
+            <div class="section-title">Pending Deposits (UTR Check)</div>
             <div class="table-wrap">
                 <table>
-                    <thead><tr><th>User</th><th>Amount</th><th>Action</th></tr></thead>
+                    <thead><tr><th>User</th><th>Amount</th><th>UTR Number</th><th>Action</th></tr></thead>
                     <tbody id="depList"></tbody>
                 </table>
             </div>
@@ -210,10 +210,7 @@
         authDomain: "test-eb5e7.firebaseapp.com",
         databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
         projectId: "test-eb5e7",
-        storageBucket: "test-eb5e7.appspot.com",
-        messagingSenderId: "366282855653",
-        appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-        measurementId: "G-ECKCTBLQJ8"
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
     };
 
     const app = initializeApp(firebaseConfig);
@@ -251,17 +248,17 @@
             document.getElementById("userCount").innerText = count;
         });
 
-        // Deposits
-        onValue(ref(db, "deposits"), snap => {
+        // Deposits (Matched with deposit_requests node)
+        onValue(ref(db, "deposit_requests"), snap => {
             let html = ""; let p = 0;
             snap.forEach(child => {
                 const d = child.val();
-                if(d.status === "Pending") {
+                if(d.status === "pending") {
                     p++;
-                    html += `<tr><td>${d.uid.substring(0,6)}</td><td>₹${d.amount}</td><td><button class="btn-green" onclick="txn('deposits','${child.key}','${d.uid}',${d.amount},'Approved')">Approve</button> <button class="btn-red" onclick="txn('deposits','${child.key}','${d.uid}',${d.amount},'Rejected')">Reject</button></td></tr>`;
+                    html += `<tr><td>${d.email || d.uid.substring(0,6)}</td><td>₹${d.amount}</td><td><code>${d.utr}</code></td><td><button class="btn-green" onclick="txn('deposit_requests','${child.key}','${d.uid}',${d.amount},'Approved')">Approve</button> <button class="btn-red" onclick="txn('deposit_requests','${child.key}','${d.uid}',${d.amount},'Rejected')">Reject</button></td></tr>`;
                 }
             });
-            document.getElementById("depList").innerHTML = html || "<tr><td colspan='3'>No pending deposits</td></tr>";
+            document.getElementById("depList").innerHTML = html || "<tr><td colspan='4'>No pending deposits</td></tr>";
             document.getElementById("pendingCount").innerText = p;
         });
 
@@ -277,8 +274,7 @@
             document.getElementById("withList").innerHTML = html || "<tr><td colspan='3'>No pending withdrawals</td></tr>";
         });
 
-        // RECHARGE LOGIC
-        // 1. Load Requests
+        // Recharge Requests
         onValue(ref(db, "recharge_requests"), snap => {
             let html = "";
             snap.forEach(child => {
@@ -290,7 +286,7 @@
             document.getElementById("rechargeReqList").innerHTML = html || "<tr><td colspan='4'>No pending recharges</td></tr>";
         });
 
-        // 2. Load Plans
+        // Recharge Plans
         onValue(ref(db, "recharge_plans"), snap => {
             let html = "";
             snap.forEach(child => {
@@ -314,7 +310,7 @@
         });
     }
 
-    // RECHARGE FUNCTIONS
+    // --- RECHARGE FUNCTIONS ---
     window.addPlan = () => {
         const op = document.getElementById("planOperator").value;
         const name = document.getElementById("planName").value;
@@ -329,27 +325,29 @@
     };
 
     window.deletePlan = (id) => remove(ref(db, `recharge_plans/${id}`));
-
     window.approveRecharge = (id) => update(ref(db, `recharge_requests/${id}`), { status: "Success" });
-
     window.rejectRecharge = async (id, uid, amt) => {
         await update(ref(db, `users/${uid}`), { balance: increment(parseFloat(amt)) });
         await update(ref(db, `recharge_requests/${id}`), { status: "Refunded" });
     };
 
-    // LOGIC
+    // --- MAIN SYSTEM LOGIC ---
     window.updateProp = (uid, prop, val) => update(ref(db, `users/${uid}`), { [prop]: val });
+    
     window.setBalance = (uid) => {
         const val = prompt("Enter new balance:");
         if(val) update(ref(db, `users/${uid}`), { balance: parseFloat(val) });
     };
+
     window.txn = async (path, tid, uid, amt, status) => {
         if(status === "Approved") {
-            const change = path === 'deposits' ? amt : -amt;
+            const change = (path === 'deposit_requests') ? parseFloat(amt) : -parseFloat(amt);
             await update(ref(db, `users/${uid}`), { balance: increment(change) });
         }
         await update(ref(db, `${path}/${tid}`), { status: status });
+        alert(`Transaction ${status}`);
     };
+
     window.loadChat = (uid) => {
         activeChat = uid;
         document.getElementById("chatHeader").innerText = "User: " + uid;
@@ -363,6 +361,7 @@
             box.scrollTop = box.scrollHeight;
         });
     };
+
     window.sendReply = () => {
         const inp = document.getElementById("adminReply");
         if(!inp.value || !activeChat) return;
