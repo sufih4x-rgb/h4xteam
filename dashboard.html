@@ -20,80 +20,44 @@
         body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; overflow-x: hidden; }
         .app-shell { width: 100%; max-width: 480px; min-height: 100vh; background: var(--surface); position: relative; padding-bottom: 80px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
 
-        /* Animated Ping Effect */
-        .ping {
-            width: 8px; height: 8px; background-color: var(--success);
-            border-radius: 50%; display: inline-block; margin-right: 5px;
-            position: relative;
-        }
-        .ping::after {
-            content: ''; width: 100%; height: 100%; background-color: var(--success);
-            border-radius: 50%; position: absolute; top: 0; left: 0;
-            animation: ping-ani 1.5s infinite ease-in-out;
-        }
-        @keyframes ping-ani {
-            0% { transform: scale(1); opacity: 1; }
-            100% { transform: scale(3.5); opacity: 0; }
-        }
+        /* Ping Animation for Live Feel */
+        .ping { width: 10px; height: 10px; background: var(--success); border-radius: 50%; display: inline-block; position: relative; }
+        .ping::after { content: ''; position: absolute; inset: 0; background: var(--success); border-radius: 50%; animation: pulse 1.5s infinite; }
+        @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3.5); opacity: 0; } }
 
-        /* Floating Animation for GIF */
-        .float-img { animation: floating 3s ease-in-out infinite; }
-        @keyframes floating {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-5px); }
-        }
-
-        /* Sidebar */
-        .sidebar { position: fixed; top: 0; left: -100%; width: 80%; max-width: 350px; height: 100%; background: white; z-index: 2000; transition: 0.3s ease; box-shadow: 10px 0 30px rgba(0,0,0,0.1); padding: 30px 20px; box-sizing: border-box; overflow-y: auto; }
-        .sidebar.active { left: 0; }
-        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1999; backdrop-filter: blur(2px); }
-        .sidebar-overlay.active { display: block; }
-
-        .profile-header { text-align: center; margin-bottom: 30px; }
-        .avatar-wrapper { position: relative; width: 85px; height: 85px; margin: 0 auto 15px; }
-        .avatar-circle { width: 100%; height: 100%; background: var(--primary); color: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 800; overflow: hidden; border: 3px solid #f1f5f9; }
-        .avatar-circle img { width: 100%; height: 100%; object-fit: cover; }
-
-        .nav-menu { margin-top: 25px; display: flex; flex-direction: column; gap: 8px; }
-        .nav-btn { width: 100%; padding: 14px; border-radius: 12px; border: none; background: #f8fafc; color: var(--text-main); font-weight: 600; text-align: left; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.2s; border: 1px solid #f1f5f9; }
-        .nav-btn:hover { background: #f1f5f9; transform: translateX(5px); }
-
-        /* UI Elements */
+        /* Navigation */
         .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
-        .wallet-card { margin: 10px 20px; padding: 30px 25px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 24px; color: white; box-shadow: 0 15px 30px rgba(67, 97, 238, 0.3); position: relative; overflow: hidden; }
-        .wallet-card::after { content: ''; position: absolute; top: -50%; right: -50%; width: 150px; height: 150px; background: rgba(255,255,255,0.1); border-radius: 50%; }
-        
-        .balance-val { font-size: 42px; font-weight: 800; margin: 8px 0; display: block; }
-        
-        .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 25px 20px; }
+        .menu-icon { font-size: 24px; cursor: pointer; background: #f1f5f9; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
+
+        /* Wallet Section */
+        .wallet-card { margin: 10px 20px; padding: 25px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 24px; color: white; position: relative; overflow: hidden; }
+        .balance-val { font-size: 40px; font-weight: 800; margin: 10px 0; display: block; }
+
+        /* Action Grid Fixed Buttons */
+        .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 25px 20px; }
         .action-item { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; }
-        .icon-circle { width: 52px; height: 52px; background: #fff; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 22px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); transition: 0.3s; }
-        
-        /* Live Game Cards */
+        .icon-circle { width: 55px; height: 55px; background: #fff; border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.06); transition: 0.3s; }
+        .icon-circle img { width: 32px; height: 32px; object-fit: contain; }
+        .action-item span { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+
+        /* Game Cards Section */
         .game-card { 
             width: 100%; padding: 15px; background: #fff; border: 1px solid #f0f2f5; 
             border-radius: 20px; display: flex; align-items: center; justify-content: space-between; 
             text-decoration: none; color: inherit; margin-bottom: 12px; box-sizing: border-box; 
-            transition: all 0.3s;
         }
-        .game-card:hover { border-color: var(--primary); transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
+        .game-img-box { width: 65px; height: 65px; background: #f8f9fc; border-radius: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .game-img-box img { width: 100%; height: 100%; object-fit: cover; }
+
+        /* Sidebar UI */
+        .sidebar { position: fixed; top: 0; left: -100%; width: 80%; max-width: 320px; height: 100%; background: white; z-index: 2000; transition: 0.3s ease; padding: 30px 20px; box-sizing: border-box; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
+        .sidebar.active { left: 0; }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1999; }
+        .sidebar-overlay.active { display: block; }
         
-        .game-img-box { 
-            width: 65px; height: 65px; background: #f8f9fc; border-radius: 15px; 
-            display: flex; align-items: center; justify-content: center; position: relative;
-        }
-        .game-img-box img { width: 45px; height: 45px; border-radius: 10px; }
+        .nav-btn { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #f1f5f9; background: #f8fafc; color: var(--text-main); font-weight: 600; text-align: left; cursor: pointer; margin-bottom: 8px; }
 
-        .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 3000; justify-content: center; align-items: flex-end; }
-        .modal-content { background: white; width: 100%; max-width: 480px; border-radius: 30px 30px 0 0; padding: 25px; box-sizing: border-box; }
-
-        .btn-main { width: 100%; padding: 16px; border-radius: 15px; border: none; background: var(--primary); color: white; font-weight: 700; cursor: pointer; margin-top: 15px; }
-
-        .chat-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; box-shadow: 0 10px 25px rgba(67, 97, 238, 0.4); cursor: pointer; z-index: 1000; }
-        .chat-msgs { height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; margin-bottom: 15px; padding: 10px; }
-        .msg { padding: 10px 15px; border-radius: 15px; font-size: 14px; max-width: 80%; }
-        .msg.user { align-self: flex-end; background: var(--primary); color: white; }
-        .msg.admin { align-self: flex-start; background: #f1f3f9; }
+        .chat-fab { position: fixed; bottom: 25px; right: 25px; width: 60px; height: 60px; background: var(--primary); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 28px; color: white; box-shadow: 0 10px 25px rgba(67, 97, 238, 0.4); cursor: pointer; }
     </style>
 </head>
 <body>
@@ -101,65 +65,66 @@
 <div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
 
 <div class="sidebar" id="sidebar">
-    <div class="profile-header">
-        <div class="avatar-wrapper">
-            <div class="avatar-circle" id="avatarBox">U</div>
-        </div>
-        <h2 id="sideName" style="margin: 0; font-size: 20px;">User</h2>
-        <p id="sideEmail" style="color: var(--text-muted); font-size: 12px; margin: 5px 0;">email@test.com</p>
+    <div style="text-align: center; margin-bottom: 30px;">
+        <div id="avatarLarge" style="width: 80px; height: 80px; background: var(--primary); color:white; border-radius: 50%; margin: 0 auto 15px; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 800;">U</div>
+        <h2 id="sideName" style="margin: 0;">User</h2>
+        <p id="sideEmail" style="color: var(--text-muted); font-size: 12px;">email@test.com</p>
     </div>
 
-    <div class="nav-menu">
-        <p style="font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 5px; margin-left: 5px;">ACCOUNT</p>
-        <button class="nav-btn" onclick="location.href='profile.html'">👤 My Profile</button>
-        <button class="nav-btn" onclick="location.href='withdraw.html'">📤 Withdraw Funds</button>
-        <button class="nav-btn" onclick="location.href='deposit.html'">📥 Deposit Cash</button>
-        
-        <p style="font-size: 11px; font-weight: 800; color: var(--text-muted); margin-top: 20px; margin-bottom: 5px; margin-left: 5px;">GAMES</p>
-        <button class="nav-btn" onclick="location.href='game.html'">📉 Color Prediction</button>
-        <button class="nav-btn" onclick="location.href='mines.html'">💣 Mines Game</button>
-        <button class="nav-btn" onclick="location.href='chick.html'">🐔 Chicken Run</button>
-    </div>
-
-    <button class="btn-main" style="background: #fff1f2; color: var(--danger); margin-top: 30px; border: 1px solid #ffe4e6;" onclick="logout()">Logout</button>
+    <button class="nav-btn" onclick="location.href='profile.html'">👤 My Profile</button>
+    <button class="nav-btn" onclick="location.href='withdraw.html'">📤 Withdraw Funds</button>
+    <button class="nav-btn" onclick="location.href='deposit.html'">📥 Deposit Cash</button>
+    <button class="nav-btn" style="margin-top: 20px; background: #fff1f2; color: var(--danger); border-color: #ffe4e6;" onclick="logout()">Logout</button>
 </div>
 
 <div class="app-shell">
     <div class="top-nav">
-        <div style="font-size: 24px; cursor: pointer; background: #f1f5f9; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 12px;" onclick="toggleSidebar()">☰</div>
+        <div class="menu-icon" onclick="toggleSidebar()">☰</div>
         <div style="font-weight: 800; font-size: 20px; letter-spacing: -1px;">H4X<span style="color:var(--primary)">TEAM</span></div>
-        <div id="userAvatarSmall" style="width: 40px; height: 40px; border-radius: 10px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; cursor: pointer;" onclick="location.href='profile.html'">U</div>
+        <div id="userAvatarSmall" style="width: 40px; height: 40px; border-radius: 12px; background: var(--primary); color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; cursor: pointer;" onclick="location.href='profile.html'">U</div>
     </div>
 
     <div class="wallet-card">
-        <div style="display:flex; align-items:center; gap:5px;">
+        <div style="display:flex; align-items:center; gap:8px;">
             <div class="ping"></div>
-            <span style="font-size: 11px; opacity: 0.9; font-weight: 600; letter-spacing: 1px;">LIVE WALLET</span>
+            <span style="font-size: 11px; font-weight: 700; letter-spacing: 1px;">AVAILABLE BALANCE</span>
         </div>
         <span class="balance-val">₹<span id="mainBal">0.00</span></span>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 15px;">
-            <div style="background:rgba(255,255,255,0.15); padding:6px 12px; border-radius:8px; font-size:11px; font-weight:700;">ID: <span id="mainUid">...</span></div>
-            <div style="font-size: 11px; font-weight: 700; background: #facc15; color: #000; padding: 4px 10px; border-radius: 20px;">VIP <span id="vipLevel">0</span></div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; font-size: 11px; font-weight: 700; opacity: 0.9;">
+            <span>ID: <span id="mainUid">...</span></span>
+            <span style="background: #facc15; color: #000; padding: 3px 10px; border-radius: 20px;">VIP <span id="vipLevel">0</span></span>
         </div>
     </div>
 
     <div class="action-grid">
-        <a href="deposit.html" class="action-item"><div class="icon-circle"><img src="https://i.ibb.co/L5hY5M7/deposit.gif" width="30"></div><span style="font-size:10px; font-weight:800; color:var(--text-muted);">DEPOSIT</span></a>
-        <a href="withdraw.html" class="action-item"><div class="icon-circle"><img src="https://i.ibb.co/3W6qW6R/withdraw.gif" width="30"></div><span style="font-size:10px; font-weight:800; color:var(--text-muted);">WITHDRAW</span></a>
-        <a href="recharge.html" class="action-item"><div class="icon-circle"><img src="https://i.ibb.co/k2hGqYq/bolt.gif" width="30"></div><span style="font-size:10px; font-weight:800; color:var(--text-muted);">RECHARGE</span></a>
-        <div class="action-item" onclick="alert('Invite Link Copied!')"><div class="icon-circle">🔗</div><span style="font-size:10px; font-weight:800; color:var(--text-muted);">INVITE</span></div>
+        <a href="deposit.html" class="action-item">
+            <div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/4221/4221518.png"></div>
+            <span>Deposit</span>
+        </a>
+        <a href="withdraw.html" class="action-item">
+            <div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/4221/4221568.png"></div>
+            <span>Withdraw</span>
+        </a>
+        <a href="recharge.html" class="action-item">
+            <div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/3163/3163673.png"></div>
+            <span>History</span>
+        </a>
+        <div class="action-item" onclick="alert('Link Copied!')">
+            <div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/2958/2958683.png"></div>
+            <span>Invite</span>
+        </div>
     </div>
 
     <div style="padding: 0 20px;">
-        <h3 style="font-size: 16px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">🔥 Hot Games <div class="ping"></div></h3>
+        <h3 style="font-size: 16px; margin-bottom: 15px; display: flex; align-items: center; gap: 8px;">🔥 Hot Games</h3>
         
         <a href="game.html" class="game-card" style="border-left: 5px solid var(--primary);">
             <div>
                 <h4 style="margin:0">Color Prediction</h4>
-                <p style="margin:5px 0 0; font-size:11px; color:var(--text-muted); display:flex; align-items:center;"><span class="ping"></span> Next draw in 30s • 2X Profit</p>
+                <p style="margin:5px 0 0; font-size:11px; color:var(--text-muted);">Predict & Win 2X Profit</p>
             </div>
             <div class="game-img-box">
-                <img src="https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3h5YXF3ZmRxcjR4cnN5NXZ1cXFwaHFxcHJxdXJxdXJxdXJxdXJxdSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/M90v85O1oQp2U/giphy.gif" class="float-img" alt="Color">
+                <img src="https://media.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3h5YXF3ZmRxcjR4cnN5NXZ1cXFwaHFxcHJxdXJxdXJxdXJxdXJxdSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/M90v85O1oQp2U/giphy.gif">
             </div>
         </a>
 
@@ -169,40 +134,28 @@
                 <p style="margin:5px 0 0; font-size:11px; color:var(--text-muted);">Find diamonds, avoid TNT</p>
             </div>
             <div class="game-img-box">
-                <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2Q1YmtuN2FhbmRrbGRmZGRrNnJxdXJxdXJxdXJxdXJxdXJxdSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/57Y92IByN7X4qV6p6n/giphy.gif" class="float-img" alt="Mines">
+                <img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM2Q1YmtuN2FhbmRrbGRmZGRrNnJxdXJxdXJxdXJxdXJxdXJxdSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/57Y92IByN7X4qV6p6n/giphy.gif">
             </div>
         </a>
 
         <a href="chick.html" class="game-card" style="border-left: 5px solid var(--success);">
             <div>
                 <h4 style="margin:0">Chicken Runner</h4>
-                <p style="margin:5px 0 0; font-size:11px; color:var(--text-muted);">Cross the road for 19X</p>
+                <p style="margin:5px 0 0; font-size:11px; color:var(--text-muted);">High multiplier runner game</p>
             </div>
             <div class="game-img-box">
-                <img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExcnFybW1qZ3JxeXFwbm1qZ3JxeXFwbm1qZ3JxeXFwbm1qZ3JxeXAmZXA9djFfaW50ZXJuYWxfZ2lmX2J5X2lkJmN0PXM/UvU3E9S3fN5LgXmD0q/giphy.gif" class="float-img" alt="Chicken">
+                <img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExcnFybW1qZ3JxeXFwbm1qZ3JxeXFwbm1qZ3JxeXFwbm1qZ3JxeXAmZXA9djFfaW50ZXJuYWxfZ2lmX2J5X2lkJmN0PXM/UvU3E9S3fN5LgXmD0q/giphy.gif">
             </div>
         </a>
     </div>
 </div>
 
-<div id="chatModal" class="modal-overlay">
-    <div class="modal-content">
-        <div style="width:40px; height:5px; background:#ddd; margin:0 auto 15px; border-radius:10px;" onclick="closeModals()"></div>
-        <h2 style="margin:0 0 10px; font-size: 18px;">Live Support</h2>
-        <div class="chat-msgs" id="chatBox"></div>
-        <div style="display:flex; gap:10px; padding-top: 10px;">
-            <input type="text" id="chatInp" placeholder="Type a message..." style="flex:1; padding:12px; border-radius:10px; border:1px solid #ddd; outline:none;">
-            <button class="btn-main" style="width:70px; margin:0; padding:10px;" onclick="sendMsg()">Send</button>
-        </div>
-    </div>
-</div>
-
-<div class="chat-fab" onclick="openChat()">💬</div>
+<div class="chat-fab" onclick="alert('Support is currently busy.')">💬</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, update, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -221,8 +174,6 @@
         document.getElementById('sidebarOverlay').classList.toggle('active');
     };
 
-    window.openChat = () => document.getElementById('chatModal').style.display = 'flex';
-    window.closeModals = () => document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
     window.logout = () => signOut(auth).then(() => location.href = 'index.html');
 
     onAuthStateChanged(auth, user => {
@@ -238,35 +189,11 @@
             document.getElementById('sideEmail').innerText = user.email;
             document.getElementById('vipLevel').innerText = d.vip || 0;
             
-            const avatarHtml = d.photoURL ? `<img src="${d.photoURL}">` : name.charAt(0).toUpperCase();
-            document.getElementById('avatarBox').innerHTML = avatarHtml;
-            document.getElementById('userAvatarSmall').innerHTML = avatarHtml;
-        });
-
-        onValue(ref(db, `chats/${user.uid}`), snap => {
-            const box = document.getElementById('chatBox');
-            box.innerHTML = "";
-            snap.forEach(c => {
-                const m = c.val();
-                const div = document.createElement('div');
-                div.className = `msg ${m.sender === 'user' ? 'user' : 'admin'}`;
-                div.innerText = m.text;
-                box.appendChild(div);
-            });
-            box.scrollTop = box.scrollHeight;
+            const initial = name.charAt(0).toUpperCase();
+            document.getElementById('avatarLarge').innerText = initial;
+            document.getElementById('userAvatarSmall').innerText = initial;
         });
     });
-
-    window.sendMsg = async () => {
-        const inp = document.getElementById('chatInp');
-        if(!inp.value.trim()) return;
-        await push(ref(db, `chats/${auth.currentUser.uid}`), {
-            text: inp.value,
-            sender: 'user',
-            timestamp: serverTimestamp()
-        });
-        inp.value = "";
-    };
 </script>
 </body>
 </html>
