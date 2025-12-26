@@ -20,7 +20,7 @@
         body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; overflow-x: hidden; }
         .app-shell { width: 100%; max-width: 480px; min-height: 100vh; background: var(--surface); position: relative; padding-bottom: 80px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
 
-        /* Smooth Ping Animation for Live Status */
+        /* Ping Animation */
         .ping { width: 10px; height: 10px; background: var(--success); border-radius: 50%; display: inline-block; position: relative; }
         .ping::after { content: ''; position: absolute; inset: 0; background: var(--success); border-radius: 50%; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3.5); opacity: 0; } }
@@ -30,28 +30,26 @@
         .menu-icon { font-size: 24px; cursor: pointer; background: #f1f5f9; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
 
         /* Wallet Card */
-        .wallet-card { margin: 10px 20px; padding: 25px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 24px; color: white; position: relative; overflow: hidden; box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2); }
+        .wallet-card { margin: 10px 20px; padding: 25px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 24px; color: white; position: relative; overflow: hidden; }
         .balance-val { font-size: 40px; font-weight: 800; margin: 10px 0; display: block; }
 
-        /* Action Grid - Optimized for Mobile */
+        /* Action Grid - RECHARGE FIXED HERE */
         .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 25px 20px; }
         .action-item { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; }
-        .icon-circle { width: 55px; height: 55px; background: #fff; border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.06); transition: 0.3s; }
+        .icon-circle { width: 55px; height: 55px; background: #fff; border-radius: 18px; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
         .icon-circle img { width: 32px; height: 32px; object-fit: contain; }
-        .action-item span { font-size: 10px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
+        .action-item span { font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; text-align: center; }
 
         /* Game List Cards */
         .game-card { 
             width: 100%; padding: 15px; background: #fff; border: 1px solid #f0f2f5; 
             border-radius: 20px; display: flex; align-items: center; justify-content: space-between; 
             text-decoration: none; color: inherit; margin-bottom: 12px; box-sizing: border-box; 
-            transition: transform 0.2s ease;
         }
-        .game-card:active { transform: scale(0.98); }
         .game-img-box { width: 65px; height: 65px; background: #f8f9fc; border-radius: 15px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
         .game-img-box img { width: 100%; height: 100%; object-fit: cover; }
 
-        /* --- View All Games Animated Button --- */
+        /* All Games Button Animation */
         .btn-all-games {
             width: 100%; padding: 18px; margin-top: 10px; border-radius: 20px; border: none;
             background: linear-gradient(90deg, #4361ee, #3f37c9, #4361ee);
@@ -65,10 +63,10 @@
         @keyframes gradientMove { 0% { background-position: 0% center; } 100% { background-position: 200% center; } }
         @keyframes glowPulse { 0% { box-shadow: 0 0 5px rgba(67, 97, 238, 0.4); } 50% { box-shadow: 0 0 20px rgba(67, 97, 238, 0.7); } 100% { box-shadow: 0 0 5px rgba(67, 97, 238, 0.4); } }
 
-        /* Sidebar & Navigation */
+        /* Sidebar UI */
         .sidebar { position: fixed; top: 0; left: -100%; width: 80%; max-width: 320px; height: 100%; background: white; z-index: 2000; transition: 0.3s ease; padding: 30px 20px; box-sizing: border-box; box-shadow: 10px 0 30px rgba(0,0,0,0.1); }
         .sidebar.active { left: 0; }
-        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1999; backdrop-filter: blur(2px); }
+        .sidebar-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 1999; }
         .sidebar-overlay.active { display: block; }
         
         .nav-btn { width: 100%; padding: 15px; border-radius: 12px; border: 1px solid #f1f5f9; background: #f8fafc; color: var(--text-main); font-weight: 600; text-align: left; cursor: pointer; margin-bottom: 8px; }
@@ -103,17 +101,29 @@
             <span style="font-size: 11px; font-weight: 700;">AVAILABLE BALANCE</span>
         </div>
         <span class="balance-val">₹<span id="mainBal">0.00</span></span>
-        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700; opacity: 0.9;">
+        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11px; font-weight: 700;">
             <span>ID: <span id="mainUid">...</span></span>
             <span style="background: #facc15; color: #000; padding: 3px 10px; border-radius: 20px;">VIP <span id="vipLevel">0</span></span>
         </div>
     </div>
 
     <div class="action-grid">
-        <a href="deposit.html" class="action-item"><div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/4221/4221518.png"></div><span>Deposit</span></a>
-        <a href="withdraw.html" class="action-item"><div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/4221/4221568.png"></div><span>Withdraw</span></a>
-        <a href="recharge.html" class="action-item"><div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/3163/3163673.png"></div><span>History</span></a>
-        <div class="action-item" onclick="alert('Invite Link Copied!')"><div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/2958/2958683.png"></div><span>Invite</span></div>
+        <a href="deposit.html" class="action-item">
+            <div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/4221/4221518.png"></div>
+            <span>Deposit</span>
+        </a>
+        <a href="withdraw.html" class="action-item">
+            <div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/4221/4221568.png"></div>
+            <span>Withdraw</span>
+        </a>
+        <a href="recharge.html" class="action-item">
+            <div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/2933/2933863.png"></div>
+            <span>Recharge</span>
+        </a>
+        <div class="action-item" onclick="alert('Link Copied!')">
+            <div class="icon-circle"><img src="https://cdn-icons-png.flaticon.com/512/2958/2958683.png"></div>
+            <span>Invite</span>
+        </div>
     </div>
 
     <div style="padding: 0 20px;">
@@ -126,59 +136,3 @@
 
         <a href="mines.html" class="game-card" style="border-left: 5px solid var(--danger);">
             <div><h4 style="margin:0">Mines Blast</h4><p style="margin:5px 0 0; font-size:11px; color:var(--text-muted);">Avoid mines, get diamonds</p></div>
-            <div class="game-img-box"><img src="https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExM3h5YXF3ZmRxcjR4cnN5NXZ1cXFwaHFxcHJxdXJxdXJxdXJxdXJxdSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9cw/57Y92IByN7X4qV6p6n/giphy.gif"></div>
-        </a>
-
-        <a href="chick.html" class="game-card" style="border-left: 5px solid var(--success);">
-            <div><h4 style="margin:0">Chicken Runner</h4><p style="margin:5px 0 0; font-size:11px; color:var(--text-muted);">Instant multiplier game</p></div>
-            <div class="game-img-box"><img src="https://media2.giphy.com/media/v1.Y2lkPTc5MGI3NjExcnFybW1qZ3JxeXFwbm1qZ3JxeXFwbm1qZ3JxeXFwbm1qZ3JxeXAmZXA9djFfaW50ZXJuYWxfZ2lmX2J5X2lkJmN0PXM/UvU3E9S3fN5LgXmD0q/giphy.gif"></div>
-        </a>
-
-        <a href="allgames.html" class="btn-all-games">EXPLORE ALL GAMES ✨</a>
-    </div>
-</div>
-
-<script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-    const firebaseConfig = {
-        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-        authDomain: "test-eb5e7.firebaseapp.com",
-        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-        projectId: "test-eb5e7",
-        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-
-    window.toggleSidebar = () => {
-        document.getElementById('sidebar').classList.toggle('active');
-        document.getElementById('sidebarOverlay').classList.toggle('active');
-    };
-
-    window.logout = () => signOut(auth).then(() => location.href = 'index.html');
-
-    onAuthStateChanged(auth, user => {
-        if (!user) return location.href = 'index.html';
-        onValue(ref(db, `users/${user.uid}`), snap => {
-            const d = snap.val() || {};
-            const name = d.displayName || user.email.split('@')[0];
-            
-            document.getElementById('mainBal').innerText = (d.balance || 0).toFixed(2);
-            document.getElementById('mainUid').innerText = user.uid.substring(0,8).toUpperCase();
-            document.getElementById('sideName').innerText = name;
-            document.getElementById('sideEmail').innerText = user.email;
-            document.getElementById('vipLevel').innerText = d.vip || 0;
-            
-            const initial = name.charAt(0).toUpperCase();
-            document.getElementById('avatarLarge').innerText = initial;
-            document.getElementById('userAvatarSmall').innerText = initial;
-        });
-    });
-</script>
-</body>
-</html>
