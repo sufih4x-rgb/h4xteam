@@ -66,7 +66,8 @@
     <div class="tabs">
         <button class="tab-btn active" onclick="showTab(event, 'users')">👥 User Management</button>
         <button class="tab-btn" onclick="showTab(event, 'masterGame')">🎮 Wingo Control</button>
-        <button class="tab-btn" onclick="showTab(event, 'txns')">💰 Transactions</button>
+        <button class="tab-btn" onclick="showTab(event, 'txns')">💰 Pending Txns</button>
+        <button class="tab-btn" onclick="showTab(event, 'history')">📜 Txn History</button>
     </div>
 
     <div id="users" class="tab-content active">
@@ -113,8 +114,30 @@
     </div>
 
     <div id="txns" class="tab-content">
-        <div class="section"><h3>Pending Deposits</h3><table><tbody id="depList"></tbody></table></div>
-        <div class="section"><h3>Pending Withdrawals</h3><table><tbody id="withList"></tbody></table></div>
+        <div class="section">
+            <div class="section-title">Pending Deposits (Manual UTR)</div>
+            <table>
+                <thead><tr><th>Email</th><th>Amount</th><th>UTR Number</th><th>Action</th></tr></thead>
+                <tbody id="depList"></tbody>
+            </table>
+        </div>
+        <div class="section">
+            <div class="section-title">Pending Withdrawals</div>
+            <table>
+                <thead><tr><th>Email</th><th>Amount</th><th>UPI ID</th><th>Action</th></tr></thead>
+                <tbody id="withList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="history" class="tab-content">
+        <div class="section">
+            <div class="section-title">All Transaction History (Approved/Rejected)</div>
+            <table>
+                <thead><tr><th>Type</th><th>User Email</th><th>Amount</th><th>Details</th><th>Status</th></tr></thead>
+                <tbody id="fullHistoryList"></tbody>
+            </table>
+        </div>
     </div>
 </div>
 
@@ -146,10 +169,10 @@
         document.getElementById(id).classList.add('active');
         e.currentTarget.classList.add('active');
         if(id === 'masterGame') syncBets();
+        if(id === 'history') loadFullHistory();
     };
 
     function initSystem() {
-        // User List with Force Win/Loss
         onValue(ref(db, "users"), snap => {
             let html = ""; let total = 0; let count = 0;
             snap.forEach(child => {
@@ -181,16 +204,99 @@
             document.getElementById("totalBal").innerText = "₹" + total.toFixed(0);
             document.getElementById("userCount").innerText = count;
         });
-
         loadTxns();
     }
 
-    // LIVE BET MONITOR (Admin dekh sakta hai kispe kitna laga hai)
+    // PENDING TXNS LOAD
+    function loadTxns() {
+        onValue(ref(db, "deposit_requests"), s => {
+            let h = ""; s.forEach(c => {
+                const d = c.val(); 
+                if(d.status==='pending') {
+                    h += `<tr><td>${d.email}</td><td>₹${d.amount}</td><td>${d.utr}</td>
+                    <td>
+                        <button class="btn-green" onclick="txn('deposit_requests','${c.key}','${d.uid}',${d.amount},'Approved')">Approve</button>
+                        <button class="btn-red" onclick="rejectTxn('deposit_requests','${c.key}')">Reject</button>
+                    </td></tr>`;
+                }
+            });
+            document.getElementById("depList").innerHTML = h || "<tr><td colspan='4'>No pending deposits</td></tr>";
+        });
+
+        onValue(ref(db, "withdrawals"), s => {
+            let h = ""; s.forEach(c => {
+                const d = c.val(); 
+                if(d.status==='Pending') {
+                    h += `<tr><td>${d.email}</td><td>₹${d.amount}</td><td><b style="color:var(--primary)">${d.upiId || 'N/A'}</b></td>
+                    <td>
+                        <button class="btn-green" onclick="txn('withdrawals','${c.key}','${d.uid}',${d.amount},'Approved')">Approve (Paid)</button>
+                        <button class="btn-red" onclick="rejectTxn('withdrawals','${c.key}','${d.uid}',${d.amount})">Reject (Refund)</button>
+                    </td></tr>`;
+                }
+            });
+            document.getElementById("withList").innerHTML = h || "<tr><td colspan='4'>No pending withdrawals</td></tr>";
+        });
+    }
+
+    // HISTORY LOAD
+    function loadFullHistory() {
+        let historyHtml = "";
+        
+        // Load Deposits History
+        onValue(ref(db, "deposit_requests"), s => {
+            s.forEach(c => {
+                const d = c.val();
+                if(d.status !== 'pending') {
+                    historyHtml += `<tr><td>DEPOSIT</td><td>${d.email}</td><td>₹${d.amount}</td><td>UTR: ${d.utr} ${d.reason ? ' | Reason: '+d.reason : ''}</td><td><span class="badge ${d.status==='Approved'?'badge-success':'badge-danger'}">${d.status}</span></td></tr>`;
+                }
+            });
+            document.getElementById("fullHistoryList").innerHTML = historyHtml;
+        });
+
+        // Load Withdrawal History
+        onValue(ref(db, "withdrawals"), s => {
+            s.forEach(c => {
+                const d = c.val();
+                if(d.status !== 'Pending') {
+                    historyHtml += `<tr><td>WITHDRAW</td><td>${d.email}</td><td>₹${d.amount}</td><td>UPI: ${d.upiId} ${d.reason ? ' | Reason: '+d.reason : ''}</td><td><span class="badge ${d.status==='Approved'?'badge-success':'badge-danger'}">${d.status}</span></td></tr>`;
+                }
+            });
+            document.getElementById("fullHistoryList").innerHTML = historyHtml;
+        });
+    }
+
+    // APPROVE TXN
+    window.txn = async (p, tid, uid, amt, st) => {
+        if(confirm(`Confirm Approve ₹${amt}?`)) {
+            if(p==='deposit_requests') await update(ref(db, `users/${uid}`), { balance: increment(amt) });
+            await update(ref(db, `${p}/${tid}`), { status: st, userNotified: false });
+            alert("Success!");
+        }
+    };
+
+    // REJECT TXN WITH REASON
+    window.rejectTxn = async (p, tid, uid, amt) => {
+        let reason = prompt("Enter Rejection Reason:");
+        if(reason === null) return;
+        
+        if(p==='withdrawals') {
+            // Refund amount if it's a withdrawal rejection
+            await update(ref(db, `users/${uid}`), { balance: increment(amt) });
+        }
+        
+        await update(ref(db, `${p}/${tid}`), { 
+            status: "Rejected", 
+            reason: reason,
+            userNotified: false 
+        });
+        alert("Transaction Rejected & User Notified.");
+    };
+
+    // PURE GAME LOGIC (Keep same)
     window.syncBets = () => {
         const m = document.getElementById("controlMode").value;
         const now = Math.floor(Date.now() / 1000);
         const currentMatch = `${new Date().getMinutes()}_${Math.floor(now/m)}`;
-        
         onValue(ref(db, `bets_${m}/${currentMatch}`), snap => {
             let v = { RED:0, GREEN:0, BIG:0, SMALL:0 };
             if(snap.exists()) {
@@ -207,15 +313,11 @@
         });
     };
 
-    // MANUAL RESULT FIXER
     window.fixNext = (key, val) => {
         const m = document.getElementById("controlMode").value;
         const data = { active: true };
         data[key] = val;
-        
-        update(ref(db, `admin_control/${m}`), data)
-            .then(() => alert(`Next result fixed: ${val}`))
-            .catch(e => alert("Error: " + e.message));
+        update(ref(db, `admin_control/${m}`), data).then(() => alert(`Fixed: ${val}`));
     };
 
     window.toggleGameControl = (uid, field, cur) => {
@@ -230,26 +332,6 @@
     window.setBal = (uid) => {
         let a = prompt("Set New Balance:");
         if(a) update(ref(db, `users/${uid}`), { balance: parseFloat(a) });
-    };
-
-    function loadTxns() {
-        onValue(ref(db, "deposit_requests"), s => {
-            let h = ""; s.forEach(c => {
-                const d = c.val(); if(d.status==='pending') h += `<tr><td>${d.email}</td><td>₹${d.amount}</td><td>${d.utr}</td><td><button class="btn-green" onclick="txn('deposit_requests','${c.key}','${d.uid}',${d.amount},'Approved')">Approve</button></td></tr>`;
-            });
-            document.getElementById("depList").innerHTML = h || "No requests";
-        });
-        onValue(ref(db, "withdrawals"), s => {
-            let h = ""; s.forEach(c => {
-                const d = c.val(); if(d.status==='Pending') h += `<tr><td>${d.email}</td><td>₹${d.amount}</td><td>${d.upi}</td><td><button class="btn-green" onclick="txn('withdrawals','${c.key}','${d.uid}',${d.amount},'Approved')">Pay</button></td></tr>`;
-            });
-            document.getElementById("withList").innerHTML = h || "No requests";
-        });
-    }
-
-    window.txn = async (p, tid, uid, amt, st) => {
-        if(p==='deposit_requests') await update(ref(db, `users/${uid}`), { balance: increment(amt) });
-        await update(ref(db, `${p}/${tid}`), { status: st });
     };
 </script>
 </body>
