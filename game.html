@@ -3,92 +3,168 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Global Game | H4XTEAM</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>Ultimate Prediction | White Edition</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #4361ee; --success: #06d6a0; --danger: #ff4d4d; --bg: #f4f7fe; }
-        body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; text-align: center; overflow-x: hidden; }
+        :root { 
+            --primary: #4361ee; 
+            --success: #00d084; 
+            --danger: #ff4757; 
+            --warning: #ffa502; 
+            --bg: #f8faff; 
+            --card: #ffffff;
+            --text-main: #1e293b;
+            --text-sub: #64748b;
+        }
         
-        .app-container { max-width: 480px; margin: auto; background: #fff; min-height: 100vh; padding: 20px; box-sizing: border-box; }
-        
-        /* Premium Wallet */
-        .wallet { background: linear-gradient(135deg, #4361ee, #3f37c9); color: white; padding: 25px; border-radius: 25px; text-align: left; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2); }
-        .bal { font-size: 32px; font-weight: 800; display: block; }
+        body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; color: var(--text-main); margin: 0; }
+        .app-container { max-width: 480px; margin: auto; min-height: 100vh; padding: 20px; box-sizing: border-box; }
 
-        /* Timer */
-        #matchTimer { font-size: 50px; font-weight: 900; color: #1e293b; margin: 10px 0; letter-spacing: -2px; }
+        /* Premium Wallet Section */
+        .top-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+        .wallet-box { 
+            background: var(--card); 
+            padding: 15px 25px; 
+            border-radius: 24px; 
+            box-shadow: 0 10px 30px rgba(67, 97, 238, 0.08);
+            border: 1px solid rgba(67, 97, 238, 0.1);
+        }
+        .wallet-box small { color: var(--text-sub); font-weight: 700; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .wallet-box .amt { display: block; font-size: 26px; font-weight: 800; color: var(--primary); }
+
+        /* Timer Section */
+        .timer-card { 
+            background: var(--card); 
+            border-radius: 28px; 
+            padding: 20px; 
+            text-align: center; 
+            margin-bottom: 20px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.03);
+            border: 1px solid #edf2f7;
+        }
+        #matchTimer { font-size: 55px; font-weight: 900; color: var(--text-main); letter-spacing: -2px; margin: 5px 0; }
+
+        /* Tabs/Modes */
+        .tabs { display: flex; gap: 8px; margin-bottom: 20px; }
+        .tab-btn { 
+            flex: 1; padding: 12px; border-radius: 14px; border: none; 
+            background: #fff; color: var(--text-sub); font-weight: 700; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.02); transition: 0.3s;
+        }
+        .tab-btn.active { background: var(--primary); color: #fff; box-shadow: 0 8px 15px rgba(67, 97, 238, 0.2); }
+
+        /* Betting Area */
+        .bet-card { background: var(--card); border-radius: 28px; padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.02); border: 1px solid #edf2f7; }
+        .row { display: flex; gap: 12px; margin-bottom: 12px; }
+        .btn-choice { 
+            flex: 1; padding: 18px; border-radius: 18px; border: none; font-weight: 800; font-size: 15px;
+            cursor: pointer; transition: 0.2s; color: #fff;
+        }
+        .green { background: var(--success); box-shadow: 0 6px 15px rgba(0, 208, 132, 0.2); }
+        .red { background: var(--danger); box-shadow: 0 6px 15px rgba(255, 71, 87, 0.2); }
+        .big { background: #5f27cd; }
+        .small { background: #341f97; }
         
-        /* Grid */
-        .btn-grid { display: flex; gap: 10px; margin: 20px 0; }
-        .choice { flex: 1; padding: 20px; border: none; border-radius: 18px; font-size: 18px; font-weight: 800; cursor: pointer; color: white; transition: 0.3s; }
-        .red { background: var(--danger); }
-        .green { background: var(--success); }
-        .selected { outline: 4px solid #1e293b; transform: scale(1.05); }
+        .btn-choice.selected { transform: scale(0.94); border: 3px solid #000; box-shadow: none; }
+
+        .num-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; margin: 15px 0; }
+        .n-btn { 
+            aspect-ratio: 1; border-radius: 12px; border: 1px solid #edf2f7; 
+            background: #f8faff; font-weight: 800; cursor: pointer; transition: 0.2s;
+        }
+        .n-btn.selected { background: var(--text-main); color: #fff; transform: scale(1.1); }
+
+        input { 
+            width: 100%; padding: 18px; border-radius: 18px; border: 2px solid #f1f5f9; 
+            font-size: 20px; font-weight: 700; text-align: center; margin: 10px 0; background: #fbfcfe;
+        }
+        #confirmBtn { 
+            width: 100%; padding: 20px; border-radius: 20px; border: none; 
+            background: var(--text-main); color: #fff; font-weight: 800; font-size: 16px; cursor: pointer;
+        }
+
+        /* Results History */
+        .history { margin-top: 25px; text-align: left; }
+        .h-item { 
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 0; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600;
+        }
+        .dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 6px; }
 
         /* Animation Overlays */
         .overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            display: none; flex-direction: column; align-items: center; justify-content: center; 
-            z-index: 1000; backdrop-filter: blur(8px); animation: fadeIn 0.3s ease;
+            position: fixed; inset: 0; background: rgba(255,255,255,0.9); 
+            display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 1000; 
+            backdrop-filter: blur(10px); animation: fadeIn 0.3s ease;
         }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
         .popup { 
-            background: white; padding: 40px; border-radius: 35px; width: 80%; max-width: 320px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.2); transform: translateY(0); animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            background: #fff; padding: 40px; border-radius: 35px; text-align: center; width: 80%;
+            box-shadow: 0 30px 60px rgba(0,0,0,0.1); border: 1px solid #f1f5f9;
         }
-        @keyframes slideUp { from { transform: translateY(50px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
-
-        .win-text { color: var(--success); font-size: 40px; font-weight: 900; margin: 0; }
-        .lose-text { color: var(--danger); font-size: 40px; font-weight: 900; margin: 0; }
-        
-        .dots { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; padding: 15px; background: #f8fafc; border-radius: 20px; }
-        .dot { width: 32px; height: 32px; border-radius: 10px; color: white; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 12px; }
-
-        input { width: 100%; padding: 15px; border-radius: 15px; border: 2px solid #f1f5f9; font-size: 20px; font-weight: 700; text-align: center; margin-bottom: 10px; box-sizing: border-box; }
-        #confirmBtn { width: 100%; padding: 18px; border-radius: 15px; border: none; background: #1e293b; color: white; font-weight: 700; cursor: pointer; }
+        .win-t { color: var(--success); font-size: 32px; font-weight: 900; }
+        .lose-t { color: var(--danger); font-size: 32px; font-weight: 900; }
     </style>
 </head>
 <body>
 
 <div class="app-container">
-    <div class="wallet">
-        <label style="font-size: 11px; font-weight: 800; opacity: 0.7;">TOTAL BALANCE</label>
-        <span class="bal">₹<span id="balanceDisplay">0.00</span></span>
+    <div class="top-nav">
+        <div class="wallet-box">
+            <small>Available Balance</small>
+            <span class="amt">₹<span id="balanceDisplay">0.00</span></span>
+        </div>
+        <div style="text-align:right">
+            <span style="display:block; font-size:10px; font-weight:800; color:var(--success)">● LIVE SERVER</span>
+        </div>
     </div>
 
-    <div id="matchTimer">00:00</div>
-    <div id="lockMsg" style="color:var(--danger); font-size: 12px; font-weight: 700; height: 20px;"></div>
-
-    <div class="btn-grid">
-        <button id="btnRed" class="choice red" onclick="selectColor('RED')">RED</button>
-        <button id="btnGreen" class="choice green" onclick="selectColor('GREEN')">GREEN</button>
+    <div class="tabs">
+        <button class="tab-btn active" onclick="setMode(30, this)">30s</button>
+        <button class="tab-btn" onclick="setMode(60, this)">1m</button>
+        <button class="tab-btn" onclick="setMode(300, this)">5m</button>
     </div>
 
-    <input type="number" id="betAmount" placeholder="Enter Amount">
-    <button id="confirmBtn" onclick="placeBet()">Confirm Bet</button>
+    <div class="timer-card">
+        <small style="font-weight:800; color:var(--text-sub); letter-spacing:1px;">NEXT ROUND IN</small>
+        <div id="matchTimer">00:00</div>
+        <div id="lockMsg" style="height:15px; font-size:11px; font-weight:800; color:var(--danger)"></div>
+    </div>
 
-    <div style="margin-top: 30px; text-align: left;">
-        <label style="font-size: 12px; font-weight: 800; color: #94a3b8;">HISTORY</label>
-        <div id="trendList" class="dots"></div>
+    <div class="bet-card">
+        <div class="row">
+            <button class="btn-choice green" onclick="pick('color','GREEN',this)">GREEN</button>
+            <button class="btn-choice red" onclick="pick('color','RED',this)">RED</button>
+        </div>
+        <div class="row">
+            <button class="btn-choice big" onclick="pick('size','BIG',this)">BIG</button>
+            <button class="btn-choice small" onclick="pick('size','SMALL',this)">SMALL</button>
+        </div>
+        <div class="num-grid" id="numberGrid"></div>
+        <input type="number" id="betAmount" placeholder="Enter Bet Amount">
+        <button id="confirmBtn" onclick="placeBet()">PLACE BET</button>
+    </div>
+
+    <div class="history">
+        <label style="font-size:11px; font-weight:800; color:var(--text-sub); text-transform:uppercase;">Trend Analysis</label>
+        <div id="historyList"></div>
     </div>
 </div>
 
-<div id="winOverlay" class="overlay" style="background: rgba(6, 214, 160, 0.2);">
+<div id="winOverlay" class="overlay">
     <div class="popup">
-        <div style="font-size: 60px;">🎉</div>
-        <h2 class="win-text">YOU WON</h2>
-        <h1 id="winAmtText" style="margin: 10px 0;">+ ₹0</h1>
-        <button onclick="closeOverlay()" style="padding: 12px 30px; border-radius: 12px; border: none; background: var(--success); color: white; font-weight: 700;">AWESOME</button>
+        <div style="font-size:50px;">🏆</div>
+        <h1 class="win-t">CONGRATS!</h1>
+        <h2 id="winAmt" style="margin:10px 0; font-size:35px;">+₹0</h2>
+        <button onclick="closeModal()" style="width:100%; padding:15px; border-radius:15px; border:none; background:var(--success); color:#fff; font-weight:800;">COLLECT CASH</button>
     </div>
 </div>
 
-<div id="loseOverlay" class="overlay" style="background: rgba(255, 77, 77, 0.2);">
+<div id="loseOverlay" class="overlay">
     <div class="popup">
-        <div style="font-size: 60px;">💔</div>
-        <h2 class="lose-text">BET LOST</h2>
-        <p style="color: #64748b; font-weight: 600;">Better luck next time!</p>
-        <button onclick="closeOverlay()" style="padding: 12px 30px; border-radius: 12px; border: none; background: var(--danger); color: white; font-weight: 700;">TRY AGAIN</button>
+        <div style="font-size:50px;">☁️</div>
+        <h1 class="lose-t">LOST!</h1>
+        <p style="font-weight:600; color:var(--text-sub);">Market went opposite. Try again!</p>
+        <button onclick="closeModal()" style="width:100%; padding:15px; border-radius:15px; border:none; background:var(--danger); color:#fff; font-weight:800;">RETRY ROUND</button>
     </div>
 </div>
 
@@ -98,145 +174,151 @@
     import { getDatabase, ref, set, get, update, onValue, increment, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
-};
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+    };
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let uid = "", userBalance = 0, userTotalWon = 0, selectedColor = "", currentMatchId = "", isSettled = false;
+    let uid = "", userBalance = 0, currentMode = 30, betCount = 0;
+    let selections = { color: null, size: null, num: null };
+    let matchId = "";
 
-    onAuthStateChanged(auth, (user) => {
-        if (!user) return window.location.href = "index.html";
-        uid = user.uid;
-        onValue(ref(db, `users/${uid}`), (s) => {
-            const data = s.val();
-            userBalance = data.balance || 0;
-            userTotalWon = data.totalWon || 0;
+    // Load Numbers
+    const grid = document.getElementById("numberGrid");
+    for(let i=0; i<=9; i++) {
+        grid.innerHTML += `<button class="n-btn" onclick="pick('num',${i},this)">${i}</button>`;
+    }
+
+    onAuthStateChanged(auth, u => {
+        if(!u) return window.location.href="index.html";
+        uid = u.uid;
+        onValue(ref(db, `users/${uid}`), s => {
+            userBalance = s.val().balance || 0;
             document.getElementById("balanceDisplay").innerText = userBalance.toFixed(2);
         });
     });
 
-    setInterval(async () => {
-        let now = new Date();
-        let seconds = now.getSeconds();
-        let remaining = 60 - seconds;
-        let matchId = "M_" + now.toISOString().split('T')[0] + "_" + (now.getHours()*60 + now.getMinutes());
+    window.setMode = (m, btn) => {
+        currentMode = m;
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+    };
 
-        if(currentMatchId !== matchId) {
-            currentMatchId = matchId;
-            isSettled = false;
-        }
+    window.pick = (type, val, btn) => {
+        selections[type] = (selections[type] === val) ? null : val;
+        const selector = type === 'num' ? '.n-btn' : '.btn-choice';
+        btn.parentElement.querySelectorAll(selector).forEach(b => b.classList.remove('selected'));
+        if(selections[type] !== null) btn.classList.add('selected');
+    };
 
+    // Main Timer Loop
+    setInterval(() => {
+        const now = Math.floor(Date.now() / 1000);
+        const remaining = currentMode - (now % currentMode);
+        matchId = "M_" + currentMode + "_" + Math.floor(now / currentMode);
+        
         document.getElementById("matchTimer").innerText = `00:${remaining < 10 ? '0'+remaining : remaining}`;
 
-        if (remaining <= 5 && !isSettled) {
-            isSettled = true;
-            processResult();
-        }
-
-        if (remaining <= 10) {
-            document.getElementById("lockMsg").innerText = "🔒 BETTING CLOSED";
+        if(remaining <= 5) {
+            document.getElementById("lockMsg").innerText = "🔒 MARKET FREEZING...";
             document.getElementById("confirmBtn").disabled = true;
         } else {
             document.getElementById("lockMsg").innerText = "";
             document.getElementById("confirmBtn").disabled = false;
         }
+
+        if(remaining === 1) handleResult();
     }, 1000);
 
-    async function processResult() {
-        // 1. Get Match Result (Anti-Loss System)
-        const matchRef = ref(db, `matches/${currentMatchId}`);
-        const matchSnap = await get(matchRef);
-        let winColor;
-
-        if (!matchSnap.exists()) {
-            const betsSnap = await get(ref(db, `matchBets/${currentMatchId}`));
-            let rTotal = 0, gTotal = 0;
-            betsSnap.forEach(b => {
-                if(b.val().color === "RED") rTotal += b.val().amount;
-                else gTotal += b.val().amount;
-            });
-            winColor = (rTotal <= gTotal) ? "RED" : "GREEN";
-            await set(matchRef, { result: winColor });
-        } else {
-            winColor = matchSnap.val().result;
-        }
-
-        // 2. Check My Bet
-        const myBetSnap = await get(ref(db, `matchBets/${currentMatchId}/${uid}`));
-        if (myBetSnap.exists()) {
-            let myBet = myBetSnap.val();
-            
-            // SPECIAL LOGIC: First Bet always wins
-            let won = (myBet.color === winColor);
-            if (userTotalWon === 0) won = true; // Forced win for first timers
-
-            if (won) {
-                let profit = Math.floor(myBet.amount * 1.9);
-                await update(ref(db, `users/${uid}`), { 
-                    balance: increment(profit),
-                    totalWon: increment(1) 
-                });
-                showPopup('win', profit);
-            } else {
-                showPopup('lose');
-            }
-            // Clear bet locally so it doesn't repeat
-            await set(ref(db, `matchBets/${currentMatchId}/${uid}`), null);
-        }
-    }
-
-    window.selectColor = (c) => {
-        selectedColor = c;
-        document.getElementById("btnRed").className = `choice red ${c==='RED'?'selected':''}`;
-        document.getElementById("btnGreen").className = `choice green ${c==='GREEN'?'selected':''}`;
-    };
-
     window.placeBet = async () => {
-        let amt = parseInt(document.getElementById("betAmount").value);
-        if(!selectedColor || isNaN(amt) || amt < 10 || amt > userBalance) return alert("Invalid Bet");
+        const amt = parseInt(document.getElementById("betAmount").value);
+        if(betCount >= 5) return alert("Round limit reached (5 bets)");
+        if(amt < 10 || isNaN(amt) || amt > userBalance) return alert("Invalid Amount/Balance");
+        if(!selections.color && !selections.size && !selections.num) return alert("Select a prediction!");
 
         await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
-        await set(ref(db, `matchBets/${currentMatchId}/${uid}`), { color: selectedColor, amount: amt });
-        alert("Bet Confirmed!");
+        await set(ref(db, `gameBets/${matchId}/${uid}/${Date.now()}`), { ...selections, amount: amt });
+        betCount++;
+        alert("Bet Live!");
     };
 
-    function showPopup(type, amt) {
-        if(type === 'win') {
-            document.getElementById("winAmtText").innerText = "+ ₹" + amt;
-            document.getElementById("winOverlay").style.display = "flex";
+    async function handleResult() {
+        const mRef = ref(db, `gameResults/${matchId}`);
+        const snap = await get(mRef);
+        let result;
+
+        if(!snap.exists()) {
+            // ALGORITHM: Least Amount Wins + Balance Control
+            const allBets = await get(ref(db, `gameBets/${matchId}`));
+            let volume = { RED:0, GREEN:0, BIG:0, SMALL:0 };
+            
+            allBets.forEach(u => u.forEach(b => {
+                const d = b.val();
+                if(d.color) volume[d.color] += d.amount;
+                if(d.size) volume[d.size] += d.amount;
+            }));
+
+            result = {
+                color: volume.RED <= volume.GREEN ? "RED" : "GREEN",
+                size: volume.BIG <= volume.SMALL ? "BIG" : "SMALL",
+                num: Math.floor(Math.random() * 10)
+            };
+            await set(mRef, result);
         } else {
-            document.getElementById("loseOverlay").style.display = "flex";
+            result = snap.val();
         }
+
+        const myBets = await get(ref(db, `gameBets/${matchId}/${uid}`));
+        if(myBets.exists()) {
+            let winTotal = 0, isWin = false;
+            // 80% Loss Chance if balance > 200
+            let probability = userBalance > 200 ? 0.2 : 1.0;
+
+            myBets.forEach(b => {
+                const bet = b.val();
+                let matched = (bet.color === result.color || bet.size === result.size || bet.num === result.num);
+                if(matched && Math.random() < probability) {
+                    isWin = true;
+                    winTotal += (bet.amount * 1.95);
+                }
+            });
+
+            if(isWin) {
+                await update(ref(db, `users/${uid}`), { balance: increment(winTotal) });
+                document.getElementById("winAmt").innerText = "₹" + winTotal.toFixed(2);
+                document.getElementById("winOverlay").style.display = "flex";
+            } else {
+                document.getElementById("loseOverlay").style.display = "flex";
+            }
+        }
+        betCount = 0;
     }
 
-    window.closeOverlay = () => {
-        document.getElementById("winOverlay").style.display = "none";
-        document.getElementById("loseOverlay").style.display = "none";
-        selectedColor = "";
-        document.getElementById("btnRed").classList.remove("selected");
-        document.getElementById("btnGreen").classList.remove("selected");
-    };
-
-    // Real-time History
-    onValue(query(ref(db, "matches"), limitToLast(10)), (snap) => {
-        const list = document.getElementById("trendList");
+    onValue(query(ref(db, "gameResults"), limitToLast(10)), s => {
+        const list = document.getElementById("historyList");
         list.innerHTML = "";
-        snap.forEach(c => {
-            const res = c.val().result;
-            const bg = res === 'RED' ? 'var(--danger)' : 'var(--success)';
-            list.innerHTML = `<div class="dot" style="background:${bg}">${res[0]}</div>` + list.innerHTML;
+        s.forEach(m => {
+            const d = m.val();
+            list.innerHTML = `<div class="h-item">
+                <span>ID: ${m.key.split('_')[2]}</span>
+                <span><span class="dot" style="background:${d.color==='RED'?'var(--danger)':'var(--success)'}"></span>${d.color}</span>
+                <span style="color:var(--primary)">${d.size}</span>
+                <span style="font-weight:900">${d.num}</span>
+            </div>` + list.innerHTML;
         });
     });
+
+    window.closeModal = () => {
+        document.querySelectorAll('.overlay').forEach(o => o.style.display="none");
+        document.querySelectorAll('.btn-choice, .n-btn').forEach(b => b.classList.remove('selected'));
+        selections = { color: null, size: null, num: null };
+    };
 </script>
 </body>
 </html>
