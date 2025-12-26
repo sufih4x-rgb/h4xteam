@@ -3,136 +3,98 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Chicken Road: Strategy Edition</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>Chicken Road: 15 Plates</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@700;800&display=swap" rel="stylesheet">
     <style>
         :root {
-            --primary: #6366f1;
-            --bg: #0b0e14;
-            --surface: #161b26;
+            --road: #2d3748;
+            --grass: #064e3b;
             --accent: #facc15;
-            --success: #10b981;
-            --danger: #ef4444;
-            --text-muted: #94a3b8;
         }
 
         body { 
-            background: var(--bg); color: #fff; 
-            font-family: 'Plus Jakarta Sans', sans-serif; 
+            background: #000; color: #fff; font-family: 'Plus Jakarta Sans', sans-serif; 
             margin: 0; display: flex; justify-content: center; overflow: hidden;
-            user-select: none;
         }
 
-        .app-container { width: 100%; max-width: 480px; height: 100vh; display: flex; flex-direction: column; background: radial-gradient(circle at top, #1e293b 0%, #0b0e14 100%); position: relative; }
+        .app-container { width: 100%; max-width: 480px; height: 100vh; display: flex; flex-direction: column; background: #020617; }
 
-        .header {
-            padding: 15px 20px; display: flex; justify-content: space-between; align-items: center;
-            background: rgba(22, 27, 38, 0.8); backdrop-filter: blur(10px); border-bottom: 1px solid rgba(255,255,255,0.05); z-index: 100;
-        }
-        .logo { font-weight: 800; font-size: 16px; }
-        .logo span { color: var(--accent); }
+        /* Header & Difficulty */
+        .header { padding: 10px 20px; background: #0f172a; border-bottom: 1px solid #1e293b; }
+        .top-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+        .balance-badge { background: #000; padding: 5px 15px; border-radius: 20px; border: 2px solid var(--accent); color: var(--accent); font-weight: 800; }
+        
+        .mode-selector { display: flex; gap: 5px; }
+        .mode-btn { flex: 1; padding: 8px; border: 1px solid #334155; background: #1e293b; color: #94a3b8; border-radius: 8px; cursor: pointer; font-size: 11px; font-weight: 800; }
+        .mode-btn.active { background: #4f46e5; color: #fff; border-color: #4f46e5; }
 
-        .balance-badge {
-            background: #0f172a; padding: 6px 12px; 
-            border-radius: 10px; border: 1px solid rgba(250, 204, 21, 0.3); color: var(--accent); font-weight: 700;
+        /* Game Arena */
+        .arena { 
+            flex-grow: 1; position: relative; overflow-x: auto; display: flex; align-items: center; 
+            background: linear-gradient(to bottom, var(--grass), #020617 30%, #020617 70%, var(--grass));
+            scrollbar-width: none;
         }
-
-        /* Difficulty Tabs */
-        .diff-container {
-            display: flex; gap: 8px; padding: 15px 20px; background: rgba(0,0,0,0.2);
-        }
-        .diff-btn {
-            flex: 1; padding: 10px; border-radius: 10px; border: 1px solid #2d3748;
-            background: #1e293b; color: #94a3b8; cursor: pointer; font-size: 12px; font-weight: 700;
-            transition: 0.3s;
-        }
-        .diff-btn.active {
-            background: var(--primary); color: #fff; border-color: var(--primary);
-            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
-        }
-
-        .arena { flex-grow: 1; position: relative; overflow-x: auto; scroll-behavior: smooth; display: flex; align-items: center; padding: 0 50px; }
         .arena::-webkit-scrollbar { display: none; }
-        .track { display: flex; gap: 40px; align-items: center; padding-bottom: 100px; }
         
-        .tile-group { display: flex; flex-direction: column; align-items: center; gap: 12px; }
-        .tile-mult { font-size: 11px; font-weight: 800; color: var(--text-muted); background: rgba(255,255,255,0.05); padding: 4px 8px; border-radius: 10px; }
+        .road {
+            position: absolute; width: 3500px; height: 130px; background: var(--road);
+            border-top: 4px solid #4a5568; border-bottom: 4px solid #4a5568;
+            display: flex; align-items: center; padding-left: 60px; gap: 65px;
+        }
+
+        .plate {
+            min-width: 70px; height: 70px; background: #1a202c; border: 3px solid #4a5568;
+            border-radius: 12px; position: relative; display: flex; align-items: center; 
+            justify-content: center; cursor: pointer; transition: 0.3s;
+        }
+        .plate.cleared { background: #059669; border-color: #34d399; }
+        .plate.failed { background: #991b1b; border-color: #f87171; }
+        .plate-mult { position: absolute; top: -25px; font-size: 12px; font-weight: 800; }
+
+        #chicken {
+            position: absolute; width: 60px; height: 60px; z-index: 100;
+            transition: 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            pointer-events: none; left: 65px;
+        }
+
+        /* Controls */
+        .controls { background: #0f172a; padding: 20px; border-radius: 25px 25px 0 0; }
+        .input-grp { background: #000; border: 1px solid #334155; padding: 12px; border-radius: 12px; display: flex; margin-bottom: 15px; }
+        .input-grp input { background: transparent; border: none; color: #fff; width: 100%; font-size: 18px; font-weight: 800; outline: none; }
         
-        .hole {
-            width: 70px; height: 70px; background: radial-gradient(circle at center, #1a202c, #000); border: 3px solid #2d3748; 
-            border-radius: 50%; display: flex; align-items: center; justify-content: center;
-            cursor: pointer; transition: 0.3s; position: relative; font-size: 28px;
-        }
-
-        .hole.active { border-color: var(--primary); animation: pulse 1.5s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.08); } }
-
-        .hole.cleared { border-color: var(--success); background: radial-gradient(circle, #064e3b, #000); }
-        .hole.failed { border-color: var(--danger); background: radial-gradient(circle, #7f1d1d, #000); }
-
-        #chicken-sprite {
-            position: absolute; width: 60px; height: 60px; 
-            bottom: 130px; left: -100px;
-            font-size: 45px; display: flex; align-items: center; justify-content: center;
-            transition: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); z-index: 150;
-        }
-
-        .death-flash { position: fixed; inset: 0; background: #ff0000; opacity: 0; pointer-events: none; z-index: 2000; transition: 0.2s; }
-
-        .controls-panel {
-            background: var(--surface); padding: 25px; border-radius: 24px 24px 0 0;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.5); z-index: 100;
-        }
-        .input-group { background: #0b0e14; border-radius: 12px; display: flex; align-items: center; padding: 0 15px; margin-bottom: 15px; border: 1px solid #2d3748; }
-        .input-group input { flex-grow: 1; background: transparent; border: none; color: #fff; padding: 12px; font-size: 18px; font-weight: 700; outline: none; }
-
-        .btn { width: 100%; padding: 16px; border-radius: 12px; border: none; font-size: 14px; font-weight: 800; cursor: pointer; transition: 0.2s; }
-        .btn-start { background: var(--primary); color: #fff; }
+        .btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; }
+        .btn-start { background: #4f46e5; color: #fff; }
         .btn-cash { background: var(--accent); color: #000; display: none; }
-
-        .win-overlay {
-            display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.9);
-            z-index: 1000; align-items: center; justify-content: center; flex-direction: column; text-align: center;
-        }
     </style>
 </head>
 <body>
 
-<div class="death-flash" id="flash"></div>
-
-<div class="app-container" id="appBody">
+<div class="app-container">
     <div class="header">
-        <div class="logo">🐔 CHICKEN <span>ROAD</span></div>
-        <div class="balance-badge">₹<span id="bal">0.00</span></div>
-    </div>
-
-    <div class="diff-container" id="diffTabs">
-        <button class="diff-btn active" onclick="setDiff('easy')">EASY</button>
-        <button class="diff-btn" onclick="setDiff('medium')">MEDIUM</button>
-        <button class="diff-btn" onclick="setDiff('hard')">HARD</button>
+        <div class="top-row">
+            <div style="font-weight:800; font-size:14px;">🐔 CHICKEN <span style="color:var(--accent)">ROAD</span></div>
+            <div class="balance-badge">₹<span id="bal">0.00</span></div>
+        </div>
+        <div class="mode-selector">
+            <button class="mode-btn active" onclick="setMode('easy')">NORMAL (19x)</button>
+            <button class="mode-btn" onclick="setMode('hard')">HARD (50x)</button>
+        </div>
     </div>
 
     <div class="arena" id="arena">
-        <div class="track" id="track"></div>
-        <div id="chicken-sprite">🐔</div>
+        <div class="road" id="road">
+            <div class="plate" id="p--1" style="background:#4a5568">Start</div>
+        </div>
+        <img id="chicken" src="https://i.ibb.co/vYm0YfS/chicken-side.png" alt="chicken">
     </div>
 
-    <div class="win-overlay" id="winLayer">
-        <div style="background: #1e293b; padding: 30px; border-radius: 30px; border: 2px solid var(--accent); width: 80%;">
-            <h2 style="color: var(--accent);">YOU SURVIVED!</h2>
-            <h1 id="winAmt" style="font-size: 40px; margin: 10px 0;">₹0</h1>
-            <button class="btn btn-start" onclick="location.reload()">CLAIM</button>
+    <div class="controls">
+        <div class="input-grp">
+            <span style="color:var(--accent); margin-right:10px;">₹</span>
+            <input type="number" id="betInput" value="10" min="10">
         </div>
-    </div>
-
-    <div class="controls-panel">
-        <div id="info" style="text-align:center; color:var(--text-muted); font-size:11px; margin-bottom:10px; font-weight:700;">CHOOSE LEVEL & START</div>
-        <div class="input-group">
-            <span style="color: var(--accent);">₹</span>
-            <input type="number" id="bet" value="10" min="10">
-        </div>
-        <button id="sBtn" class="btn btn-start" onclick="begin()">🚀 START RUN</button>
-        <button id="cBtn" class="btn btn-cash" onclick="collect()">💰 CASH OUT</button>
+        <button id="sBtn" class="btn btn-start" onclick="beginGame()">🚀 START MISSION</button>
+        <button id="cBtn" class="btn btn-cash" onclick="collect()">💰 COLLECT</button>
     </div>
 </div>
 
@@ -153,21 +115,19 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let uBal = 0, playing = false, step = 0, betAmt = 0;
-    let mode = 'easy';
+    let uBal = 0, playing = false, step = -1, bet = 0, mode = 'easy';
 
     const config = {
-        easy: { mults: [1.1, 1.25, 1.45, 1.7, 2.0, 2.5, 3.2, 4.5, 6.5, 10], baseRisk: 0.12, trapAt: 170 },
-        medium: { mults: [1.3, 1.6, 2.1, 2.8, 4.0, 6.0, 9.0, 15, 25, 50], baseRisk: 0.22, trapAt: 140 },
-        hard: { mults: [1.5, 2.2, 3.5, 5.5, 10, 20, 45, 100, 250, 500], baseRisk: 0.35, trapAt: 100 }
+        easy: [1.2, 1.7, 2.3, 3.5, 4.0, 4.8, 4.99, 5.5, 6.11, 8.1, 10.1, 12.5, 14.0, 16.5, 19.0],
+        hard: [2.0, 3.5, 5.0, 7.5, 10.0, 12.5, 15.0, 18.0, 22.0, 26.0, 30.0, 35.0, 40.0, 45.0, 50.0]
     };
 
-    window.setDiff = (d) => {
-        if (playing) return;
-        mode = d;
-        document.querySelectorAll('.diff-btn').forEach(b => b.classList.remove('active'));
+    window.setMode = (m) => {
+        if(playing) return;
+        mode = m;
+        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
         event.target.classList.add('active');
-        setupTrack();
+        initRoad();
     };
 
     onAuthStateChanged(auth, (user) => {
@@ -180,112 +140,84 @@
         });
     });
 
-    function setupTrack() {
-        const t = document.getElementById("track");
-        t.innerHTML = "";
-        config[mode].mults.forEach((m, i) => {
-            const g = document.createElement("div");
-            g.className = "tile-group";
-            g.innerHTML = `<div class="tile-mult">${m}x</div><div class="hole" id="h-${i}" onclick="jump(${i})">🕳️</div>`;
-            t.appendChild(g);
+    function initRoad() {
+        const road = document.getElementById("road");
+        road.innerHTML = '<div class="plate" id="p--1" style="background:#4a5568">Start</div>';
+        config[mode].forEach((m, i) => {
+            const p = document.createElement("div");
+            p.className = "plate";
+            p.id = `p-${i}`;
+            p.innerHTML = `<span class="plate-mult">${m}x</span>${i === 14 ? '🥚' : ''}`;
+            p.onclick = () => jump(i);
+            road.appendChild(p);
         });
     }
 
-    window.begin = async () => {
-        const a = parseFloat(document.getElementById("bet").value);
-        if (isNaN(a) || a < 10) return alert("Min bet ₹10");
-        if (a > uBal) return alert("Low Balance");
+    window.beginGame = async () => {
+        const amt = parseFloat(document.getElementById("betInput").value);
+        if (amt < 10 || amt > uBal) return alert("Check Balance");
 
-        betAmt = a;
-        step = 0;
-        playing = true;
-
-        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: uBal - a });
+        bet = amt; playing = true; step = -1;
+        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: uBal - amt });
 
         document.getElementById("sBtn").style.display = "none";
         document.getElementById("cBtn").style.display = "block";
-        document.getElementById("diffTabs").style.opacity = "0.5";
-        document.getElementById("diffTabs").style.pointerEvents = "none";
-        
-        setupTrack();
-        document.getElementById("chicken-sprite").style.left = "-80px";
-        document.getElementById("chicken-sprite").innerText = "🐔";
-        focusStep();
+        document.getElementById("cBtn").innerText = "💰 COLLECT";
+        initRoad();
+        moveChicken(-1);
     };
-
-    function focusStep() {
-        document.querySelectorAll('.hole').forEach(h => h.classList.remove('active'));
-        const next = document.getElementById(`h-${step}`);
-        if (next) next.classList.add('active');
-        document.getElementById("info").innerText = `${mode.toUpperCase()} MODE | TARGET: ${config[mode].mults[step]}x`;
-    }
 
     window.jump = (i) => {
-        if (!playing || i !== step) return;
-
-        const c = document.getElementById("chicken-sprite");
-        const target = document.getElementById(`h-${i}`);
-        const rect = target.getBoundingClientRect();
-        const trackRect = document.getElementById("track").getBoundingClientRect();
-
-        c.style.transform = "translateY(-80px) rotate(15deg)";
-        c.style.left = (rect.left - trackRect.left + 5) + "px";
+        if (!playing || i !== step + 1) return;
+        moveChicken(i);
 
         setTimeout(() => {
-            c.style.transform = "translateY(0)";
+            let risk = mode === 'hard' ? 0.35 : 0.20;
             
-            // --- DYNAMIC RIGGING LOGIC ---
-            let trapChance = config[mode].baseRisk;
+            // RIGGING LOGIC: Profit capping at ₹80
+            if (uBal > 80) risk = 0.85; 
+            if (i > 5) risk += 0.10;
 
-            // Agar user trap limit ke paas hai toh risk badha do (Time waste karne ke liye)
-            if (uBal > config[mode].trapAt) {
-                trapChance += 0.40; // Extra 40% risk to force loss
-            }
-
-            // High multiplier greed trap
-            if (step > 3) trapChance += 0.10;
-
-            let isLost = Math.random() < trapChance;
-
-            if (isLost) {
-                triggerDeath(target, c);
+            if (Math.random() < risk) {
+                fail(i);
             } else {
-                triggerSuccess(target);
+                step = i;
+                document.getElementById(`p-${i}`).classList.add('cleared');
+                const win = (bet * config[mode][i]).toFixed(2);
+                document.getElementById("cBtn").innerText = `💰 COLLECT ₹${win}`;
+                if(i === 14) collect();
             }
-        }, 400);
+        }, 450);
     };
 
-    function triggerSuccess(target) {
-        target.classList.add('cleared');
-        target.innerHTML = "⭐";
-        step++;
-        if (step >= config[mode].mults.length) {
-            collect();
-        } else {
-            focusStep();
-            document.getElementById("arena").scrollLeft += 110;
-        }
+    function moveChicken(i) {
+        const c = document.getElementById("chicken");
+        const p = document.getElementById(`p-${i}`);
+        c.style.transform = "translateY(-60px) rotate(10deg)";
+        c.style.left = (p.offsetLeft + 5) + "px";
+        setTimeout(() => {
+            c.style.transform = "translateY(0)";
+            document.getElementById("arena").scrollLeft = p.offsetLeft - 100;
+        }, 400);
     }
 
-    function triggerDeath(target, chicken) {
+    function fail(i) {
         playing = false;
-        document.getElementById("flash").style.opacity = "0.7";
-        chicken.innerText = "🍗";
-        target.classList.add('failed');
-        target.innerHTML = "💥";
-        setTimeout(() => location.reload(), 1200);
+        document.getElementById(`p-${i}`).classList.add('failed');
+        document.getElementById("chicken").style.filter = "brightness(0.5) sepia(1)";
+        setTimeout(() => location.reload(), 1500);
     }
 
     window.collect = async () => {
-        if (!playing || step === 0) return;
+        if (!playing || step < 0) return;
         playing = false;
-        const totalWin = betAmt * config[mode].mults[step - 1];
-        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: uBal + totalWin });
-        document.getElementById("winAmt").innerText = `₹${totalWin.toFixed(2)}`;
-        document.getElementById("winLayer").style.display = "flex";
+        const win = bet * config[mode][step];
+        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: uBal + win });
+        alert(`Congratulations! You won ₹${win.toFixed(2)}`);
+        location.reload();
     };
 
-    setupTrack();
+    initRoad();
 </script>
 </body>
 </html>
