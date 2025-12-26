@@ -18,30 +18,28 @@
         .stat-card div { font-size: 24px; font-weight: 800; color: var(--primary); }
 
         .tabs { display: flex; gap: 10px; margin-bottom: 25px; overflow-x: auto; }
-        .tab-btn { background: #e2e8f0; color: #64748b; padding: 12px 22px; border-radius: 12px; cursor: pointer; font-weight: 700; border: none; transition: 0.3s; }
+        .tab-btn { background: #e2e8f0; color: #64748b; padding: 12px 22px; border-radius: 12px; cursor: pointer; font-weight: 700; border: none; transition: 0.3s; white-space: nowrap; }
         .tab-btn.active { background: var(--primary); color: white; }
         .tab-content { display: none; }
         .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
 
-        .section { background: var(--white); padding: 25px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.04); margin-bottom: 30px; }
+        .section { background: var(--white); padding: 25px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.04); margin-bottom: 30px; overflow-x: auto; }
         .section-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
         
-        table { width: 100%; border-collapse: collapse; }
+        table { width: 100%; border-collapse: collapse; min-width: 700px; }
         th { text-align: left; padding: 12px; background: #f8fafc; font-size: 11px; color: var(--text-light); }
         td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; }
 
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; }
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; display: inline-block; margin-right: 4px; }
         .badge-danger { background: #fee2e2; color: #dc2626; }
+        .badge-success { background: #d1fae5; color: #059669; }
+        .badge-warning { background: #fef3c7; color: #92400e; }
         
         button { padding: 8px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 11px; }
         .btn-blue { background: var(--primary); color: white; }
         .btn-green { background: var(--success); color: white; }
         .btn-red { background: var(--danger); color: white; }
-        
-        /* Game Control Styles */
-        .game-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
-        .bet-box { background: #f8fafc; padding: 15px; border-radius: 15px; margin-bottom: 10px; }
-        .vol-text { font-weight: 800; color: var(--primary); float: right; }
+        .btn-dark { background: #1e293b; color: white; }
 
         #loginOverlay { position: fixed; inset: 0; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 10000; }
         .login-card { background: white; padding: 40px; border-radius: 30px; text-align: center; width: 320px; }
@@ -52,7 +50,7 @@
 <div id="loginOverlay">
     <div class="login-card">
         <h2>Admin Login</h2>
-        <input type="password" id="adminPass" placeholder="System Password" style="width:100%; padding:12px; margin:10px 0; border-radius:10px; border:1px solid #ddd;">
+        <input type="password" id="adminPass" placeholder="System Password" style="width:100%; padding:12px; margin:10px 0; border-radius:10px; border:1px solid #ddd; box-sizing: border-box;">
         <button class="btn-blue" style="width: 100%; padding: 15px;" onclick="checkAuth()">Login</button>
     </div>
 </div>
@@ -61,76 +59,32 @@
     <div class="stats-grid">
         <div class="stat-card"><h3>Total Balance</h3><div id="totalBal">₹0</div></div>
         <div class="stat-card"><h3>Users</h3><div id="userCount">0</div></div>
-        <div class="stat-card"><h3>30S Volume</h3><div id="vol30">₹0</div></div>
-        <div class="stat-card"><h3>1M Volume</h3><div id="vol60">₹0</div></div>
     </div>
 
     <div class="tabs">
-        <button class="tab-btn active" onclick="showTab(event, 'users')">👥 Users</button>
-        <button class="tab-btn" onclick="showTab(event, 'masterGame')">🎮 Game Control</button>
-        <button class="tab-btn" onclick="showTab(event, 'deposits')">📥 Deposits</button>
-        <button class="tab-btn" onclick="showTab(event, 'withdrawals')">📤 Withdrawals</button>
-        <button class="tab-btn" onclick="showTab(event, 'support')">💬 Support</button>
+        <button class="tab-btn active" onclick="showTab(event, 'users')">👥 User Management</button>
+        <button class="tab-btn" onclick="showTab(event, 'txns')">💰 Transactions</button>
     </div>
 
     <div id="users" class="tab-content active">
         <div class="section">
-            <div class="section-title">User Management</div>
+            <div class="section-title">All Registered Users</div>
             <table>
-                <thead><tr><th>User Info</th><th>Balance</th><th>Status</th><th>Control</th></tr></thead>
+                <thead><tr><th>User Info</th><th>Balance</th><th>Status</th><th>Game Control</th><th>Account Control</th></tr></thead>
                 <tbody id="userList"></tbody>
             </table>
         </div>
     </div>
 
-    <div id="masterGame" class="tab-content">
-        <div class="section">
-            <div class="section-title">Live Result Fixer & Monitor</div>
-            <select id="controlMode" onchange="syncBets()" style="padding:10px; border-radius:10px; margin-bottom:20px;">
-                <option value="30">Mode: 30 Seconds</option>
-                <option value="60">Mode: 1 Minute</option>
-                <option value="300">Mode: 5 Minutes</option>
-            </select>
-            
-            <div class="game-grid">
-                <div class="card">
-                    <h3>📊 Live Bets (Current Round)</h3>
-                    <div class="bet-box">RED <span id="b_RED" class="vol-text">₹0</span></div>
-                    <div class="bet-box">GREEN <span id="b_GREEN" class="vol-text">₹0</span></div>
-                    <div class="bet-box">BIG <span id="b_BIG" class="vol-text">₹0</span></div>
-                    <div class="bet-box">SMALL <span id="b_SMALL" class="vol-text">₹0</span></div>
-                </div>
-                <div class="card">
-                    <h3>🎯 Manual Fix (Next Round)</h3>
-                    <div style="display:flex; gap:5px; margin-bottom:10px;">
-                        <button class="btn-red" style="flex:1" onclick="fixNext('targetColor','RED')">Force RED</button>
-                        <button class="btn-green" style="flex:1" onclick="fixNext('targetColor','GREEN')">Force GREEN</button>
-                    </div>
-                    <div style="display:flex; gap:5px; margin-bottom:10px;">
-                        <button class="btn-blue" style="flex:1; background:#fbbf24" onclick="fixNext('targetSize','BIG')">Force BIG</button>
-                        <button class="btn-blue" style="flex:1; background:#38bdf8" onclick="fixNext('targetSize','SMALL')">Force SMALL</button>
-                    </div>
-                    <input type="number" id="targetNum" placeholder="Force Number (0-9)" style="width:100%; padding:10px; margin-bottom:5px; border-radius:10px; border:1px solid #ddd;">
-                    <button class="btn-blue" style="width:100%" onclick="fixNext('targetNum', document.getElementById('targetNum').value)">Set Number</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="deposits" class="tab-content">
+    <div id="txns" class="tab-content">
         <div class="section"><h3>Pending Deposits</h3><table><tbody id="depList"></tbody></table></div>
-    </div>
-    <div id="withdrawals" class="tab-content">
         <div class="section"><h3>Pending Withdrawals</h3><table><tbody id="withList"></tbody></table></div>
-    </div>
-    <div id="support" class="tab-content">
-        <div class="chat-container"><div class="chat-sidebar" id="chatList"></div><div class="chat-main"><div class="chat-msgs" id="chatBox"></div><div style="padding:15px; display:flex; gap:10px;"><input type="text" id="adminReply" style="flex:1"><button class="btn-blue" onclick="sendReply()">Send</button></div></div></div>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, set, push, increment, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -142,7 +96,6 @@
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    let activeChat = null;
 
     window.checkAuth = () => {
         if(document.getElementById("adminPass").value === "admin123") {
@@ -159,19 +112,37 @@
     };
 
     function initSystem() {
-        // User List with forceLoss Control
         onValue(ref(db, "users"), snap => {
             let html = ""; let total = 0; let count = 0;
             snap.forEach(child => {
                 const u = child.val(); const uid = child.key;
                 total += (u.balance || 0); count++;
+                
                 const isLoss = u.forceLoss === true;
+                const isWin = u.forceWin === true;
+                const isBanned = u.isBanned === true;
+
                 html += `<tr>
-                    <td>${u.email || 'User'}</td>
+                    <td>${u.email || 'User'}<br><small style="color:gray">${uid.substring(0,8)}</small></td>
                     <td>₹${(u.balance || 0).toFixed(2)}</td>
-                    <td><span class="badge ${isLoss?'badge-danger':''}">${isLoss?'TARGETED':'NORMAL'}</span></td>
                     <td>
-                        <button class="btn-red" onclick="toggleLoss('${uid}', ${isLoss})">${isLoss?'Untarget':'Target Loss'}</button>
+                        ${isLoss ? '<span class="badge badge-danger">FORCED LOSS</span>' : ''}
+                        ${isWin ? '<span class="badge badge-success">FORCED WIN</span>' : ''}
+                        ${isBanned ? '<span class="badge badge-warning">BANNED</span>' : ''}
+                        ${!isLoss && !isWin && !isBanned ? '<span class="badge" style="background:#e2e8f0">NORMAL</span>' : ''}
+                    </td>
+                    <td>
+                        <button class="${isLoss?'btn-blue':'btn-red'}" onclick="toggleGameStatus('${uid}', 'forceLoss', ${isLoss})">
+                            ${isLoss?'Remove Loss':'Force Loss'}
+                        </button>
+                        <button class="${isWin?'btn-blue':'btn-green'}" onclick="toggleGameStatus('${uid}', 'forceWin', ${isWin})">
+                            ${isWin?'Remove Win':'Force Win'}
+                        </button>
+                    </td>
+                    <td>
+                        <button class="${isBanned?'btn-green':'btn-dark'}" onclick="toggleStatus('${uid}', 'isBanned', ${isBanned})">
+                            ${isBanned?'Unban':'Ban'}
+                        </button>
                         <button class="btn-blue" onclick="setBal('${uid}')">Edit ₹</button>
                     </td>
                 </tr>`;
@@ -181,91 +152,44 @@
             document.getElementById("userCount").innerText = count;
         });
 
-        syncBets();
         loadTxns();
-        loadSupport();
     }
 
-    // LIVE BET MONITOR LOGIC
-    window.syncBets = () => {
-        const m = document.getElementById("controlMode").value;
-        const now = Math.floor(Date.now() / 1000);
-        const match = `${new Date().getMinutes()}_${Math.floor(now/m)}`;
-        
-        onValue(ref(db, `bets_${m}/${match}`), snap => {
-            let v = { RED:0, GREEN:0, BIG:0, SMALL:0 };
-            if(snap.exists()) {
-                snap.forEach(u => u.forEach(b => {
-                    const d = b.val();
-                    if(d.color) v[d.color] += d.amount;
-                    if(d.size) v[d.size] += d.amount;
-                }));
-            }
-            document.getElementById('b_RED').innerText = '₹'+v.RED;
-            document.getElementById('b_GREEN').innerText = '₹'+v.GREEN;
-            document.getElementById('b_BIG').innerText = '₹'+v.BIG;
-            document.getElementById('b_SMALL').innerText = '₹'+v.SMALL;
-        });
+    window.toggleGameStatus = (uid, field, currentVal) => {
+        const updates = {};
+        updates[field] = !currentVal;
+        if(field === 'forceWin' && !currentVal) updates['forceLoss'] = false;
+        if(field === 'forceLoss' && !currentVal) updates['forceWin'] = false;
+        update(ref(db, `users/${uid}`), updates);
     };
 
-    window.fixNext = (key, val) => {
-        const m = document.getElementById("controlMode").value;
-        update(ref(db, `admin_control/${m}`), { active: true, [key]: val });
-        alert("Next result fixed!");
+    window.toggleStatus = (uid, field, currentVal) => {
+        update(ref(db, `users/${uid}`), { [field]: !currentVal });
     };
 
-    window.toggleLoss = (uid, cur) => update(ref(db, `users/${uid}`), { forceLoss: !cur });
-    
     window.setBal = (uid) => {
         let a = prompt("New Balance:");
         if(a) update(ref(db, `users/${uid}`), { balance: parseFloat(a) });
     };
 
-    // DEPOSIT/WITHDRAWAL LOAD
     function loadTxns() {
         onValue(ref(db, "deposit_requests"), s => {
             let h = ""; s.forEach(c => {
-                const d = c.val(); if(d.status==='pending') h += `<tr><td>${d.email}</td><td>₹${d.amount}</td><td>${d.utr}</td><td><button onclick="txn('deposit_requests','${c.key}','${d.uid}',${d.amount},'Approved')">Approve</button></td></tr>`;
+                const d = c.val(); if(d.status==='pending') h += `<tr><td>${d.email}</td><td>₹${d.amount}</td><td>${d.utr}</td><td><button class="btn-green" onclick="txn('deposit_requests','${c.key}','${d.uid}',${d.amount},'Approved')">Approve</button></td></tr>`;
             });
-            document.getElementById("depList").innerHTML = h;
+            document.getElementById("depList").innerHTML = h || "No pending deposits";
         });
         onValue(ref(db, "withdrawals"), s => {
             let h = ""; s.forEach(c => {
-                const d = c.val(); if(d.status==='Pending') h += `<tr><td>${d.email}</td><td>₹${d.amount}</td><td>${d.upi}</td><td><button onclick="txn('withdrawals','${c.key}','${d.uid}',${d.amount},'Approved')">Pay</button></td></tr>`;
+                const d = c.val(); if(d.status==='Pending') h += `<tr><td>${d.email}</td><td>₹${d.amount}</td><td>${d.upi}</td><td><button class="btn-green" onclick="txn('withdrawals','${c.key}','${d.uid}',${d.amount},'Approved')">Pay</button></td></tr>`;
             });
-            document.getElementById("withList").innerHTML = h;
+            document.getElementById("withList").innerHTML = h || "No pending withdrawals";
         });
     }
 
     window.txn = async (p, tid, uid, amt, st) => {
-        if(st==='Approved') {
-            const inc = (p==='deposit_requests')?amt:-amt;
-            await update(ref(db, `users/${uid}`), { balance: increment(inc) });
-        }
+        if(p==='deposit_requests') await update(ref(db, `users/${uid}`), { balance: increment(amt) });
         await update(ref(db, `${p}/${tid}`), { status: st });
-    };
-
-    function loadSupport() {
-        onValue(ref(db, "admin_chats"), s => {
-            const l = document.getElementById("chatList"); l.innerHTML = "";
-            s.forEach(c => {
-                const d = document.createElement("div"); d.className="user-item"; d.innerText = "User: "+c.key.substring(0,5);
-                d.onclick = () => { activeChat=c.key; loadMsgs(c.key); }; l.appendChild(d);
-            });
-        });
-    }
-    function loadMsgs(uid) {
-        onValue(ref(db, `admin_chats/${uid}`), s => {
-            const b = document.getElementById("chatBox"); b.innerHTML = "";
-            s.forEach(m => { b.innerHTML += `<div class="bubble ${m.val().role}">${m.val().text}</div>`; });
-        });
-    }
-    window.sendReply = () => {
-        const i = document.getElementById("adminReply");
-        if(i.value && activeChat) {
-            push(ref(db, `admin_chats/${activeChat}`), { text: i.value, role: "admin", timestamp: serverTimestamp() });
-            i.value = "";
-        }
     };
 </script>
 </body>
