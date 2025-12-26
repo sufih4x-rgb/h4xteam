@@ -29,7 +29,6 @@
         .selected { transform: scale(0.9); outline: 4px solid #111827 !important; }
         .disabled { opacity: 0.5; pointer-events: none; filter: grayscale(1); }
 
-        /* Chart */
         .chart-container { margin-top: 30px; background: #fff; border-radius: 24px; padding: 15px; border: 1px solid #f1f5f9; }
         .chart-row { display: flex; justify-content: space-between; align-items: center; padding: 12px; border-bottom: 1px solid #f1f5f9; }
         .chart-dot { width: 32px; height: 32px; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; }
@@ -102,6 +101,7 @@
         let uid = "", balance = 0, mode = 30, isLocked = false, currentMatch = "";
         let selections = { color: null, size: null, num: null };
         let roundLockedSelection = { color: false, size: false, num: false };
+        let userHasActiveBet = false; // Tracking for animation
 
         const nGrid = document.getElementById("numGrid");
         for(let i=0; i<=9; i++) nGrid.innerHTML += `<button class="n-btn" onclick="handlePick('num',${i},this)">${i}</button>`;
@@ -152,6 +152,7 @@
 
             Object.keys(selections).forEach(k => { if(selections[k] !== null) roundLockedSelection[k] = true; });
             
+            userHasActiveBet = true; // Mark that user is playing this round
             await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
             await set(ref(db, `bets_${mode}/${currentMatch}/${uid}/${Date.now()}`), { ...selections, amount: amt });
             
@@ -164,18 +165,24 @@
             const snap = await get(resRef);
             if(snap.exists()) return showResultUI(snap.val());
 
-            // --- 2-HOUR EARNING LOGIC ---
             const userSnap = await get(ref(db, `users/${uid}`));
             const twoHrProfit = userSnap.val()?.twoHourProfit || 0;
             const lastWinTime = userSnap.val()?.lastWinTime || 0;
-            
+            const currentBalance = userSnap.val()?.balance || 0;
+
             let loseChance = 0.5;
-            // Agar ₹110 se zyada kama liya hai pichle 2 ghanton mein
-            if(twoHrProfit >= 110 && (Date.now() - lastWinTime < 7200000)) {
-                loseChance = 0.95; // 95% Chance of Loss
+
+            // --- NEW DEPOSIT LUCK (70% Win Chance) ---
+            if(currentBalance > 0 && currentBalance < 1000) {
+                loseChance = 0.3; // 70% Win Chance for new/low balance users
             }
 
-            // --- MARKET LOAD LOGIC (3x Profit Protection) ---
+            // --- 2-HOUR PROFIT PROTECTION ---
+            if(twoHrProfit >= 110 && (Date.now() - lastWinTime < 7200000)) {
+                loseChance = 0.95; 
+            }
+
+            // --- MARKET LOAD LOGIC ---
             const allBets = await get(ref(db, `bets_${mode}/${currentMatch}`));
             let vol = { RED:0, GREEN:0 };
             if(allBets.exists()) {
@@ -211,18 +218,29 @@
 
             if(winAmt > 0) {
                 let net = winAmt - investment;
-                document.getElementById("resStatus").innerText = "WINNER";
-                document.getElementById("resValue").innerText = "+₹" + winAmt.toFixed(2);
                 await update(ref(db, `users/${uid}`), { 
                     balance: increment(winAmt),
                     twoHourProfit: increment(net),
                     lastWinTime: Date.now()
                 });
+                
+                // --- ONLY SHOW ANIMATION IF USER BETTED ---
+                if(userHasActiveBet) {
+                    document.getElementById("resStatus").innerText = "WINNER";
+                    document.getElementById("resValue").innerText = "+₹" + winAmt.toFixed(2);
+                    document.getElementById("resValue").style.color = "var(--success)";
+                    document.getElementById("resOverlay").style.display = "flex";
+                }
             } else {
-                document.getElementById("resStatus").innerText = "LOSE";
-                document.getElementById("resValue").innerText = "Better Luck!";
+                if(userHasActiveBet) {
+                    document.getElementById("resStatus").innerText = "LOSE";
+                    document.getElementById("resValue").innerText = "Better Luck!";
+                    document.getElementById("resValue").style.color = "var(--danger)";
+                    document.getElementById("resOverlay").style.display = "flex";
+                }
             }
-            document.getElementById("resOverlay").style.display = "flex";
+            userHasActiveBet = false; // Reset for next round
+            loadHistory();
         }
 
         function loadHistory() {
