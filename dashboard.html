@@ -20,13 +20,19 @@
         body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; overflow-x: hidden; }
         .app-shell { width: 100%; max-width: 480px; min-height: 100vh; background: var(--surface); position: relative; padding-bottom: 80px; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
 
+        /* Fake Withdrawal Ticker */
+        .ticker-wrap { background: #111; color: #00ff88; padding: 8px 0; font-size: 11px; font-weight: 700; overflow: hidden; white-space: nowrap; border-bottom: 1px solid #222; }
+        .ticker-move { display: inline-block; animation: tickerMove 25s linear infinite; }
+        @keyframes tickerMove { 0% { transform: translateX(100%); } 100% { transform: translateX(-100%); } }
+        .ticker-item { display: inline-block; margin-right: 40px; }
+
         /* Status Ping */
         .ping { width: 10px; height: 10px; background: var(--success); border-radius: 50%; display: inline-block; position: relative; }
         .ping::after { content: ''; position: absolute; inset: 0; background: var(--success); border-radius: 50%; animation: pulse 1.5s infinite; }
         @keyframes pulse { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(3.5); opacity: 0; } }
 
         /* Nav */
-        .top-nav { padding: 20px; display: flex; justify-content: space-between; align-items: center; }
+        .top-nav { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; }
         .menu-icon { font-size: 24px; cursor: pointer; background: #f1f5f9; width: 45px; height: 45px; display: flex; align-items: center; justify-content: center; border-radius: 12px; }
 
         /* Wallet */
@@ -69,8 +75,6 @@
             font-size: 28px; box-shadow: 0 10px 25px rgba(67, 97, 238, 0.4);
             cursor: pointer; z-index: 3000; transition: 0.3s;
         }
-        #chat-float-btn:hover { transform: scale(1.1); }
-
         #chat-window {
             position: fixed; bottom: 90px; right: 20px; width: 320px; height: 400px;
             background: white; border-radius: 20px; box-shadow: 0 15px 35px rgba(0,0,0,0.15);
@@ -78,8 +82,6 @@
             border: 1px solid #eee;
         }
         #chat-header { background: var(--primary); color: white; padding: 15px; font-weight: 700; display: flex; justify-content: space-between; align-items: center; }
-        
-        /* ADMIN BLINKING DOT CSS */
         .admin-status-wrap { display: flex; align-items: center; gap: 6px; font-size: 11px; margin-top: 2px; opacity: 0.9; }
         .blink-dot { width: 7px; height: 7px; background: #00ff88; border-radius: 50%; display: none; position: relative; }
         .blink-dot::after { content: ''; position: absolute; inset: 0; background: #00ff88; border-radius: 50%; animation: adminPulse 1.5s infinite; }
@@ -137,6 +139,11 @@
 </div>
 
 <div class="app-shell">
+    <div class="ticker-wrap">
+        <div class="ticker-move" id="tickerContent">
+            </div>
+    </div>
+
     <div class="top-nav">
         <div class="menu-icon" onclick="toggleSidebar()">☰</div>
         <div style="font-weight: 800; font-size: 20px; letter-spacing: -1px;">H4X<span style="color:var(--primary)">TEAM</span></div>
@@ -176,22 +183,18 @@
 
     <div style="padding: 0 20px;">
         <h3 style="font-size: 16px; margin-bottom: 15px;">🔥 Hot Games</h3>
-        
         <a href="game.html" class="game-card" style="border-left: 5px solid var(--primary);">
             <div><h4 style="margin:0">Color Prediction</h4><p style="margin:5px 0 0; font-size:11px; color:var(--text-muted);">Predict colors & 2X profit</p></div>
             <div class="game-img-box"><img src="https://firebasestorage.googleapis.com/v0/b/test-eb5e7.appspot.com/o/unnamed.jpg?alt=media&token=e9f5c3a0-ccc5-4859-abd5-e7cefe3189e7"></div>
         </a>
-
         <a href="mines.html" class="game-card" style="border-left: 5px solid var(--danger);">
             <div><h4 style="margin:0">Mines Blast</h4><p style="margin:5px 0 0; font-size:11px; color:var(--text-muted);">Avoid mines, get diamonds</p></div>
             <div class="game-img-box"><img src="https://firebasestorage.googleapis.com/v0/b/test-eb5e7.appspot.com/o/unnamed%20(1).jpg?alt=media&token=182c8a69-303e-4c60-9edf-a6e54728c94b"></div>
         </a>
-
         <a href="chick.html" class="game-card" style="border-left: 5px solid var(--success);">
             <div><h4 style="margin:0">Chicken Runner</h4><p style="margin:5px 0 0; font-size:11px; color:var(--text-muted);">Instant multiplier game</p></div>
             <div class="game-img-box"><img src="https://firebasestorage.googleapis.com/v0/b/test-eb5e7.appspot.com/o/download%20(1).jpg?alt=media&token=397f3425-f247-4ed1-8e01-62f7cf6037b1"></div>
         </a>
-
         <a href="allgames.html" class="btn-all-games">EXPLORE ALL GAMES ✨</a>
     </div>
 </div>
@@ -213,6 +216,20 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
+    // FAKE TICKER GENERATOR
+    function startTicker() {
+        const names = ["Ankit", "Suresh", "Rahul", "Priya", "Vikram", "Neha", "Arjun", "Karan", "Ishita"];
+        const ticker = document.getElementById('tickerContent');
+        let html = "";
+        for(let i=0; i<20; i++) {
+            const name = names[Math.floor(Math.random()*names.length)] + "****";
+            const amt = Math.floor(Math.random() * (300 - 100 + 1)) + 100;
+            html += `<span class="ticker-item">🎉 User ${name} successfully withdrawn ₹${amt}.00!</span>`;
+        }
+        ticker.innerHTML = html + html; // Double for seamless loop
+    }
+    startTicker();
+
     window.toggleSidebar = () => {
         document.getElementById('sidebar').classList.toggle('active');
         document.getElementById('sidebarOverlay').classList.toggle('active');
@@ -228,9 +245,17 @@
     onAuthStateChanged(auth, user => {
         if (!user) return location.href = 'index.html';
         
-        // Dashboard Data
+        // --- BAN/UNBAN CHECK LOGIC ---
         onValue(ref(db, `users/${user.uid}`), snap => {
             const d = snap.val() || {};
+            
+            // If user is banned, redirect to login/index
+            if(d.isBanned === true) {
+                alert("Your account has been banned by Admin.");
+                signOut(auth).then(() => location.href = 'index.html');
+                return;
+            }
+
             const name = d.displayName || user.email.split('@')[0];
             document.getElementById('mainBal').innerText = (d.balance || 0).toFixed(2);
             document.getElementById('mainUid').innerText = user.uid.substring(0,8).toUpperCase();
@@ -242,7 +267,7 @@
             document.getElementById('userAvatarSmall').innerText = initial;
         });
 
-        // --- ADMIN ONLINE STATUS REALTIME ---
+        // Admin Online Status
         onValue(ref(db, 'admin_status/isOnline'), (snapshot) => {
             const isOnline = snapshot.val();
             document.getElementById('adminOnlineLabel').style.display = isOnline ? 'flex' : 'none';
@@ -253,7 +278,6 @@
         const chatInput = document.getElementById('chat-input');
         const sendBtn = document.getElementById('send-chat');
 
-        // Listen for new messages
         onValue(ref(db, `admin_chats/${user.uid}`), (snapshot) => {
             chatMsgDiv.innerHTML = '';
             snapshot.forEach((child) => {
@@ -266,13 +290,11 @@
             chatMsgDiv.scrollTop = chatMsgDiv.scrollHeight;
         });
 
-        // Send message
         sendBtn.onclick = () => {
             const text = chatInput.value.trim();
             if(!text) return;
             const chatRef = ref(db, `admin_chats/${user.uid}`);
-            const newMsgRef = push(chatRef);
-            set(newMsgRef, {
+            push(chatRef, {
                 text: text,
                 role: 'user',
                 timestamp: serverTimestamp()
