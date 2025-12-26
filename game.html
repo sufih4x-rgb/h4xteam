@@ -14,7 +14,6 @@
         
         .container { max-width: 450px; margin: auto; padding: 15px; }
 
-        /* Mode Switcher */
         .mode-switch { display: flex; gap: 10px; margin-bottom: 15px; }
         .mode-btn { flex: 1; padding: 10px; border-radius: 12px; border: 1px solid #e2e8f0; background: #f8faff; font-weight: 700; cursor: pointer; font-size: 12px; }
         .mode-btn.active { background: #111827; color: white; border-color: #111827; }
@@ -35,7 +34,6 @@
         input { width: 100%; padding: 18px; border-radius: 15px; border: 2px solid #e2e8f0; font-size: 18px; text-align: center; margin-bottom: 15px; box-sizing: border-box; font-weight: 700; }
         #betBtn { width: 100%; padding: 20px; border: none; border-radius: 15px; background: #111827; color: white; font-weight: 800; cursor: pointer; }
 
-        /* Multi-Layout Section */
         .layout-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 25px; }
         .layout-box { background: #f8faff; border-radius: 20px; padding: 15px; border: 1px solid #f1f5f9; height: 300px; overflow-y: auto; }
         .title-sm { font-size: 11px; font-weight: 800; color: #64748b; margin-bottom: 10px; text-transform: uppercase; }
@@ -80,7 +78,7 @@
 
         <div class="layout-grid">
             <div class="layout-box">
-                <div class="title-sm">Live Betting</div>
+                <div class="title-sm">Live Betting (Locked)</div>
                 <div id="liveBets"></div>
             </div>
             <div class="layout-box">
@@ -128,7 +126,6 @@
                 });
                 loadHistory();
                 loadUserHistory();
-                startFakeBets();
             }
         });
 
@@ -162,8 +159,29 @@
             document.getElementById("engine").classList.toggle("disabled", isLocked);
             document.getElementById("lockMsg").style.display = isLocked ? "block" : "none";
 
+            // Jab time over hone wala ho tabhi fake bets dikhayein
+            if(rem <= 5 && rem > 0) {
+                addFakeBet();
+            } else if (rem > 5) {
+                document.getElementById("liveBets").innerHTML = ""; // Clear bets when new round starts
+            }
+
             if(rem === 1) calculateResult();
         }, 1000);
+
+        function addFakeBet() {
+            const names = ["Rohan", "Sona", "BetPro", "Lucky", "Aman", "Vicky", "Rahul", "Priya"];
+            const box = document.getElementById("liveBets");
+            const name = names[Math.floor(Math.random()*names.length)];
+            // Paisa kam rakha gaya hai (₹10 to ₹100)
+            const amt = Math.floor(Math.random() * 90) + 10; 
+            const col = Math.random() > 0.5 ? 'RED' : 'GREEN';
+            const el = document.createElement('div');
+            el.className = 'row-item';
+            el.innerHTML = `<span>${name}</span><span style="color:${col==='RED'?'var(--danger)':'var(--success)'}">₹${amt}</span>`;
+            box.prepend(el);
+            if(box.children.length > 10) box.lastChild.remove();
+        }
 
         window.placeBet = async () => {
             const amtInput = document.getElementById("amtInput");
@@ -185,7 +203,6 @@
 
             let finalColor = Math.random() > 0.5 ? 'RED' : 'GREEN';
             
-            // ADMIN OVERRIDE
             const adminSnap = await get(ref(db, `admin_control/${gameTime}`));
             if(adminSnap.exists() && adminSnap.val().active) {
                 finalColor = adminSnap.val().color;
@@ -213,7 +230,6 @@
 
             if(win) await update(ref(db, `users/${uid}`), { balance: increment(winAmt) });
             
-            // Save to history
             await push(ref(db, `history/${uid}`), {
                 period: currentMatch,
                 amount: myBet.amount,
@@ -253,21 +269,6 @@
                     </div>`;
                 });
             });
-        }
-
-        function startFakeBets() {
-            const names = ["Rohan", "King", "Sona", "BetPro", "Lucky", "Aman", "Vicky"];
-            const box = document.getElementById("liveBets");
-            setInterval(() => {
-                const name = names[Math.floor(Math.random()*names.length)];
-                const amt = (Math.floor(Math.random()*20)+1)*50;
-                const col = Math.random()>0.5 ? 'RED':'GREEN';
-                const el = document.createElement('div');
-                el.className = 'row-item';
-                el.innerHTML = `<span>${name}</span><span style="color:${col==='RED'?'var(--danger)':'var(--success)'}">₹${amt}</span>`;
-                box.prepend(el);
-                if(box.children.length > 15) box.lastChild.remove();
-            }, 2000);
         }
     </script>
 </body>
