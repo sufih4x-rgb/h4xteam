@@ -22,17 +22,13 @@
         }
 
         .app-container { width: 100%; max-width: 480px; min-height: 100vh; position: relative; }
-
         .header { padding: 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border); }
         .back-btn { font-size: 24px; cursor: pointer; text-decoration: none; color: black; }
         .header h2 { font-size: 18px; font-weight: 800; margin: 0; }
-
         .progress-bar { height: 4px; background: var(--surface); width: 100%; }
         .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: 0.3s; }
-
         .section { padding: 25px 20px; }
         .label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: block; }
-
         .sim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
         .sim-card { 
             border: 2px solid var(--border); border-radius: 20px; padding: 15px; 
@@ -41,7 +37,6 @@
         .sim-card img { width: 40px; height: 40px; border-radius: 8px; margin-bottom: 8px; pointer-events: none; }
         .sim-card b { display: block; font-size: 13px; pointer-events: none; }
         .sim-card.active { border-color: var(--primary); background: #f0f3ff; }
-
         .input-group { display: none; margin-top: 25px; }
         .input-box {
             width: 100%; border: 2px solid var(--border); border-radius: 14px;
@@ -49,7 +44,6 @@
             outline: none; transition: 0.3s;
         }
         .input-box:focus { border-color: var(--primary); }
-
         #plansArea { display: none; padding: 0 20px 30px 20px; }
         .plan-card {
             border: 1px solid var(--border); border-radius: 16px; padding: 15px;
@@ -62,26 +56,15 @@
             background: var(--text-dark); color: #fff; border: none; padding: 10px 18px; 
             border-radius: 10px; font-weight: 700; cursor: pointer;
         }
-
         .overlay {
             display: none; position: fixed; inset: 0; background: #fff; 
             z-index: 1000; flex-direction: column; align-items: center; justify-content: center;
             text-align: center; padding: 30px;
         }
         .success-icon { width: 80px; height: 80px; background: #ecfdf5; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 20px; }
-
-        #notifyPopup {
-            display: none; position: fixed; top: 10px; width: 90%; max-width: 400px;
-            background: #1e293b; color: white; padding: 12px; border-radius: 12px; z-index: 2000;
-        }
     </style>
 </head>
 <body>
-
-<div id="notifyPopup">
-    <b id="notifTitle"></b><br>
-    <small id="notifMsg"></small>
-</div>
 
 <div class="app-container">
     <div class="header">
@@ -118,14 +101,14 @@
 <div class="overlay" id="successScreen">
     <div class="success-icon">✓</div>
     <h2 style="font-weight: 800;">Request Sent!</h2>
-    <p style="color: var(--text-muted);">Recharge for <b id="finalNum"></b> is pending.<br>Admin will approve shortly.</p>
+    <p style="color: var(--text-muted);">Recharge for <b id="finalNum"></b> is pending.<br>Balance has been deducted.</p>
     <button class="select-btn" onclick="location.href='dashboard.html'" style="width: 100%; margin-top: 20px;">BACK TO HOME</button>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, push, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, push, get, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -145,9 +128,12 @@
         Airtel: [{p:299}, {p:479}, {p:719}]
     };
 
-    // Load Live Prices
-    onValue(ref(db, 'settings/plans'), (snap) => {
-        if(snap.exists()) adminPlans = snap.val();
+    // Load Admin Custom Plans if any
+    onValue(ref(db, 'recharge_plans'), (snap) => {
+        if(snap.exists()) {
+            const data = snap.val();
+            // Optional: You can filter plans by operator here
+        }
     });
 
     window.selectSim = (sim, el) => {
@@ -179,7 +165,7 @@
                 <div class="plan-card">
                     <div>
                         <div class="plan-price">₹${plan.p}</div>
-                        <div class="plan-details">${details[i]}</div>
+                        <div class="plan-details">${details[i] || 'Unlimited Pack'}</div>
                     </div>
                     <button class="select-btn" onclick="checkAndPay(${plan.p})">SELECT</button>
                 </div>`;
@@ -192,47 +178,49 @@
         if(!user) return alert("Please Login First");
 
         const num = document.getElementById('mobileNum').value;
-        
-        // 1. Check Balance
-        const userSnap = await get(ref(db, `users/${user.uid}`));
-        if(userSnap.exists()) {
-            const balance = userSnap.val().balance || 0;
-            
-            if(balance < amount) {
-                alert(`Insufficient Balance! You have ₹${balance}, but this plan costs ₹${amount}.`);
-                return;
+        const btn = event.target;
+        btn.disabled = true; // Double click prevention
+        btn.innerText = "Processing...";
+
+        try {
+            const userSnap = await get(ref(db, `users/${user.uid}`));
+            if(userSnap.exists()) {
+                const userData = userSnap.val();
+                const balance = userData.balance || 0;
+                
+                if(balance < amount) {
+                    alert(`Insufficient Balance! Available: ₹${balance}`);
+                    btn.disabled = false;
+                    btn.innerText = "SELECT";
+                    return;
+                }
+
+                // 1. Deduct Balance Immediately
+                await update(ref(db, `users/${user.uid}`), {
+                    balance: increment(-amount)
+                });
+
+                // 2. Submit Request for Admin
+                await push(ref(db, 'recharge_requests'), {
+                    uid: user.uid,
+                    email: user.email || 'N/A',
+                    displayName: userData.displayName || 'User',
+                    mobile: num,
+                    operator: selectedSim,
+                    amount: amount,
+                    status: "Pending",
+                    timestamp: new Date().toLocaleString()
+                });
+
+                document.getElementById('finalNum').innerText = num;
+                document.getElementById('successScreen').style.display = 'flex';
             }
-
-            // 2. Submit Request if Balance is OK
-            await push(ref(db, 'recharge_requests'), {
-                uid: user.uid,
-                mobile: num,
-                operator: selectedSim,
-                amount: amount,
-                status: "Pending",
-                timestamp: new Date().toLocaleString()
-            });
-
-            document.getElementById('finalNum').innerText = num;
-            document.getElementById('successScreen').style.display = 'flex';
+        } catch (err) {
+            alert("Error: " + err.message);
+            btn.disabled = false;
+            btn.innerText = "SELECT";
         }
     };
-
-    // Notification Listener
-    onAuthStateChanged(auth, (user) => {
-        if(user) {
-            onValue(ref(db, `users/${user.uid}/notifications`), (snap) => {
-                if(snap.exists()) {
-                    const d = snap.val();
-                    const pop = document.getElementById('notifyPopup');
-                    document.getElementById('notifTitle').innerText = d.title;
-                    document.getElementById('notifMsg').innerText = d.message;
-                    pop.style.display = 'block';
-                    setTimeout(() => pop.style.display = 'none', 6000);
-                }
-            });
-        }
-    });
 </script>
 </body>
 </html>
