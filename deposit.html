@@ -3,209 +3,195 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deposit | H4XTEAM</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>Secure Deposit | H4XTEAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #4361ee;
-            --success: #06d6a0;
-            --danger: #ef476f;
-            --bg: #f8f9fc;
-            --surface: #ffffff;
-            --text-main: #1a1c2e;
-            --text-muted: #64748b;
-        }
-
-        body { 
-            background: var(--bg); color: var(--text-main); 
-            font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; 
-            display: flex; justify-content: center; overflow-x: hidden;
-        }
-
-        .app-shell { width: 100%; max-width: 480px; min-height: 100vh; background: var(--surface); padding: 20px; box-sizing: border-box; position: relative; }
+        :root { --primary: #4361ee; --bg: #f8f9fc; --success: #06d6a0; --danger: #ef476f; }
+        body { background: var(--bg); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; }
+        .app { width: 100%; max-width: 480px; min-height: 100vh; background: #fff; padding: 20px; box-sizing: border-box; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
         
-        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
-        .back-btn { width: 40px; height: 40px; border-radius: 12px; background: #eef2ff; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; color: var(--primary); font-weight: bold; }
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
+        .back-btn { border:none; background:#f1f5f9; width:40px; height:40px; border-radius:12px; cursor:pointer; font-size:18px; display: flex; align-items: center; justify-content: center; }
 
-        .step-box { display: none; animation: slideUp 0.4s ease forwards; }
-        .step-box.active { display: block; }
-        @keyframes slideUp { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+        .qr-container { 
+            background: #fff; border: 2px solid #f1f5f9; border-radius: 24px; padding: 25px; 
+            text-align: center; margin-bottom: 20px; transition: 0.3s;
+        }
+        #qrImg { 
+            width: 200px; height: 200px; padding: 10px; background: #fff;
+            border: 1px solid #eee; border-radius: 15px;
+        }
+        .qr-placeholder { height: 200px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 14px; background: #f8fafc; border-radius: 15px; width: 200px; margin: 0 auto; text-align: center; line-height: 1.5; }
 
-        .card { background: #fff; border: 1px solid #f1f5f9; padding: 20px; border-radius: 24px; box-shadow: 0 10px 25px rgba(0,0,0,0.03); margin-bottom: 20px; }
-        label { display: block; font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 10px; text-transform: uppercase; }
-        input { width: 100%; padding: 18px; border: 2px solid #f1f5f9; border-radius: 16px; font-size: 18px; font-weight: 700; box-sizing: border-box; outline: none; }
+        .input-group { margin-top: 20px; }
+        label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 5px; }
         
-        .qr-wrapper { background: #f0f3ff; border-radius: 28px; padding: 25px; text-align: center; margin-bottom: 20px; border: 2px dashed var(--primary); }
-        #qr-img { background: #fff; padding: 12px; border-radius: 20px; box-shadow: 0 8px 25px rgba(67, 97, 238, 0.15); margin-bottom: 15px; }
+        .amt-input-wrapper { position: relative; margin-top: 8px; margin-bottom: 20px; }
+        .amt-input-wrapper span { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--primary); }
+        
+        input { 
+            width: 100%; padding: 15px 15px 15px 35px; border-radius: 14px; 
+            border: 2px solid #f1f5f9; box-sizing: border-box; font-size: 16px; 
+            font-weight: 700; outline: none; transition: 0.3s; 
+        }
+        input:focus { border-color: var(--primary); background: #fbfbff; }
+        .utr-input { padding-left: 15px !important; border-color: #e2e8f0; }
 
-        .primary-btn { width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 18px; font-size: 16px; font-weight: 800; cursor: pointer; box-shadow: 0 10px 20px rgba(67, 97, 238, 0.2); }
-        .primary-btn:disabled { background: #cbd5e1; }
+        .btn-submit { 
+            width: 100%; padding: 18px; border-radius: 16px; border: none; 
+            background: var(--primary); color: white; font-weight: 800; 
+            cursor: pointer; margin-top: 25px; font-size: 15px; 
+            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.2); transition: 0.3s;
+        }
+        .btn-submit:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
 
-        .overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: none; flex-direction: column; align-items: center; justify-content: center; z-index: 3000; backdrop-filter: blur(12px); background: rgba(255,255,255,0.7); animation: fadeIn 0.3s ease; }
-        .popup { background: white; padding: 40px 30px; border-radius: 30px; width: 85%; max-width: 350px; text-align: center; box-shadow: 0 25px 50px rgba(0,0,0,0.15); }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-        .spinner { width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 15px; }
-        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .steps { background: #fef2f2; padding: 15px; border-radius: 15px; margin-top: 20px; border: 1px solid #fee2e2; }
+        .step-item { display: flex; gap: 10px; font-size: 12px; margin-bottom: 8px; color: #991b1b; font-weight: 600; }
+        .step-num { background: #ef476f; color: #fff; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
     </style>
 </head>
 <body>
 
-<div id="loading" class="overlay">
-    <div class="spinner"></div>
-    <b style="color: var(--primary)">Submitting Request...</b>
-</div>
-
-<div id="rejectOverlay" class="overlay">
-    <div class="popup" style="border-top: 6px solid var(--danger);">
-        <div style="font-size: 60px;">🚫</div>
-        <h2 style="color:var(--danger); margin:10px 0;">FAKE PAYMENT!</h2>
-        <p style="color:#64748b; font-size:14px; line-height:1.6;">Your request was rejected. Please provide a real UTR number next time.</p>
-        <button onclick="closeStatusOverlay()" class="primary-btn" style="background:var(--danger)">OKAY</button>
-    </div>
-</div>
-
-<div id="successOverlay" class="overlay">
-    <div class="popup" style="border-top: 6px solid var(--success);">
-        <div style="font-size: 60px;">🎉</div>
-        <h2 style="color:var(--success); margin:10px 0;">APPROVED!</h2>
-        <p id="successMsg" style="color:#64748b; font-size:14px; line-height:1.6;"></p>
-        <button onclick="closeStatusOverlay()" class="primary-btn" style="background:var(--success)">START WINNING</button>
-    </div>
-</div>
-
-<div class="app-shell">
+<div class="app">
     <div class="header">
-        <button onclick="window.history.back()" class="back-btn">←</button>
-        <h1>Deposit</h1>
+        <button class="back-btn" onclick="history.back()">←</button>
+        <h2 style="margin:0; font-size:20px;">Add Money</h2>
     </div>
 
-    <div id="step1" class="step-box active">
-        <div class="card">
-            <label>Amount (₹50 - ₹500)</label>
-            <input type="number" id="amount" placeholder="Enter amount">
+    <div class="qr-container" id="qrContainer">
+        <div id="qrBox">
+            <div class="qr-placeholder">Step 1: <br> Enter amount below <br> to generate QR</div>
         </div>
-        <button class="primary-btn" onclick="nextStep()">Continue to Pay</button>
+        <p id="qrStatus" style="font-size:12px; font-weight:700; color:var(--success); margin-top:15px; display:none;">✅ QR Generated! Scan to Pay</p>
     </div>
 
-    <div id="step2" class="step-box">
-        <div class="qr-wrapper">
-            <img id="qr-img" width="180" src="">
-            <div style="background:#fff; padding:10px; border-radius:12px; font-weight:800; font-size:12px;">
-                9561998301@amazonpay
+    <div class="input-group">
+        <label>Deposit Amount (Min ₹100)</label>
+        <div class="amt-input-wrapper">
+            <span>₹</span>
+            <input type="number" id="depAmt" placeholder="0.00" oninput="generateQR()">
+        </div>
+
+        <div id="utrSection" style="display:none; animation: fadeIn 0.5s;">
+            <label>Transaction UTR (12 Digits)</label>
+            <input type="text" id="utrInp" class="utr-input" placeholder="Enter 12-digit Ref No." maxlength="12">
+            
+            <div class="steps">
+                <div class="step-item"><div class="step-num">1</div> Scan QR & Pay via PhonePe/GPay/Paytm.</div>
+                <div class="step-item"><div class="step-num">2</div> Copy 12-digit UTR Number from History.</div>
+                <div class="step-item"><div class="step-num">3</div> Paste UTR and Click Submit below.</div>
             </div>
+
+            <button class="btn-submit" id="subBtn" onclick="submitDeposit()">SUBMIT DEPOSIT</button>
         </div>
-        <div class="card">
-            <label>Total Payable (Incl. 10% Fee)</label>
-            <h2 id="final-amt" style="color:var(--primary); margin:0 0 15px 0;">₹0.00</h2>
-            <label>12-Digit UTR Number</label>
-            <input type="text" id="utr" placeholder="Enter UTR from GPay/PhonePe">
-        </div>
-        <button id="submitBtn" class="primary-btn" onclick="submitDeposit()">Submit Payment</button>
-        <p onclick="prevStep()" style="text-align:center; color:var(--text-muted); cursor:pointer; font-weight:700; margin-top:15px;">← Change Amount</p>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, set, onValue, update, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, serverTimestamp, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-   const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
-};
+    // --- CONFIGURATION START ---
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+    };
+
+    const MY_UPI_ID = "example@upi"; // <--- APNA REAL UPI ID DALEIN
+    const MERCHANT_NAME = "H4X TEAM";
+    // --- CONFIGURATION END ---
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let UID = "";
+    let userObj = null;
+    onAuthStateChanged(auth, u => { if(!u) location.href='index.html'; else userObj = u; });
 
-    onAuthStateChanged(auth, (u) => {
-        if (!u) { window.location = "index.html"; return; }
-        UID = u.uid;
-        listenForStatus();
-    });
+    window.generateQR = () => {
+        const amt = document.getElementById('depAmt').value;
+        const qrBox = document.getElementById('qrBox');
+        const utrSec = document.getElementById('utrSection');
+        const qrStatus = document.getElementById('qrStatus');
 
-    window.nextStep = () => {
-        const amt = Number(document.getElementById("amount").value);
-        if (amt < 50 || amt > 500) return alert("Enter ₹50 - ₹500");
-        const final = Math.floor(amt + (amt * 0.10));
-        const upi = "9561998301@amazonpay";
-        document.getElementById("qr-img").src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=upi://pay?pa=${upi}%26am=${final}%26cu=INR`;
-        document.getElementById("final-amt").innerText = "₹" + final;
-        document.getElementById("step1").classList.remove("active");
-        document.getElementById("step2").classList.add("active");
-    };
-
-    window.prevStep = () => {
-        document.getElementById("step2").classList.remove("active");
-        document.getElementById("step1").classList.add("active");
+        if(amt >= 100) {
+            const upiUrl = `upi://pay?pa=${MY_UPI_ID}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amt}&cu=INR`;
+            const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`;
+            
+            qrBox.innerHTML = `<img src="${qrApi}" id="qrImg">`;
+            utrSec.style.display = "block";
+            qrStatus.style.display = "block";
+        } else {
+            qrBox.innerHTML = `<div class="qr-placeholder">Min. amount is ₹100</div>`;
+            utrSec.style.display = "none";
+            qrStatus.style.display = "none";
+        }
     };
 
     window.submitDeposit = async () => {
-        const utr = document.getElementById("utr").value.trim();
-        const amt = Number(document.getElementById("amount").value);
-        if (utr.length < 10) return alert("Enter valid UTR");
+        const amt = document.getElementById('depAmt').value;
+        const utr = document.getElementById('utrInp').value;
+        const subBtn = document.getElementById('subBtn');
 
-        document.getElementById("loading").style.display = "flex";
-        
-        try {
-            // FIX: Using 'deposits/' path directly so Admin can see it
-            const newDepRef = push(ref(db, "deposits"));
-            await set(newDepRef, {
-                uid: UID,
-                amount: amt,
-                utr: utr,
-                status: "Pending", // Must be "Pending" for Admin Panel filter
-                notified: false,
-                timestamp: Date.now()
-            });
-            alert("Request sent to Admin!");
-            window.location.reload();
-        } catch (e) {
-            alert("Error: " + e.message);
-            document.getElementById("loading").style.display = "none";
+        if(!utr || utr.length < 12) {
+            alert("❌ Invalid UTR! Please enter full 12-digit number.");
+            return;
         }
-    };
 
-    function listenForStatus() {
-        // Listen for all deposits and filter by this user's UID
-        onValue(ref(db, "deposits"), (snap) => {
-            snap.forEach((child) => {
-                const data = child.val();
-                if (data.uid === UID && !data.notified) {
-                    if (data.status === "Approved") {
-                        showOverlay("success", data.amount, child.key);
-                    } else if (data.status === "Rejected") {
-                        showOverlay("reject", 0, child.key);
+        subBtn.disabled = true;
+        subBtn.innerText = "CHECKING UTR...";
+
+        try {
+            // --- DUPLICATE UTR SYSTEM ---
+            const depositRef = ref(db, `deposit_requests`);
+            const snapshot = await get(depositRef);
+            
+            let isDuplicate = false;
+            if (snapshot.exists()) {
+                const data = snapshot.val();
+                for (let key in data) {
+                    if (data[key].utr === utr) {
+                        isDuplicate = true;
+                        break;
                     }
                 }
+            }
+
+            if (isDuplicate) {
+                alert("🚨 STOP! This UTR has already been used. Fraud attempts will lead to permanent ban.");
+                subBtn.disabled = false;
+                subBtn.innerText = "SUBMIT DEPOSIT";
+                return;
+            }
+
+            // --- SAVE REQUEST ---
+            await push(ref(db, `deposit_requests`), {
+                uid: userObj.uid,
+                email: userObj.email,
+                amount: parseFloat(amt),
+                utr: utr,
+                status: "pending",
+                timestamp: serverTimestamp()
             });
-        });
-    }
 
-    async function showOverlay(type, amt, key) {
-        if (type === "success") {
-            document.getElementById("successMsg").innerHTML = `Deposit of <b>₹${amt}</b> Approved!`;
-            document.getElementById("successOverlay").style.display = "flex";
-        } else {
-            document.getElementById("rejectOverlay").style.display = "flex";
+            alert("✅ Request Submitted Successfully!\nOur team will verify and add balance in 10-30 minutes.");
+            location.href = 'dashboard.html';
+
+        } catch (e) {
+            alert("Error: " + e.message);
+            subBtn.disabled = false;
+            subBtn.innerText = "SUBMIT DEPOSIT";
         }
-        await update(ref(db, `deposits/${key}`), { notified: true });
-    }
-
-    window.closeStatusOverlay = () => {
-        document.getElementById("successOverlay").style.display = "none";
-        document.getElementById("rejectOverlay").style.display = "none";
     };
 </script>
+
+<style>
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+
 </body>
 </html>
