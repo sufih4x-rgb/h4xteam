@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H4X Hub | Premium Lobby</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --bg: #ffffff;
+            --card-bg: #f8faff;
+            --text: #1e293b;
+        }
+
+        body {
+            background: var(--bg);
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            margin: 0; padding: 0; color: var(--text);
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        /* Top Header Navigation */
+        .top-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px;
+            position: sticky;
+            top: 0;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            z-index: 1000;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .balance-section small {
+            font-size: 10px; font-weight: 800; color: #94a3b8; letter-spacing: 1px;
+        }
+
+        .balance-section b {
+            display: block; font-size: 22px; color: var(--primary);
+        }
+
+        .team-brand {
+            background: linear-gradient(135deg, #1e293b, #334155);
+            color: #fff; padding: 10px 18px; border-radius: 14px;
+            font-weight: 900; font-size: 13px; letter-spacing: 1px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        }
+
+        /* Lobby Container */
+        .lobby-container {
+            max-width: 480px; margin: auto; padding: 20px;
+        }
+
+        .section-title {
+            font-size: 18px; font-weight: 800; margin-bottom: 20px;
+            display: flex; align-items: center; gap: 8px;
+        }
+
+        /* 10-Row Grid */
+        .game-grid {
+            display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px;
+        }
+
+        .game-card {
+            background: var(--card-bg); border-radius: 28px; padding: 10px;
+            border: 1px solid #edf2f7; transition: all 0.3s ease;
+            cursor: pointer; text-decoration: none; color: inherit;
+            position: relative; overflow: hidden; display: block;
+        }
+
+        .game-card:active { transform: scale(0.95); }
+
+        .game-img {
+            width: 100%; height: 130px; border-radius: 22px;
+            object-fit: cover; margin-bottom: 12px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.05);
+        }
+
+        .game-info { text-align: center; padding-bottom: 5px; }
+        .game-info h3 { margin: 0; font-size: 14px; font-weight: 800; color: #1e293b; }
+        
+        .tag {
+            font-size: 9px; font-weight: 700; padding: 3px 8px;
+            border-radius: 8px; margin-top: 6px; display: inline-block;
+        }
+        .tag-hot { background: #fee2e2; color: #ef4444; }
+        .tag-new { background: #e0f2fe; color: #0ea5e9; }
+
+        .badge-abs {
+            position: absolute; top: 15px; right: 15px;
+            background: #ff4757; color: #fff; font-size: 8px;
+            padding: 4px 8px; border-radius: 8px; font-weight: 900;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-nav">
+        <div class="balance-section">
+            <small>LIVE BALANCE</small>
+            <b>₹<span id="headerBalance">0.00</span></b>
+        </div>
+        <div class="team-brand">H4X TEAM</div>
+    </div>
+
+    <div class="lobby-container">
+        <div class="section-title">🔥 POPULAR GAMES</div>
+
+        <div class="game-grid">
+            <a href="game.html?mode=60" class="game-card">
+                <div class="badge-abs">HOT</div>
+                <img src="https://img.freepik.com/premium-photo/casino-poker-chips-gold-coins-roulette-background_102582-4411.jpg" class="game-img">
+                <div class="game-info">
+                    <h3>WinGo 1Min</h3>
+                    <div class="tag tag-hot">MULTIPLY 4.4x</div>
+                </div>
+            </a>
+
+            <a href="aviator.html" class="game-card">
+                <img src="https://img.freepik.com/free-photo/airplane-flying-sky_23-2148053224.jpg" class="game-img">
+                <div class="game-info">
+                    <h3>Aviator H4X</h3>
+                    <div class="tag tag-new">NON-STOP WIN</div>
+                </div>
+            </a>
+
+            <a href="game.html?mode=30" class="game-card">
+                <img src="https://firebasestorage.googleapis.com/v0/b/test-eb5e7.appspot.com/o/unnamed.jpg?alt=media&token=e9f5c3a0-ccc5-4859-abd5-e7cefe3189e7">
+                <div class="game-info">
+                    <h3>WinGo 30s</h3>
+                    <div class="tag tag-hot">QUICK ROUND</div>
+                </div>
+            </a>
+
+            <a href="game.html?mode=300" class="game-card">
+                <img src="https://firebasestorage.googleapis.com/v0/b/test-eb5e7.appspot.com/o/unnamed.jpg?alt=media&token=e9f5c3a0-ccc5-4859-abd5-e7cefe3189e7g">
+                <div class="game-info">
+                    <h3>WinGo 5Min</h3>
+                    <div class="tag tag-new">STRATEGY</div>
+                </div>
+            </a>
+
+            <script>
+                const grid = document.querySelector('.game-grid');
+                const placeholders = [
+                    {n: "Dragon Tiger", i: "https://img.freepik.com/free-photo/tiger-illustration_23-2148900000.jpg"},
+                    {n: "Ludo Pro", i: "https://img.freepik.com/free-photo/board-game-concept-with-dice_23-2148851002.jpg"},
+                    {n: "Trx Win", i: "https://img.freepik.com/free-photo/shining-casino-jackpot-sign_23-2148851016.jpg"},
+                    {n: "Mines diamond", i: "https://firebasestorage.googleapis.com/v0/b/test-eb5e7.appspot.com/o/unnamed%20(1).jpg?alt=media&token=182c8a69-303e-4c60-9edf-a6e54728c94b"},
+                    {n: "7 Up Down", i: "https://img.freepik.com/free-photo/dice-casino-chips-background_23-2148281134.jpg"},
+                    {n: "Teen Patti", i: "https://img.freepik.com/free-photo/cards-game-night_23-2148851020.jpg"}
+                ];
+                placeholders.forEach(p => {
+                    grid.innerHTML += `
+                        <div class="game-card" style="opacity: 0.7">
+                            <img src="${p.i}" class="game-img">
+                            <div class="game-info">
+                                <h3>${p.n}</h3>
+                                <div class="tag" style="background:#f1f5f9; color:#94a3b8">COMING</div>
+                            </div>
+                        </div>
+                    `;
+                });
+            </script>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+            authDomain: "test-eb5e7.firebaseapp.com",
+            databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+            projectId: "test-eb5e7",
+            appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getDatabase(app);
+
+        onAuthStateChanged(auth, u => {
+            if(u) {
+                onValue(ref(db, `users/${u.uid}`), s => {
+                    const bal = s.val()?.balance || 0;
+                    document.getElementById("headerBalance").innerText = bal.toFixed(2);
+                });
+            } else {
+                window.location.href = "login.html"; // Redirect if not logged in
+            }
+        });
+    </script>
+</body>
+</html>
