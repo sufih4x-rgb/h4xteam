@@ -27,6 +27,16 @@
         .btn-withdraw:disabled { background: #cbd5e1; opacity: 0.7; }
         
         .safe-badge { background: #f0f3ff; color: var(--primary); padding: 10px; border-radius: 12px; font-size: 12px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
+
+        /* Naya History Style */
+        .history-section { margin-top: 30px; }
+        .history-row { background: #f8fafc; padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        .hist-info b { display: block; font-size: 14px; }
+        .hist-info small { color: #64748b; font-size: 11px; }
+        .status-pill { padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        .pill-pending { background: #fef3c7; color: #92400e; }
+        .pill-approved { background: #d1fae5; color: #065f46; }
+        .pill-rejected { background: #fee2e2; color: #991b1b; }
     </style>
 </head>
 <body>
@@ -59,6 +69,13 @@
 
     <button id="withdrawBtn" class="btn-withdraw" onclick="processWithdraw()" disabled>SUBMIT REQUEST</button>
     
+    <div class="history-section">
+        <label>Recent Withdrawals</label>
+        <div id="historyList">
+            <p style="text-align:center; font-size:12px; color:#94a3b8;">No transactions found.</p>
+        </div>
+    </div>
+
     <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: 20px;">
         Money will be sent to the verified UPI handle only.
     </p>
@@ -67,7 +84,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, update, increment, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, increment, push, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -87,6 +104,8 @@
         if (!user) return window.location = "index.html";
         uid = user.uid;
         uEmail = user.email;
+        
+        // Load Balance
         onValue(ref(db, "users/" + uid), snap => {
             if(snap.exists()){
                 userBal = snap.val().balance || 0;
@@ -94,21 +113,59 @@
                 document.getElementById("balanceText").innerText = userBal.toFixed(2);
             }
         });
+
+        // LOAD HISTORY AND SHOW POPUPS
+        loadHistoryAndNotify();
     });
+
+    function loadHistoryAndNotify() {
+        const histRef = query(ref(db, "withdrawals"), orderByChild("uid"), equalTo(uid));
+        onValue(histRef, snap => {
+            let html = "";
+            if(snap.exists()){
+                snap.forEach(child => {
+                    const data = child.val();
+                    const status = data.status || "Pending";
+                    const statusClass = status.toLowerCase();
+                    const reason = data.reason ? `<br><span style="color:red; font-size:10px;">Reason: ${data.reason}</span>` : "";
+
+                    // POPUP LOGIC: Sirf tab dikhayega jab status change ho aur 'seen' na ho
+                    // (Note: Iske liye admin panel mein status change hone par ek 'notified' flag system dal sakte hain, 
+                    // lekin yahan simple logic rakhte hain ki jab tak page pe hai tab alert dikhe)
+                    if(data.status === "Approved" && !data.userNotified) {
+                        alert("🎉 Success! Your withdrawal of ₹" + data.amount + " has been approved!");
+                        update(ref(db, `withdrawals/${child.key}`), { userNotified: true });
+                    } 
+                    else if(data.status === "Rejected" && !data.userNotified) {
+                        alert("❌ Withdrawal Rejected!\nAmount: ₹" + data.amount + "\nReason: " + (data.reason || "Policy violation"));
+                        update(ref(db, `withdrawals/${child.key}`), { userNotified: true });
+                    }
+
+                    html = `
+                    <div class="history-row">
+                        <div class="hist-info">
+                            <b>₹${data.amount}</b>
+                            <small>${new Date(data.timestamp).toLocaleDateString()}</small>
+                            ${reason}
+                        </div>
+                        <span class="status-pill pill-${statusClass}">${status}</span>
+                    </div>` + html;
+                });
+                document.getElementById("historyList").innerHTML = html;
+            }
+        });
+    }
 
     window.validateUPI = () => {
         const u1 = document.getElementById("upi1").value.trim().toLowerCase();
         const u2 = document.getElementById("upi2").value.trim().toLowerCase();
         const msg = document.getElementById("matchMsg");
         const btn = document.getElementById("withdrawBtn");
-
-        // Simple Regex for UPI validation (Check for @)
         const upiPattern = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
 
         msg.style.display = "block";
-
         if (!upiPattern.test(u1)) {
-            msg.innerText = "❌ Invalid UPI Format (Example: name@ybl)";
+            msg.innerText = "❌ Invalid UPI Format";
             msg.className = "status-msg msg-error";
             btn.disabled = true;
         } else if (u1 !== u2) {
@@ -133,10 +190,8 @@
             document.getElementById("withdrawBtn").disabled = true;
             document.getElementById("withdrawBtn").innerText = "Submitting...";
 
-            // Deduct balance
             await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
 
-            // Push to withdrawals
             await push(ref(db, "withdrawals"), {
                 uid: uid,
                 email: uEmail,
@@ -144,10 +199,11 @@
                 amount: amt,
                 upiId: upi,
                 status: "Pending",
-                timestamp: Date.now()
+                timestamp: Date.now(),
+                userNotified: false // Important for the popup logic
             });
 
-            alert("Request sent successfully! Funds will arrive shortly.");
+            alert("Request sent successfully!");
             location.reload();
         } catch (e) {
             alert("Error: " + e.message);
