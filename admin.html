@@ -184,7 +184,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, push, remove, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, push, remove, serverTimestamp, increment, set, onDisconnect } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -201,6 +201,12 @@
     window.checkAuth = () => {
         if(document.getElementById("adminPass").value === "admin123") {
             document.getElementById("loginOverlay").style.display = "none";
+            
+            // --- SET ADMIN ONLINE ---
+            set(ref(db, 'admin_status/isOnline'), true);
+            // Jab admin tab band karega, automatic offline ho jayega
+            onDisconnect(ref(db, 'admin_status/isOnline')).set(false);
+            
             initSystem();
         } else { alert("Wrong Password!"); }
     };
@@ -242,7 +248,7 @@
             document.getElementById("pendingCount").innerText = p;
         });
 
-        // --- WITHDRAWALS (Updated with UPI Display) ---
+        // --- WITHDRAWALS ---
         onValue(ref(db, "withdrawals"), snap => {
             let html = "";
             snap.forEach(child => {
@@ -274,15 +280,16 @@
             document.getElementById("rechargeReqList").innerHTML = html || "<tr><td colspan='4'>No pending recharges</td></tr>";
         });
 
-        // --- SUPPORT CHAT ---
-        onValue(ref(db, "chats"), snap => {
+        // --- SUPPORT CHAT (Updated to admin_chats) ---
+        onValue(ref(db, "admin_chats"), snap => {
             const list = document.getElementById("chatList");
             list.innerHTML = "";
             snap.forEach(child => {
+                const uid = child.key;
                 const div = document.createElement("div");
-                div.className = `user-item ${activeChat === child.key ? 'active' : ''}`;
-                div.innerHTML = `<strong>User ${child.key.substring(0,8)}</strong><br><small>Support Ticket</small>`;
-                div.onclick = () => loadChat(child.key);
+                div.className = `user-item ${activeChat === uid ? 'active' : ''}`;
+                div.innerHTML = `<strong>User ${uid.substring(0,8)}</strong><br><small>Feedback/Support</small>`;
+                div.onclick = () => loadChat(uid);
                 list.appendChild(div);
             });
         });
@@ -317,23 +324,31 @@
         await update(ref(db, `users/${uid}`), { balance: increment(parseFloat(amt)) });
         await update(ref(db, `recharge_requests/${id}`), { status: "Refunded" });
     };
+
     window.loadChat = (uid) => {
         activeChat = uid;
-        document.getElementById("chatHeader").innerText = "User: " + uid;
-        onValue(ref(db, `chats/${uid}`), snap => {
+        document.getElementById("chatHeader").innerText = "Support with User: " + uid;
+        onValue(ref(db, `admin_chats/${uid}`), snap => {
             const box = document.getElementById("chatBox");
             box.innerHTML = "";
             snap.forEach(c => {
                 const m = c.val();
-                box.innerHTML += `<div class="bubble ${m.sender}">${m.text}</div>`;
+                const role = m.role || m.sender; // handling both keys
+                box.innerHTML += `<div class="bubble ${role}">${m.text}</div>`;
             });
             box.scrollTop = box.scrollHeight;
         });
     };
+
     window.sendReply = () => {
         const inp = document.getElementById("adminReply");
         if(!inp.value || !activeChat) return;
-        push(ref(db, `chats/${activeChat}`), { text: inp.value, sender: "admin", timestamp: serverTimestamp() });
+        // Updated to use 'role' as 'admin' to match dashboard logic
+        push(ref(db, `admin_chats/${activeChat}`), { 
+            text: inp.value, 
+            role: "admin", 
+            timestamp: serverTimestamp() 
+        });
         inp.value = "";
     };
 </script>
