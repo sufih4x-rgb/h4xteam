@@ -3,45 +3,32 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Dragon Tiger Pro | Profit & Rigging Mode</title>
+    <title>Dragon Tiger Pro | Single Bet Mode</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --dragon: #1d4ed8; --tiger: #b45309; --tie: #059669; --bg: #000; --gold: #fbbf24; --surface: #111; }
         body { margin: 0; background: var(--bg); color: white; font-family: 'Inter', sans-serif; display: flex; justify-content: center; overflow-x: hidden; }
         .game-shell { width: 100%; max-width: 450px; min-height: 100vh; background: radial-gradient(circle at top, #2d0a0a, #000); position: relative; border: 4px solid #422006; display: flex; flex-direction: column; }
-
-        /* Top Bar */
         .top-info { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: rgba(0,0,0,0.85); border-bottom: 1px solid var(--gold); }
         .mode-btn { background: #222; border: 1px solid var(--gold); color: var(--gold); padding: 5px 10px; border-radius: 5px; font-size: 11px; font-weight: 800; cursor: pointer; }
         .mode-btn.active { background: var(--gold); color: #000; }
         .timer-txt { color: var(--gold); font-weight: 900; font-size: 14px; }
-
-        /* History */
-        .history-strip { display: flex; gap: 6px; padding: 10px; overflow-x: auto; background: rgba(255,255,255,0.05); border-bottom: 1px solid #222; }
+        .history-strip { display: flex; gap: 6px; padding: 10px; overflow-x: auto; background: rgba(255,255,255,0.05); border-bottom: 1px solid #222; height: 40px; }
         .dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 900; flex-shrink: 0; }
         .dot-dragon { background: var(--dragon); } .dot-tiger { background: var(--tiger); } .dot-tie { background: var(--tie); }
-
-        /* Card Arena */
         .card-arena { height: 160px; display: flex; justify-content: center; align-items: center; gap: 20px; }
         .card { width: 65px; height: 90px; background: #333; border-radius: 8px; border: 2px solid var(--gold); display: flex; align-items: center; justify-content: center; font-size: 32px; font-weight: 900; color: transparent; transition: 0.6s; position: relative; }
         .card.reveal { background: white !important; color: black !important; transform: rotateY(360deg); }
-
-        /* Betting Grid */
         .bet-grid { display: flex; height: 140px; padding: 10px; gap: 8px; }
-        .zone { flex: 1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; cursor: pointer; border: 2px solid rgba(255,255,255,0.1); position: relative; transition: 0.2s; }
+        .zone { flex: 1; border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; cursor: pointer; border: 2px solid rgba(255,255,255,0.1); position: relative; transition: 0.2s; text-align: center; }
         .z-dragon { background: linear-gradient(145deg, #1e40af, #1e3a8a); }
         .z-tiger { background: linear-gradient(145deg, #92400e, #78350f); }
         .z-tie { flex: 0.6; background: linear-gradient(145deg, #065f46, #064e3b); font-size: 11px; }
-        .active-bet { border-color: #fff; box-shadow: 0 0 15px white; }
+        .zone.disabled { opacity: 0.4; cursor: not-allowed; filter: grayscale(1); }
         .chip-badge { position: absolute; top: -8px; background: var(--gold); color: #000; padding: 2px 6px; border-radius: 8px; font-size: 10px; font-weight: 800; display: none; }
         .overlay { position: absolute; inset: 0; background: rgba(0,0,0,0.8); border-radius: 12px; display: none; align-items: center; justify-content: center; color: #ef4444; font-size: 12px; z-index: 5; font-weight: bold; }
-
-        /* Transactions */
         .tx-section { flex-grow: 1; background: #0a0a0a; padding: 15px; border-top: 1px solid #333; overflow-y: auto; max-height: 180px; }
         .tx-row { display: flex; justify-content: space-between; font-size: 12px; padding: 8px 0; border-bottom: 1px solid #1a1a1a; }
-        .tx-win { color: #10b981; } .tx-lose { color: #ef4444; }
-
-        /* Bottom Controls */
         .controls { background: var(--surface); padding: 15px; border-top: 2px solid #333; }
         .chip-rack { display: flex; justify-content: center; gap: 10px; margin-bottom: 10px; }
         .chip { width: 42px; height: 42px; border-radius: 50%; border: 2px dashed #fff; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; cursor: pointer; }
@@ -68,26 +55,24 @@
     </div>
 
     <div class="bet-grid">
-        <div class="zone z-dragon" onclick="handleBet('dragon')">
+        <div class="zone z-dragon" id="zone-dragon" onclick="handleBet('dragon')">
             <div class="overlay" id="ov-dragon">LOCKED</div>
             <div id="badge-dragon" class="chip-badge">0</div>
             DRAGON<br><span style="font-size:10px; opacity:0.7;">1.92x</span>
         </div>
-        <div class="zone z-tie" onclick="handleBet('tie')">
+        <div class="zone z-tie" id="zone-tie" onclick="handleBet('tie')">
             <div class="overlay" id="ov-tie">LOCKED</div>
             <div id="badge-tie" class="chip-badge">0</div>
             TIE<br><span style="font-size:10px; opacity:0.7;">8x</span>
         </div>
-        <div class="zone z-tiger" onclick="handleBet('tiger')">
+        <div class="zone z-tiger" id="zone-tiger" onclick="handleBet('tiger')">
             <div class="overlay" id="ov-tiger">LOCKED</div>
             <div id="badge-tiger" class="chip-badge">0</div>
             TIGER<br><span style="font-size:10px; opacity:0.7;">1.92x</span>
         </div>
     </div>
 
-    <div class="tx-section">
-        <div id="tx-list"></div>
-    </div>
+    <div class="tx-section"><div id="tx-list"></div></div>
 
     <div class="controls">
         <div class="chip-rack">
@@ -121,36 +106,23 @@
     const db = getDatabase(app);
 
     let uBal = 0, currentChip = 10, mySide = null, myBet = 0, bettingOpen = false, currentMode = 30;
+    let matchCounter = 0, lastResultWin = false;
     const cards = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
-
-    window.switchMode = (m) => {
-        if(myBet > 0) return alert("Current match active!");
-        currentMode = m;
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        document.getElementById(`btn${m}`).classList.add('active');
-        loadHistory();
-    };
 
     function syncEngine() {
         const now = new Date();
         const sec = now.getSeconds();
-        if (currentMode === 60) {
-            if (sec < 35) setBetState(true, `BETTING: ${35-sec}s`, "var(--gold)");
-            else if (sec < 42) { if(bettingOpen) processResult(); setBetState(false, "REVEALING", "white"); }
-            else { setBetState(false, `WAITING: ${60-sec}s`, "#666"); if(sec === 59) resetBoard(); }
-        } else {
-            const sub = sec % 30;
-            if (sub < 15) setBetState(true, `FAST: ${15-sub}s`, "var(--gold)");
-            else if (sub < 20) { if(bettingOpen) processResult(); setBetState(false, "REVEALING", "white"); }
-            else { setBetState(false, `NEXT: ${30-sub}s`, "#666"); if(sub === 29) resetBoard(); }
-        }
+        const sub = sec % currentMode;
+        if (sub < (currentMode/2)) setBetState(true, `BET: ${Math.floor(currentMode/2)-sub}s`, "var(--gold)");
+        else if (sub < (currentMode/2 + 5)) { if(bettingOpen) processResult(); setBetState(false, "REVEALING", "white"); }
+        else { setBetState(false, `WAIT`, "#666"); if(sub === currentMode-1) resetBoard(); }
     }
     setInterval(syncEngine, 1000);
 
     function setBetState(open, txt, color) {
         bettingOpen = open;
-        const d = document.getElementById("timer-display");
-        d.innerText = txt; d.style.color = color;
+        document.getElementById("timer-display").innerText = txt;
+        document.getElementById("timer-display").style.color = color;
         document.querySelectorAll(".overlay").forEach(o => o.style.display = open ? "none" : "flex");
     }
 
@@ -161,13 +133,25 @@
             document.getElementById("bal-txt").innerText = uBal.toFixed(2);
         });
         loadHistory();
-        loadUserTransactions(user.uid);
+        loadTxs(user.uid);
     });
 
     window.handleBet = async (side) => {
-        if(!bettingOpen) return;
-        if(uBal < currentChip) return alert("Low Balance!");
-        mySide = side; myBet += currentChip;
+        if(!bettingOpen || uBal < currentChip) return;
+        
+        // Single Side Check: Agar pehle se koi side chuni hai aur wo isse alag hai toh block
+        if(mySide !== null && mySide !== side) {
+            return alert("You can only bet on one side per match!");
+        }
+
+        mySide = side; 
+        myBet += currentChip;
+
+        // Visual Feedback: Disable other zones
+        document.querySelectorAll('.zone').forEach(z => {
+            if(!z.id.includes(side)) z.classList.add('disabled');
+        });
+
         const b = document.getElementById(`badge-${side}`);
         b.innerText = "₹"+myBet; b.style.display = "block";
         document.getElementById("total-bet").innerText = "₹"+myBet;
@@ -176,105 +160,82 @@
 
     async function processResult() {
         bettingOpen = false;
+        matchCounter++;
         const uSnap = await get(ref(db, `users/${auth.currentUser.uid}`));
         const uData = uSnap.val() || {};
-
-        // --- PROFIT & RIGGING ENGINE ---
+        
         let betD = parseFloat(document.getElementById("badge-dragon").innerText.replace('₹','') || 0);
         let betT = parseFloat(document.getElementById("badge-tiger").innerText.replace('₹','') || 0);
-        let betTie = parseFloat(document.getElementById("badge-tie").innerText.replace('₹','') || 0);
 
         let res = "";
+        let tieChance = Math.floor(Math.random() * 25) + 1;
 
-        // 1. Check Old System: Admin Override
-        if (uData.forceWin) {
-            res = mySide || (Math.random() > 0.5 ? 'dragon' : 'tiger');
-        } else if (uData.forceLoss) {
-            res = (mySide === 'dragon') ? 'tiger' : 'dragon';
+        // 1. TIE (1/25 Chance)
+        if (tieChance === 12 || matchCounter >= 25) { res = 'tie'; matchCounter = 0; }
+        // 2. ADMIN FORCE
+        else if (uData.forceWin) res = mySide || 'dragon';
+        else if (uData.forceLoss) res = (mySide === 'dragon') ? 'tiger' : 'dragon';
+        // 3. USER SMART RIGGING
+        else if (mySide) {
+            if (uBal < 170) res = Math.random() < 0.70 ? mySide : (mySide === 'dragon' ? 'tiger' : 'dragon');
+            else if (uBal < 200) res = lastResultWin ? (mySide === 'dragon' ? 'tiger' : 'dragon') : mySide;
+            else res = Math.random() < 0.85 ? (mySide === 'dragon' ? 'tiger' : 'dragon') : mySide;
         } 
-        // 2. Check Old System: Balance Protection (Mines/Chicken Rule)
-        else if (uBal > 200 && Math.random() < 0.85) {
-            res = (mySide === 'dragon') ? 'tiger' : 'dragon';
-        }
-        // 3. New System: Profit Optimization (Choose side with lowest payout)
+        // 4. PROFIT MODE
         else {
-            let payD = betD * 1.92;
-            let payT = betT * 1.92;
-            let payTie = betTie * 8;
-
-            if (payD <= payT && payD <= payTie) res = 'dragon';
-            else if (payT <= payD && payT <= payTie) res = 'tiger';
-            else res = 'tie';
-
-            // Randomize if no bets
-            if (betD === 0 && betT === 0 && betTie === 0) {
-                let r = Math.random();
-                res = r < 0.45 ? 'dragon' : (r < 0.9 ? 'tiger' : 'tie');
-            }
+            res = (betD <= betT) ? 'dragon' : 'tiger';
+            if(betD === 0 && betT === 0) res = Math.random() > 0.5 ? 'dragon' : 'tiger';
         }
 
-        // --- CARD VALUES ---
-        let dV, tV;
-        if(res === 'dragon') { dV = 12; tV = 2; }
-        else if(res === 'tiger') { dV = 2; tV = 12; }
-        else { dV = 7; tV = 7; }
+        let dV = (res === 'dragon') ? 12 : (res === 'tiger' ? 2 : 7);
+        let tV = (res === 'tiger') ? 12 : (res === 'dragon' ? 2 : 7);
 
-        // --- ANIMATION ---
         document.getElementById("c-dragon").innerText = cards[dV];
         document.getElementById("c-dragon").classList.add("reveal");
-        
-        setTimeout(() => {
+
+        setTimeout(async () => {
             document.getElementById("c-tiger").innerText = cards[tV];
             document.getElementById("c-tiger").classList.add("reveal");
             
-            if(res === mySide) {
+            if (res === mySide) {
+                lastResultWin = true;
                 let winAmt = myBet * (res === 'tie' ? 8 : 1.92);
-                update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(winAmt) });
-                saveTx(auth.currentUser.uid, 'WIN', winAmt);
-            } else if(myBet > 0) {
-                saveTx(auth.currentUser.uid, 'LOSE', myBet);
+                await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(winAmt) });
+                saveTx('WIN', winAmt);
+            } else if (myBet > 0) {
+                lastResultWin = false;
+                if (res === 'tie') {
+                    await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(myBet/2) });
+                    saveTx('TIE-REFUND', myBet/2);
+                } else saveTx('LOSE', myBet);
             }
-            push(ref(db, `history_dt_${currentMode}`), { res, ts: Date.now() });
+            push(ref(db, `history_dt_${currentMode}`), { res });
         }, 800);
     }
 
-    async function saveTx(uid, type, amt) {
-        await push(ref(db, `transactions/${uid}`), { type, amount: amt.toFixed(2), time: new Date().toLocaleTimeString('en-GB') });
-    }
+    function saveTx(t, a) { push(ref(db, `transactions/${auth.currentUser.uid}`), { type: t, amount: a.toFixed(2), time: new Date().toLocaleTimeString() }); }
+    
+    function loadTxs(uid) { onValue(query(ref(db, `transactions/${uid}`), limitToLast(8)), s => {
+        const l = document.getElementById("tx-list"); l.innerHTML = "";
+        s.forEach(sn => { const d = sn.val(); l.innerHTML = `<div class="tx-row"><span>${d.time}</span><span style="color:${d.type.includes('WIN')?'#10b981':'#ef4444'}">${d.type} ₹${d.amount}</span></div>` + l.innerHTML; });
+    }); }
 
-    function loadUserTransactions(uid) {
-        onValue(query(ref(db, `transactions/${uid}`), limitToLast(8)), s => {
-            const list = document.getElementById("tx-list"); list.innerHTML = "";
-            s.forEach(snap => {
-                const d = snap.val();
-                list.innerHTML = `<div class="tx-row"><span>${d.time}</span><span class="${d.type=='WIN'?'tx-win':'tx-lose'}">${d.type=='WIN'?'+':'-'}₹${d.amount}</span></div>` + list.innerHTML;
-            });
-        });
-    }
-
-    function loadHistory() {
-        onValue(query(ref(db, `history_dt_${currentMode}`), limitToLast(15)), s => {
-            const box = document.getElementById("history-box"); box.innerHTML = "";
-            s.forEach(snap => {
-                const d = snap.val();
-                box.innerHTML = `<div class="dot dot-${d.res}">${d.res[0].toUpperCase()}</div>` + box.innerHTML;
-            });
-        });
-    }
+    function loadHistory() { onValue(query(ref(db, `history_dt_${currentMode}`), limitToLast(15)), s => {
+        const b = document.getElementById("history-box"); b.innerHTML = "";
+        s.forEach(sn => { b.innerHTML = `<div class="dot dot-${sn.val().res}">${sn.val().res[0].toUpperCase()}</div>` + b.innerHTML; });
+    }); }
 
     function resetBoard() {
         myBet = 0; mySide = null;
         document.getElementById("total-bet").innerText = "₹0";
         document.querySelectorAll(".chip-badge").forEach(b => b.style.display = "none");
         document.querySelectorAll(".card").forEach(c => { c.classList.remove("reveal"); c.innerText = "?"; });
-        document.querySelectorAll(".zone").forEach(z => z.classList.remove("active-bet"));
+        document.querySelectorAll(".zone").forEach(z => z.classList.remove("disabled"));
     }
 
-    window.selectChip = (v, el) => {
-        currentChip = v;
-        document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected'));
-        el.classList.add('selected');
-    };
+    window.selectChip = (v, el) => { currentChip = v; document.querySelectorAll('.chip').forEach(c => c.classList.remove('selected')); el.classList.add('selected'); };
+    
+    window.switchMode = (m) => { if(myBet > 0) return; currentMode = m; document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active')); document.getElementById(`btn${m}`).classList.add('active'); loadHistory(); };
 </script>
 </body>
 </html>
