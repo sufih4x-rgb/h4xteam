@@ -6,28 +6,57 @@
     <title>Mobile Recharge | H4XTEAM</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #4361ee; --text-dark: #1e293b; --text-muted: #64748b; --bg: #ffffff; --surface: #f8fafc; --border: #e2e8f0; }
+        :root { --primary: #4361ee; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --text-dark: #1e293b; --text-muted: #64748b; --bg: #f8fafc; --surface: #ffffff; --border: #e2e8f0; }
         body { background: var(--bg); color: var(--text-dark); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; justify-content: center; }
-        .app-container { width: 100%; max-width: 480px; min-height: 100vh; position: relative; padding-bottom: 50px; }
-        .header { padding: 20px; display: flex; align-items: center; gap: 15px; border-bottom: 1px solid var(--border); }
-        .back-btn { font-size: 24px; cursor: pointer; text-decoration: none; color: black; }
-        .header h2 { font-size: 18px; font-weight: 800; margin: 0; }
-        .progress-bar { height: 4px; background: var(--surface); width: 100%; }
-        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: 0.3s; }
+        .app-container { width: 100%; max-width: 480px; min-height: 100vh; position: relative; padding-bottom: 80px; background: var(--surface); box-shadow: 0 0 30px rgba(0,0,0,0.05); }
+        
+        /* Premium Header */
+        .header { padding: 20px; display: flex; align-items: center; gap: 15px; background: #fff; position: sticky; top: 0; z-index: 100; border-bottom: 1px solid var(--border); }
+        .back-btn { font-size: 24px; cursor: pointer; text-decoration: none; color: black; font-weight: bold; }
+        .header h2 { font-size: 18px; font-weight: 800; margin: 0; letter-spacing: -0.5px; }
+        
+        .progress-bar { height: 4px; background: #f1f5f9; width: 100%; }
+        .progress-fill { height: 100%; background: var(--primary); width: 0%; transition: 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+
         .section { padding: 25px 20px; }
         .label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 15px; display: block; }
+        
+        /* Operator Cards */
         .sim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
-        .sim-card { border: 2px solid var(--border); border-radius: 20px; padding: 15px; text-align: center; cursor: pointer; transition: 0.2s; background: var(--bg); }
-        .sim-card img { width: 40px; height: 40px; border-radius: 8px; margin-bottom: 8px; }
-        .sim-card b { display: block; font-size: 13px; }
-        .sim-card.active { border-color: var(--primary); background: #f0f3ff; }
-        .input-group { display: none; margin-top: 25px; }
-        .input-box { width: 100%; border: 2px solid var(--border); border-radius: 14px; padding: 15px; font-size: 16px; font-weight: 700; box-sizing: border-box; outline: none; }
-        #plansArea { display: none; padding: 0 20px; }
-        .plan-card { border: 1px solid var(--border); border-radius: 16px; padding: 15px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
-        .plan-price { font-size: 20px; font-weight: 800; }
-        .select-btn { background: var(--text-dark); color: #fff; border: none; padding: 10px 18px; border-radius: 10px; font-weight: 700; cursor: pointer; }
+        .sim-card { border: 2px solid var(--border); border-radius: 20px; padding: 15px; text-align: center; cursor: pointer; transition: 0.3s; background: var(--surface); position: relative; overflow: hidden; }
+        .sim-card img { width: 45px; height: 45px; border-radius: 12px; margin-bottom: 8px; object-fit: cover; }
+        .sim-card b { display: block; font-size: 13px; font-weight: 700; }
+        .sim-card.active { border-color: var(--primary); background: #f0f3ff; transform: translateY(-3px); box-shadow: 0 10px 20px rgba(67, 97, 238, 0.1); }
+        .sim-card.active::after { content: '✓'; position: absolute; top: 8px; right: 12px; color: var(--primary); font-weight: 900; }
+
+        /* Input Styling */
+        .input-group { display: none; margin-top: 25px; animation: slideUp 0.4s ease; }
+        .input-box { width: 100%; border: 2px solid var(--border); border-radius: 16px; padding: 18px; font-size: 18px; font-weight: 700; box-sizing: border-box; outline: none; transition: 0.3s; background: #fcfdfe; }
+        .input-box:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1); }
+
+        /* Plans UI */
+        #plansArea { display: none; padding: 0 20px; animation: slideUp 0.4s ease; }
+        .plan-card { background: #fff; border: 1px solid var(--border); border-radius: 20px; padding: 20px; display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; transition: 0.2s; }
+        .plan-card:hover { border-color: var(--primary); }
+        .plan-price { font-size: 22px; font-weight: 800; color: var(--text-dark); }
+        .select-btn { background: var(--text-dark); color: #fff; border: none; padding: 12px 20px; border-radius: 12px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .select-btn:active { transform: scale(0.95); }
+
+        /* TRANSACTION HISTORY UI */
+        .history-section { margin-top: 30px; border-top: 8px solid #f1f5f9; padding: 25px 20px; }
+        .trans-card { background: #fff; border-radius: 16px; padding: 15px; margin-bottom: 12px; border: 1px solid #f1f5f9; display: flex; align-items: center; gap: 12px; }
+        .status-icon { width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+        .status-Pending { background: #fff7ed; color: var(--warning); }
+        .status-Success { background: #f0fdf4; color: var(--success); }
+        .status-Rejected { background: #fef2f2; color: var(--danger); }
+        .trans-info { flex: 1; }
+        .trans-info b { font-size: 14px; display: block; }
+        .trans-info span { font-size: 11px; color: var(--text-muted); }
+        .trans-amt { font-weight: 800; font-size: 15px; }
+
         .overlay { display: none; position: fixed; inset: 0; background: #fff; z-index: 1000; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
@@ -39,29 +68,46 @@
     <div class="section">
         <span class="label">Step 1: Select Operator</span>
         <div class="sim-grid">
-            <div class="sim-card" onclick="selectSim('Jio', this)"><img src="https://firebasestorage.googleapis.com/v0/b/test-eb5e7.appspot.com/o/download%20(1).png?alt=media&token=09c95a02-d46e-40b9-976e-dc0b7bb6b4fe"><b>JIO</b></div>
-            <div class="sim-card" onclick="selectSim('Airtel', this)"><img src="https://firebasestorage.googleapis.com/v0/b/test-eb5e7.appspot.com/o/download.png?alt=media&token=fe12c7d3-8a0e-4bd2-9506-2dab32713489"><b>AIRTEL</b></div>
+            <div class="sim-card" onclick="selectSim('Jio', this)">
+                <img src="https://firebasestorage.googleapis.com/v0/b/test-eb5e7.appspot.com/o/download%20(1).png?alt=media&token=09c95a02-d46e-40b9-976e-dc0b7bb6b4fe">
+                <b>JIO</b>
+            </div>
+            <div class="sim-card" onclick="selectSim('Airtel', this)">
+                <img src="https://firebasestorage.googleapis.com/v0/b/test-eb5e7.appspot.com/o/download.png?alt=media&token=fe12c7d3-8a0e-4bd2-9506-2dab32713489">
+                <b>AIRTEL</b>
+            </div>
         </div>
+
         <div class="input-group" id="phoneGroup">
             <span class="label">Step 2: Mobile Number</span>
             <input type="number" id="mobileNum" class="input-box" placeholder="Enter 10 digit number" oninput="validateNum()">
         </div>
     </div>
 
-    <div id="plansArea"><span class="label">Step 3: Select Plan</span><div id="plansList"></div></div>
+    <div id="plansArea">
+        <span class="label">Step 3: Select Plan</span>
+        <div id="plansList"></div>
+    </div>
+
+    <div class="history-section">
+        <span class="label">Recent Recharge History</span>
+        <div id="historyList">
+            <div style="text-align: center; color: var(--text-muted); font-size: 12px; padding: 20px;">No recent transactions</div>
+        </div>
+    </div>
 </div>
 
 <div class="overlay" id="successScreen">
-    <div style="font-size: 60px; color: #10b981;">✓</div>
-    <h2>Request Sent!</h2>
-    <p>Recharge for <b id="finalNum"></b> is being processed.</p>
-    <button class="select-btn" onclick="location.href='dashboard.html'" style="width: 100%;">BACK TO HOME</button>
+    <div style="width: 80px; height: 80px; background: #dcfce7; color: #10b981; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 40px; margin-bottom: 20px;">✓</div>
+    <h2 style="margin-bottom: 10px;">Request Sent!</h2>
+    <p style="color: var(--text-muted); margin-bottom: 30px;">Recharge for <b id="finalNum" style="color: var(--text-dark);"></b> is being processed by our team.</p>
+    <button class="select-btn" onclick="location.href='dashboard.html'" style="width: 100%; padding: 18px;">BACK TO HOME</button>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, get, update, push, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, get, update, push, increment, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -91,8 +137,13 @@
 
     window.validateNum = () => {
         const val = document.getElementById('mobileNum').value;
-        if(val.length === 10) { renderPlans(); document.getElementById('pFill').style.width = '100%'; }
-        else { document.getElementById('plansArea').style.display = 'none'; }
+        if(val.length === 10) { 
+            renderPlans(); 
+            document.getElementById('pFill').style.width = '100%'; 
+        } else { 
+            document.getElementById('plansArea').style.display = 'none'; 
+            document.getElementById('pFill').style.width = '50%';
+        }
     };
 
     function renderPlans() {
@@ -101,11 +152,48 @@
         adminPlans[selectedSim].forEach(amt => {
             list.innerHTML += `
                 <div class="plan-card">
-                    <div><div class="plan-price">₹${amt}</div><div style="font-size:12px;color:gray;">Unlimited Calls + Data</div></div>
+                    <div>
+                        <div class="plan-price">₹${amt}</div>
+                        <div style="font-size:12px;color:var(--text-muted);font-weight:600;">Unlimited Calls + 1.5GB/Day</div>
+                    </div>
                     <button class="select-btn" onclick="payRecharge(${amt})">SELECT</button>
                 </div>`;
         });
         document.getElementById('plansArea').style.display = 'block';
+    }
+
+    // --- RECHARGE HISTORY REALTIME ---
+    function loadHistory(uid) {
+        const historyRef = ref(db, 'recharge_requests');
+        onValue(historyRef, (snapshot) => {
+            const listDiv = document.getElementById('historyList');
+            let html = "";
+            let records = [];
+            
+            snapshot.forEach(child => {
+                const data = child.val();
+                if(data.uid === uid) records.unshift(data); // Newest first
+            });
+
+            if(records.length === 0) {
+                listDiv.innerHTML = `<div style="text-align: center; color: var(--text-muted); font-size: 12px; padding: 20px;">No transactions yet.</div>`;
+                return;
+            }
+
+            records.slice(0, 5).forEach(req => {
+                const icon = req.status === "Success" ? "✓" : (req.status === "Rejected" ? "✕" : "⌛");
+                html += `
+                <div class="trans-card">
+                    <div class="status-icon status-${req.status}">${icon}</div>
+                    <div class="trans-info">
+                        <b>${req.operator} - ${req.mobile}</b>
+                        <span>${req.timestamp}</span>
+                    </div>
+                    <div class="trans-amt">₹${req.amount}</div>
+                </div>`;
+            });
+            listDiv.innerHTML = html;
+        });
     }
 
     window.payRecharge = async (amt) => {
@@ -113,7 +201,7 @@
         if(!user) return alert("Please Login");
         
         const num = document.getElementById('mobileNum').value;
-        const confirmPay = confirm(`Pay ₹${amt} for recharge on ${num}?`);
+        const confirmPay = confirm(`Confirm payment of ₹${amt} for ${num}?`);
         if(!confirmPay) return;
 
         const userRef = ref(db, `users/${user.uid}`);
@@ -122,7 +210,7 @@
 
         if(bal < amt) return alert("Insufficient Balance!");
 
-        // Deduct and Push Request
+        // Update Balance and Push Request
         await update(userRef, { balance: increment(-amt) });
         await push(ref(db, 'recharge_requests'), {
             uid: user.uid,
@@ -137,6 +225,10 @@
         document.getElementById('finalNum').innerText = num;
         document.getElementById('successScreen').style.display = 'flex';
     };
+
+    onAuthStateChanged(auth, user => {
+        if(user) loadHistory(user.uid);
+    });
 </script>
 </body>
 </html>
