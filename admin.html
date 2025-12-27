@@ -3,140 +3,100 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Master Control | H4XTEAM</title>
+    <title>Master Admin v3.0 | H4XTEAM</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #4361ee; --success: #06d6a0; --danger: #ff4d4d; --warning: #ff9f1c;
-            --bg: #f4f7fe; --white: #ffffff; --text-dark: #1e293b; --text-light: #64748b;
-        }
-        body { background-color: var(--bg); color: var(--text-dark); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 1300px; margin: auto; }
-        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .stat-card { background: var(--white); padding: 20px; border-radius: 18px; border: 1px solid #edf2f7; }
-        .stat-card h3 { font-size: 11px; color: var(--text-light); text-transform: uppercase; margin: 0; }
-        .stat-card div { font-size: 24px; font-weight: 800; color: var(--primary); }
-
-        .tabs { display: flex; gap: 10px; margin-bottom: 25px; overflow-x: auto; }
-        .tab-btn { background: #e2e8f0; color: #64748b; padding: 12px 22px; border-radius: 12px; cursor: pointer; font-weight: 700; border: none; transition: 0.3s; white-space: nowrap; }
-        .tab-btn.active { background: var(--primary); color: white; }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.3s ease; }
-
-        .section { background: var(--white); padding: 25px; border-radius: 24px; box-shadow: 0 10px 40px rgba(0,0,0,0.04); margin-bottom: 30px; overflow-x: auto; }
-        .section-title { font-size: 18px; font-weight: 800; margin-bottom: 20px; }
+        :root { --primary: #4361ee; --success: #06d6a0; --danger: #ff4d4d; --bg: #f8faff; --white: #fff; --text: #1e293b; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); display: flex; }
         
-        table { width: 100%; border-collapse: collapse; min-width: 700px; }
-        th { text-align: left; padding: 12px; background: #f8fafc; font-size: 11px; color: var(--text-light); }
+        /* Sidebar */
+        .sidebar { width: 260px; height: 100vh; background: var(--white); border-right: 1px solid #e2e8f0; position: fixed; padding-top: 20px; }
+        .nav-item { padding: 15px 25px; cursor: pointer; font-weight: 700; color: #64748b; border-right: 4px solid transparent; transition: 0.3s; }
+        .nav-item.active { background: #eef2ff; color: var(--primary); border-color: var(--primary); }
+        
+        /* Main */
+        .main { margin-left: 260px; width: 100%; padding: 40px; }
+        .section { background: var(--white); padding: 25px; border-radius: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.03); margin-bottom: 25px; }
+        .tab-content { display: none; }
+        .tab-content.active { display: block; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: left; padding: 12px; background: #f1f5f9; font-size: 12px; color: #64748b; }
         td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; }
-
-        .game-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; }
-        .bet-box { background: #f8fafc; padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid #eee; }
-        .vol-text { font-weight: 800; color: var(--primary); float: right; }
-
-        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; display: inline-block; margin-right: 4px; }
-        .badge-danger { background: #fee2e2; color: #dc2626; }
+        
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        .badge-pending { background: #fef3c7; color: #d97706; }
         .badge-success { background: #d1fae5; color: #059669; }
         
-        button { padding: 8px 14px; border-radius: 10px; font-weight: 700; cursor: pointer; border: none; font-size: 11px; }
-        .btn-blue { background: var(--primary); color: white; }
+        button { padding: 8px 12px; border-radius: 8px; border: none; font-weight: 700; cursor: pointer; font-size: 11px; }
         .btn-green { background: var(--success); color: white; }
         .btn-red { background: var(--danger); color: white; }
+        .btn-blue { background: var(--primary); color: white; }
 
-        #loginOverlay { position: fixed; inset: 0; background: var(--primary); display: flex; justify-content: center; align-items: center; z-index: 10000; }
-        .login-card { background: white; padding: 40px; border-radius: 30px; text-align: center; width: 320px; }
+        #loginOverlay { position: fixed; inset: 0; background: var(--primary); display: flex; align-items: center; justify-content: center; z-index: 10000; }
     </style>
 </head>
 <body>
 
 <div id="loginOverlay">
-    <div class="login-card">
-        <h2>Admin Login</h2>
-        <input type="password" id="adminPass" placeholder="System Password" style="width:100%; padding:12px; margin:10px 0; border-radius:10px; border:1px solid #ddd; box-sizing: border-box;">
-        <button class="btn-blue" style="width: 100%; padding: 15px;" onclick="checkAuth()">Login</button>
+    <div style="background:white; padding:40px; border-radius:30px; text-align:center;">
+        <h2>Admin Access</h2>
+        <input type="password" id="adminPass" placeholder="Password" style="padding:12px; border-radius:10px; border:1px solid #ddd; width:200px;"><br><br>
+        <button class="btn-blue" style="width:100%; padding:15px;" onclick="checkAuth()">Login</button>
     </div>
 </div>
 
-<div class="container">
-    <div class="stats-grid">
-        <div class="stat-card"><h3>Total Balance</h3><div id="totalBal">₹0</div></div>
-        <div class="stat-card"><h3>Users</h3><div id="userCount">0</div></div>
-    </div>
+<div class="sidebar">
+    <div style="padding: 25px; font-size: 20px; font-weight: 800; color: var(--primary);">H4X ADMIN</div>
+    <div class="nav-item active" onclick="showTab(event, 'users')">👥 Users</div>
+    <div class="nav-item" onclick="showTab(event, 'wingo')">🎮 Wingo Control</div>
+    <div class="nav-item" onclick="showTab(event, 'recharges')">📱 Recharges</div>
+    <div class="nav-item" onclick="showTab(event, 'payments')">💰 Payments</div>
+</div>
 
-    <div class="tabs">
-        <button class="tab-btn active" onclick="showTab(event, 'users')">👥 User Management</button>
-        <button class="tab-btn" onclick="showTab(event, 'masterGame')">🎮 Wingo Control</button>
-        <button class="tab-btn" onclick="showTab(event, 'txns')">💰 Pending Txns</button>
-        <button class="tab-btn" onclick="showTab(event, 'history')">📜 Txn History</button>
-    </div>
-
+<div class="main">
     <div id="users" class="tab-content active">
         <div class="section">
-            <div class="section-title">All Registered Users</div>
+            <h3>User Management</h3>
             <table>
-                <thead><tr><th>User Info</th><th>Balance</th><th>Status</th><th>Game Control</th><th>Action</th></tr></thead>
+                <thead><tr><th>Email</th><th>Balance</th><th>Logic</th><th>Actions</th></tr></thead>
                 <tbody id="userList"></tbody>
             </table>
         </div>
     </div>
 
-    <div id="masterGame" class="tab-content">
+    <div id="wingo" class="tab-content">
         <div class="section">
-            <div class="section-title">Live Result Fixer & Monitor</div>
-            <select id="controlMode" onchange="syncBets()" style="padding:10px; border-radius:10px; margin-bottom:20px; width: 200px;">
-                <option value="30">Mode: 30 Seconds</option>
-                <option value="60">Mode: 1 Minute</option>
-            </select>
-            
-            <div class="game-grid">
-                <div class="card">
-                    <h3>📊 Live Bets (Current Round)</h3>
-                    <div class="bet-box">RED <span id="b_RED" class="vol-text">₹0</span></div>
-                    <div class="bet-box">GREEN <span id="b_GREEN" class="vol-text">₹0</span></div>
-                    <div class="bet-box">BIG <span id="b_BIG" class="vol-text">₹0</span></div>
-                    <div class="bet-box">SMALL <span id="b_SMALL" class="vol-text">₹0</span></div>
-                </div>
-                <div class="card">
-                    <h3>🎯 Manual Fix (Next Round)</h3>
-                    <div style="display:flex; gap:5px; margin-bottom:10px;">
-                        <button class="btn-red" style="flex:1; padding: 15px;" onclick="fixNext('color','RED')">Force RED</button>
-                        <button class="btn-green" style="flex:1; padding: 15px;" onclick="fixNext('color','GREEN')">Force GREEN</button>
-                    </div>
-                    <div style="display:flex; gap:5px; margin-bottom:10px;">
-                        <button class="btn-blue" style="flex:1; background:#fbbf24; padding: 15px;" onclick="fixNext('size','BIG')">Force BIG</button>
-                        <button class="btn-blue" style="flex:1; background:#38bdf8; padding: 15px;" onclick="fixNext('size','SMALL')">Force SMALL</button>
-                    </div>
-                    <input type="number" id="targetNum" placeholder="Force Number (0-9)" style="width:100%; padding:12px; margin-bottom:10px; border-radius:10px; border:1px solid #ddd; box-sizing: border-box;">
-                    <button class="btn-blue" style="width:100%; padding: 15px; background: #1e293b;" onclick="fixNext('num', parseInt(document.getElementById('targetNum').value))">Set Specific Number</button>
-                </div>
+            <h3>Wingo Result Fixer</h3>
+            <div style="display:flex; gap:10px; margin-bottom:20px;">
+                <button class="btn-red" onclick="fixWingo('color','RED')">RED</button>
+                <button class="btn-green" onclick="fixWingo('color','GREEN')">GREEN</button>
+                <button class="btn-blue" onclick="fixWingo('size','BIG')">BIG</button>
+                <button style="background:cyan" onclick="fixWingo('size','SMALL')">SMALL</button>
             </div>
+            <input type="number" id="winNum" placeholder="Fix Number (0-9)" style="padding:10px; border-radius:8px; border:1px solid #ddd;">
+            <button class="btn-blue" onclick="fixWingo('num', document.getElementById('winNum').value)">Fix Number</button>
         </div>
     </div>
 
-    <div id="txns" class="tab-content">
+    <div id="recharges" class="tab-content">
         <div class="section">
-            <div class="section-title">Pending Deposits (Manual UTR)</div>
+            <h3>Pending Recharge Requests</h3>
             <table>
-                <thead><tr><th>Email</th><th>Amount</th><th>UTR Number</th><th>Action</th></tr></thead>
-                <tbody id="depList"></tbody>
-            </table>
-        </div>
-        <div class="section">
-            <div class="section-title">Pending Withdrawals</div>
-            <table>
-                <thead><tr><th>Email</th><th>Amount</th><th>UPI ID</th><th>Action</th></tr></thead>
-                <tbody id="withList"></tbody>
+                <thead><tr><th>User</th><th>Number</th><th>Operator</th><th>Amount</th><th>Action</th></tr></thead>
+                <tbody id="rechargeList"></tbody>
             </table>
         </div>
     </div>
 
-    <div id="history" class="tab-content">
+    <div id="payments" class="tab-content">
         <div class="section">
-            <div class="section-title">All Transaction History (Approved/Rejected)</div>
-            <table>
-                <thead><tr><th>Type</th><th>User Email</th><th>Amount</th><th>Details</th><th>Status</th></tr></thead>
-                <tbody id="fullHistoryList"></tbody>
-            </table>
+            <h3>Pending Deposits</h3>
+            <table id="depTable"></table>
+        </div>
+        <div class="section">
+            <h3>Pending Withdrawals</h3>
+            <table id="withTable"></table>
         </div>
     </div>
 </div>
@@ -159,179 +119,64 @@
     window.checkAuth = () => {
         if(document.getElementById("adminPass").value === "admin123") {
             document.getElementById("loginOverlay").style.display = "none";
-            initSystem();
-        } else { alert("Wrong Password!"); }
+            loadData();
+        } else alert("Wrong Password");
     };
 
     window.showTab = (e, id) => {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         e.currentTarget.classList.add('active');
-        if(id === 'masterGame') syncBets();
-        if(id === 'history') loadFullHistory();
     };
 
-    function initSystem() {
+    function loadData() {
+        // Load Users
         onValue(ref(db, "users"), snap => {
-            let html = ""; let total = 0; let count = 0;
+            let h = "";
             snap.forEach(child => {
-                const u = child.val(); const uid = child.key;
-                total += (u.balance || 0); count++;
-                const isLoss = u.forceLoss === true;
-                const isWin = u.forceWin === true;
-                const isBanned = u.isBanned === true;
-
-                html += `<tr>
-                    <td>${u.email || 'User'}</td>
-                    <td>₹${(u.balance || 0).toFixed(2)}</td>
-                    <td>
-                        ${isLoss ? '<span class="badge badge-danger">TARGETED LOSS</span>' : ''}
-                        ${isWin ? '<span class="badge badge-success">TARGETED WIN</span>' : ''}
-                        ${isBanned ? '<span class="badge badge-danger">BANNED</span>' : ''}
-                    </td>
-                    <td>
-                        <button class="${isLoss?'btn-blue':'btn-red'}" onclick="toggleGameControl('${uid}', 'forceLoss', ${isLoss})">${isLoss?'Unset':'Force Loss'}</button>
-                        <button class="${isWin?'btn-blue':'btn-green'}" onclick="toggleGameControl('${uid}', 'forceWin', ${isWin})">${isWin?'Unset':'Force Win'}</button>
-                    </td>
-                    <td>
-                        <button class="btn-red" onclick="toggleBan('${uid}', ${isBanned})">${isBanned?'Unban':'Ban'}</button>
-                        <button class="btn-blue" onclick="setBal('${uid}')">₹ Edit</button>
-                    </td>
-                </tr>`;
+                const u = child.val();
+                h += `<tr><td>${u.email}</td><td>₹${u.balance}</td>
+                <td>${u.forceWin?'WIN':u.forceLoss?'LOSS':'Normal'}</td>
+                <td><button onclick="editBal('${child.key}')">₹</button></td></tr>`;
             });
-            document.getElementById("userList").innerHTML = html;
-            document.getElementById("totalBal").innerText = "₹" + total.toFixed(0);
-            document.getElementById("userCount").innerText = count;
+            document.getElementById("userList").innerHTML = h;
         });
-        loadTxns();
-    }
 
-    // PENDING TXNS LOAD
-    function loadTxns() {
-        onValue(ref(db, "deposit_requests"), s => {
-            let h = ""; s.forEach(c => {
-                const d = c.val(); 
-                if(d.status==='pending') {
-                    h += `<tr><td>${d.email}</td><td>₹${d.amount}</td><td>${d.utr}</td>
+        // Load Recharges
+        onValue(ref(db, "recharge_requests"), snap => {
+            let h = "";
+            snap.forEach(child => {
+                const r = child.val();
+                if(r.status === "Pending") {
+                    h += `<tr><td>${r.email}</td><td>${r.mobile}</td><td>${r.operator}</td><td>₹${r.amount}</td>
                     <td>
-                        <button class="btn-green" onclick="txn('deposit_requests','${c.key}','${d.uid}',${d.amount},'Approved')">Approve</button>
-                        <button class="btn-red" onclick="rejectTxn('deposit_requests','${c.key}')">Reject</button>
+                        <button class="btn-green" onclick="handleRecharge('${child.key}','Success')">Done</button>
+                        <button class="btn-red" onclick="handleRecharge('${child.key}','Rejected','${r.uid}',${r.amount})">Refund</button>
                     </td></tr>`;
                 }
             });
-            document.getElementById("depList").innerHTML = h || "<tr><td colspan='4'>No pending deposits</td></tr>";
-        });
-
-        onValue(ref(db, "withdrawals"), s => {
-            let h = ""; s.forEach(c => {
-                const d = c.val(); 
-                if(d.status==='Pending') {
-                    h += `<tr><td>${d.email}</td><td>₹${d.amount}</td><td><b style="color:var(--primary)">${d.upiId || 'N/A'}</b></td>
-                    <td>
-                        <button class="btn-green" onclick="txn('withdrawals','${c.key}','${d.uid}',${d.amount},'Approved')">Approve (Paid)</button>
-                        <button class="btn-red" onclick="rejectTxn('withdrawals','${c.key}','${d.uid}',${d.amount})">Reject (Refund)</button>
-                    </td></tr>`;
-                }
-            });
-            document.getElementById("withList").innerHTML = h || "<tr><td colspan='4'>No pending withdrawals</td></tr>";
+            document.getElementById("rechargeList").innerHTML = h || "No pending recharges";
         });
     }
 
-    // HISTORY LOAD
-    function loadFullHistory() {
-        let historyHtml = "";
-        
-        // Load Deposits History
-        onValue(ref(db, "deposit_requests"), s => {
-            s.forEach(c => {
-                const d = c.val();
-                if(d.status !== 'pending') {
-                    historyHtml += `<tr><td>DEPOSIT</td><td>${d.email}</td><td>₹${d.amount}</td><td>UTR: ${d.utr} ${d.reason ? ' | Reason: '+d.reason : ''}</td><td><span class="badge ${d.status==='Approved'?'badge-success':'badge-danger'}">${d.status}</span></td></tr>`;
-                }
-            });
-            document.getElementById("fullHistoryList").innerHTML = historyHtml;
-        });
-
-        // Load Withdrawal History
-        onValue(ref(db, "withdrawals"), s => {
-            s.forEach(c => {
-                const d = c.val();
-                if(d.status !== 'Pending') {
-                    historyHtml += `<tr><td>WITHDRAW</td><td>${d.email}</td><td>₹${d.amount}</td><td>UPI: ${d.upiId} ${d.reason ? ' | Reason: '+d.reason : ''}</td><td><span class="badge ${d.status==='Approved'?'badge-success':'badge-danger'}">${d.status}</span></td></tr>`;
-                }
-            });
-            document.getElementById("fullHistoryList").innerHTML = historyHtml;
-        });
-    }
-
-    // APPROVE TXN
-    window.txn = async (p, tid, uid, amt, st) => {
-        if(confirm(`Confirm Approve ₹${amt}?`)) {
-            if(p==='deposit_requests') await update(ref(db, `users/${uid}`), { balance: increment(amt) });
-            await update(ref(db, `${p}/${tid}`), { status: st, userNotified: false });
-            alert("Success!");
-        }
-    };
-
-    // REJECT TXN WITH REASON
-    window.rejectTxn = async (p, tid, uid, amt) => {
-        let reason = prompt("Enter Rejection Reason:");
-        if(reason === null) return;
-        
-        if(p==='withdrawals') {
-            // Refund amount if it's a withdrawal rejection
+    window.handleRecharge = async (rid, status, uid, amt) => {
+        if(status === 'Rejected') {
             await update(ref(db, `users/${uid}`), { balance: increment(amt) });
         }
-        
-        await update(ref(db, `${p}/${tid}`), { 
-            status: "Rejected", 
-            reason: reason,
-            userNotified: false 
-        });
-        alert("Transaction Rejected & User Notified.");
+        await update(ref(db, `recharge_requests/${rid}`), { status: status });
+        alert("Recharge Updated");
     };
 
-    // PURE GAME LOGIC (Keep same)
-    window.syncBets = () => {
-        const m = document.getElementById("controlMode").value;
-        const now = Math.floor(Date.now() / 1000);
-        const currentMatch = `${new Date().getMinutes()}_${Math.floor(now/m)}`;
-        onValue(ref(db, `bets_${m}/${currentMatch}`), snap => {
-            let v = { RED:0, GREEN:0, BIG:0, SMALL:0 };
-            if(snap.exists()) {
-                snap.forEach(u => u.forEach(b => {
-                    const d = b.val();
-                    if(d.color) v[d.color] += (d.amount || 0);
-                    if(d.size) v[d.size] += (d.amount || 0);
-                }));
-            }
-            document.getElementById('b_RED').innerText = '₹'+v.RED;
-            document.getElementById('b_GREEN').innerText = '₹'+v.GREEN;
-            document.getElementById('b_BIG').innerText = '₹'+v.BIG;
-            document.getElementById('b_SMALL').innerText = '₹'+v.SMALL;
-        });
+    window.fixWingo = (type, val) => {
+        const data = { active: true }; data[type] = val;
+        update(ref(db, "admin_control/30"), data); // Fixed for 30s mode
+        alert("Wingo Fixed: " + val);
     };
 
-    window.fixNext = (key, val) => {
-        const m = document.getElementById("controlMode").value;
-        const data = { active: true };
-        data[key] = val;
-        update(ref(db, `admin_control/${m}`), data).then(() => alert(`Fixed: ${val}`));
-    };
-
-    window.toggleGameControl = (uid, field, cur) => {
-        const updateData = {};
-        updateData[field] = !cur;
-        if(field === 'forceWin' && !cur) updateData['forceLoss'] = false;
-        if(field === 'forceLoss' && !cur) updateData['forceWin'] = false;
-        update(ref(db, `users/${uid}`), updateData);
-    };
-
-    window.toggleBan = (uid, cur) => update(ref(db, `users/${uid}`), { isBanned: !cur });
-    window.setBal = (uid) => {
-        let a = prompt("Set New Balance:");
-        if(a) update(ref(db, `users/${uid}`), { balance: parseFloat(a) });
+    window.editBal = (uid) => {
+        let amt = prompt("Enter new balance:");
+        if(amt) update(ref(db, `users/${uid}`), { balance: parseFloat(amt) });
     };
 </script>
 </body>
