@@ -9,47 +9,23 @@
         :root { --primary: #4361ee; --bg: #f8f9fc; --success: #06d6a0; --danger: #ef476f; }
         body { background: var(--bg); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; }
         .app { width: 100%; max-width: 480px; min-height: 100vh; background: #fff; padding: 20px; box-sizing: border-box; box-shadow: 0 0 20px rgba(0,0,0,0.05); }
-        
         .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
         .back-btn { border:none; background:#f1f5f9; width:40px; height:40px; border-radius:12px; cursor:pointer; font-size:18px; display: flex; align-items: center; justify-content: center; }
-
-        .qr-container { 
-            background: #fff; border: 2px solid #f1f5f9; border-radius: 24px; padding: 25px; 
-            text-align: center; margin-bottom: 20px; transition: 0.3s;
-        }
-        #qrImg { 
-            width: 200px; height: 200px; padding: 10px; background: #fff;
-            border: 1px solid #eee; border-radius: 15px;
-        }
+        .qr-container { background: #fff; border: 2px solid #f1f5f9; border-radius: 24px; padding: 25px; text-align: center; margin-bottom: 20px; transition: 0.3s; }
+        #qrBox img { width: 200px; height: 200px; padding: 10px; background: #fff; border: 1px solid #eee; border-radius: 15px; }
         .qr-placeholder { height: 200px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 14px; background: #f8fafc; border-radius: 15px; width: 200px; margin: 0 auto; text-align: center; line-height: 1.5; }
-
         .input-group { margin-top: 20px; }
         label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.5px; margin-left: 5px; }
-        
         .amt-input-wrapper { position: relative; margin-top: 8px; margin-bottom: 20px; }
         .amt-input-wrapper span { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--primary); }
-        
-        input { 
-            width: 100%; padding: 15px 15px 15px 35px; border-radius: 14px; 
-            border: 2px solid #f1f5f9; box-sizing: border-box; font-size: 16px; 
-            font-weight: 700; outline: none; transition: 0.3s; 
-        }
+        input { width: 100%; padding: 15px 15px 15px 35px; border-radius: 14px; border: 2px solid #f1f5f9; box-sizing: border-box; font-size: 16px; font-weight: 700; outline: none; transition: 0.3s; }
         input:focus { border-color: var(--primary); background: #fbfbff; }
         .utr-input { padding-left: 15px !important; border-color: #e2e8f0; }
-
-        .btn-submit { 
-            width: 100%; padding: 18px; border-radius: 16px; border: none; 
-            background: var(--primary); color: white; font-weight: 800; 
-            cursor: pointer; margin-top: 25px; font-size: 15px; 
-            box-shadow: 0 8px 20px rgba(67, 97, 238, 0.2); transition: 0.3s;
-        }
+        .btn-submit { width: 100%; padding: 18px; border-radius: 16px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; margin-top: 25px; font-size: 15px; box-shadow: 0 8px 20px rgba(67, 97, 238, 0.2); transition: 0.3s; }
         .btn-submit:disabled { background: #cbd5e1; cursor: not-allowed; box-shadow: none; }
-
         .steps { background: #fef2f2; padding: 15px; border-radius: 15px; margin-top: 20px; border: 1px solid #fee2e2; }
         .step-item { display: flex; gap: 10px; font-size: 12px; margin-bottom: 8px; color: #991b1b; font-weight: 600; }
         .step-num { background: #ef476f; color: #fff; min-width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; }
-
-        /* Naya History & Status Style */
         .history-section { margin-top: 35px; border-top: 2px dashed #f1f5f9; padding-top: 20px; }
         .history-row { background: #f8fafc; padding: 15px; border-radius: 16px; margin-bottom: 12px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
         .hist-info b { display: block; font-size: 15px; color: #1e293b; }
@@ -82,14 +58,14 @@
             <input type="number" id="depAmt" placeholder="0.00" oninput="generateQR()">
         </div>
 
-        <div id="utrSection" style="display:none; animation: fadeIn 0.5s;">
+        <div id="utrSection" style="display:none;">
             <label>Transaction UTR (12 Digits)</label>
             <input type="text" id="utrInp" class="utr-input" placeholder="Enter 12-digit Ref No." maxlength="12">
             
             <div class="steps">
-                <div class="step-item"><div class="step-num">1</div> Scan QR & Pay via PhonePe/GPay/Paytm.</div>
-                <div class="step-item"><div class="step-num">2</div> Copy 12-digit UTR Number from History.</div>
-                <div class="step-item"><div class="step-num">3</div> Paste UTR and Click Submit below.</div>
+                <div class="step-item"><div class="step-num">1</div> Scan QR & Pay via UPI App.</div>
+                <div class="step-item"><div class="step-num">2</div> Copy 12-digit UTR from History.</div>
+                <div class="step-item"><div class="step-num">3</div> Submit and wait for verification.</div>
             </div>
 
             <button class="btn-submit" id="subBtn" onclick="submitDeposit()">SUBMIT DEPOSIT</button>
@@ -107,7 +83,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, push, serverTimestamp, get, onValue, query, orderByChild, equalTo, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, push, serverTimestamp, get, onValue, query, orderByChild, equalTo, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -133,33 +109,25 @@
         }
     });
 
-    // History & Popup Logic
     function loadDepositHistory() {
         const depRef = query(ref(db, "deposit_requests"), orderByChild("uid"), equalTo(userObj.uid));
-        onValue(depRef, snap => {
+        onValue(depRef, async snap => {
             let html = "";
             if(snap.exists()){
                 snap.forEach(child => {
                     const data = child.val();
                     const status = data.status || "pending";
-                    const statusLabel = status.charAt(0).toUpperCase() + status.slice(1);
                     
-                    // Notification Logic
+                    // Logic: Tracking Referral when Approved
                     if(status === "Approved" && !data.userNotified) {
-                        alert("💰 Deposit Confirmed!\n₹" + data.amount + " has been added to your wallet.");
-                        update(ref(db, `deposit_requests/${child.key}`), { userNotified: true });
-                    } else if(status === "Rejected" && !data.userNotified) {
-                        alert("❌ Deposit Rejected!\nUTR: " + data.utr + "\nReason: " + (data.reason || "Invalid UTR or Payment not received."));
+                        handleReferralOnSuccess(data.amount);
+                        alert("💰 Deposit Confirmed! ₹" + data.amount + " added.");
                         update(ref(db, `deposit_requests/${child.key}`), { userNotified: true });
                     }
 
-                    html = `
-                    <div class="history-row">
-                        <div class="hist-info">
-                            <b>₹${data.amount.toFixed(2)}</b>
-                            <small>UTR: ${data.utr}</small>
-                        </div>
-                        <span class="status-pill pill-${status.toLowerCase()}">${statusLabel}</span>
+                    html = `<div class="history-row">
+                        <div class="hist-info"><b>₹${data.amount.toFixed(2)}</b><small>UTR: ${data.utr}</small></div>
+                        <span class="status-pill pill-${status.toLowerCase()}">${status}</span>
                     </div>` + html;
                 });
                 document.getElementById("depositHistory").innerHTML = html;
@@ -167,87 +135,63 @@
         });
     }
 
+    // Naya function: Referral track karne ke liye
+    async function handleReferralOnSuccess(amount) {
+        if (amount < 100) return; // Only track if deposit is 100+
+
+        const myUserRef = ref(db, `users/${userObj.uid}`);
+        const userSnap = await get(myUserRef);
+        const userData = userSnap.val();
+
+        if (userData && userData.referredBy) {
+            const referrerUid = userData.referredBy;
+            const referPath = `users/${referrerUid}/referrals/${userObj.uid}`;
+            
+            // 1. Mark status as Verified
+            const refSnap = await get(ref(db, referPath));
+            if (refSnap.exists() && refSnap.val().status === "Pending") {
+                await update(ref(db, referPath), { status: "Verified" });
+                
+                // 2. Increment verified count for Referrer
+                await update(ref(db, `users/${referrerUid}`), { 
+                    verifiedCount: increment(1) 
+                });
+            }
+        }
+    }
+
     window.generateQR = () => {
         const amt = document.getElementById('depAmt').value;
-        const qrBox = document.getElementById('qrBox');
-        const utrSec = document.getElementById('utrSection');
-        const qrStatus = document.getElementById('qrStatus');
-
         if(amt >= 100) {
             const upiUrl = `upi://pay?pa=${MY_UPI_ID}&pn=${encodeURIComponent(MERCHANT_NAME)}&am=${amt}&cu=INR`;
             const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`;
-            
-            qrBox.innerHTML = `<img src="${qrApi}" id="qrImg">`;
-            utrSec.style.display = "block";
-            qrStatus.style.display = "block";
+            document.getElementById('qrBox').innerHTML = `<img src="${qrApi}">`;
+            document.getElementById('utrSection').style.display = "block";
+            document.getElementById('qrStatus').style.display = "block";
         } else {
-            qrBox.innerHTML = `<div class="qr-placeholder">Min. amount is ₹100</div>`;
-            utrSec.style.display = "none";
-            qrStatus.style.display = "none";
+            document.getElementById('qrBox').innerHTML = `<div class="qr-placeholder">Min. ₹100</div>`;
+            document.getElementById('utrSection').style.display = "none";
         }
     };
 
     window.submitDeposit = async () => {
         const amt = document.getElementById('depAmt').value;
         const utr = document.getElementById('utrInp').value;
-        const subBtn = document.getElementById('subBtn');
+        if(!utr || utr.length < 12) return alert("Enter 12-digit UTR");
 
-        if(!utr || utr.length < 12) {
-            alert("❌ Invalid UTR! Please enter full 12-digit number.");
-            return;
-        }
-
-        subBtn.disabled = true;
-        subBtn.innerText = "CHECKING UTR...";
-
-        try {
-            const depositRef = ref(db, `deposit_requests`);
-            const snapshot = await get(depositRef);
-            
-            let isDuplicate = false;
-            if (snapshot.exists()) {
-                const data = snapshot.val();
-                for (let key in data) {
-                    if (data[key].utr === utr) {
-                        isDuplicate = true;
-                        break;
-                    }
-                }
-            }
-
-            if (isDuplicate) {
-                alert("🚨 STOP! This UTR has already been used.");
-                subBtn.disabled = false;
-                subBtn.innerText = "SUBMIT DEPOSIT";
-                return;
-            }
-
-            await push(ref(db, `deposit_requests`), {
-                uid: userObj.uid,
-                email: userObj.email,
-                amount: parseFloat(amt),
-                utr: utr,
-                status: "pending",
-                userNotified: false,
-                timestamp: serverTimestamp()
-            });
-
-            alert("✅ Deposit request submitted!");
-            document.getElementById('utrInp').value = "";
-            subBtn.disabled = false;
-            subBtn.innerText = "SUBMIT DEPOSIT";
-
-        } catch (e) {
-            alert("Error: " + e.message);
-            subBtn.disabled = false;
-            subBtn.innerText = "SUBMIT DEPOSIT";
-        }
+        document.getElementById('subBtn').disabled = true;
+        await push(ref(db, `deposit_requests`), {
+            uid: userObj.uid,
+            email: userObj.email,
+            amount: parseFloat(amt),
+            utr: utr,
+            status: "pending",
+            userNotified: false,
+            timestamp: serverTimestamp()
+        });
+        alert("Submitted!");
+        document.getElementById('subBtn').disabled = false;
     };
 </script>
-
-<style>
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-</style>
-
 </body>
 </html>
