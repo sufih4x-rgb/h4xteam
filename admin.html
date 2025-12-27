@@ -3,126 +3,97 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H4X Master Control | Premium</title>
+    <title>H4X Master Admin v5.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #6366f1; --primary-hover: #4f46e5;
-            --success: #10b981; --danger: #ef4444; --warning: #f59e0b;
-            --dark: #0f172a; --light: #f8fafc; --white: #ffffff;
-            --text-main: #1e293b; --text-muted: #64748b;
-        }
+        :root { --primary: #6366f1; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --dark: #0f172a; --white: #ffffff; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; display: flex; }
         
-        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: var(--light); color: var(--text-main); display: flex; }
+        /* Sidebar */
+        .sidebar { width: 260px; height: 100vh; background: var(--dark); color: white; position: fixed; }
+        .nav-item { padding: 16px 25px; cursor: pointer; transition: 0.3s; font-weight: 600; color: #94a3b8; display: flex; align-items: center; gap: 10px; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
+        .nav-item.active { background: var(--primary); color: white; }
 
-        /* Sidebar Modern Styling */
-        .sidebar { width: 280px; height: 100vh; background: var(--dark); color: white; position: fixed; display: flex; flex-direction: column; }
-        .sidebar-brand { padding: 40px 30px; font-size: 24px; font-weight: 800; letter-spacing: -1px; background: linear-gradient(to right, #818cf8, #6366f1); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        .nav-link { padding: 18px 30px; cursor: pointer; display: flex; align-items: center; gap: 12px; transition: 0.3s; font-weight: 600; font-size: 15px; color: #94a3b8; }
-        .nav-link:hover { color: white; background: rgba(255,255,255,0.05); }
-        .nav-link.active { color: white; background: var(--primary); }
-
-        /* Main Content Area */
-        .main { margin-left: 280px; width: calc(100% - 280px); padding: 40px; }
-        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 40px; }
+        /* Main Content */
+        .main { margin-left: 260px; width: 100%; padding: 30px; box-sizing: border-box; }
+        .card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-bottom: 25px; border: 1px solid #e2e8f0; }
         
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-bottom: 40px; }
-        .card { background: var(--white); border-radius: 24px; padding: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.03); border: 1px solid #e2e8f0; }
-        .card h3 { margin: 0 0 20px 0; font-size: 18px; font-weight: 800; display: flex; align-items: center; gap: 10px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        th { text-align: left; padding: 12px; background: #f1f5f9; font-size: 11px; text-transform: uppercase; color: #64748b; }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; }
 
-        /* User Table Styling */
-        table { width: 100%; border-collapse: separate; border-spacing: 0 10px; }
-        th { text-align: left; padding: 15px; color: var(--text-muted); font-size: 12px; text-transform: uppercase; letter-spacing: 1px; }
-        td { padding: 15px; background: var(--white); border-top: 1px solid #f1f5f9; border-bottom: 1px solid #f1f5f9; }
-        tr td:first-child { border-left: 1px solid #f1f5f9; border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
-        tr td:last-child { border-right: 1px solid #f1f5f9; border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
-
-        /* Premium Buttons */
-        button { border: none; padding: 10px 16px; border-radius: 12px; font-weight: 700; cursor: pointer; font-family: inherit; transition: 0.2s; font-size: 13px; }
-        button:active { transform: scale(0.95); }
-        .btn-win { background: #dcfce7; color: #166534; }
-        .btn-loss { background: #fee2e2; color: #991b1b; }
-        .btn-ban { background: #1e293b; color: white; }
-        .btn-edit { background: #e0e7ff; color: #3730a3; }
-        .btn-red { background: var(--danger); color: white; width: 100%; padding: 20px; font-size: 16px; }
-        .btn-green { background: var(--success); color: white; width: 100%; padding: 20px; font-size: 16px; }
+        /* Buttons */
+        button { border: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; transition: 0.2s; font-size: 11px; }
+        .btn-approve { background: #dcfce7; color: #166534; }
+        .btn-reject { background: #fee2e2; color: #991b1b; }
+        .btn-action { background: #e0e7ff; color: #4361ee; }
         
-        .badge { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; }
-        .bg-win { background: #10b981; color: white; }
-        .bg-loss { background: #ef4444; color: white; }
-
         .tab-content { display: none; }
-        .tab-content.active { display: block; animation: fadeIn 0.4s ease; }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-
-        #loginOverlay { position: fixed; inset: 0; background: var(--dark); z-index: 10000; display: flex; align-items: center; justify-content: center; }
+        .tab-content.active { display: block; }
+        
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; }
+        .status-pending { background: #fef3c7; color: #92400e; }
     </style>
 </head>
 <body>
 
-<div id="loginOverlay">
-    <div style="background:var(--white); padding:50px; border-radius:32px; width:350px; text-align:center;">
-        <h2 style="font-weight:800; margin-bottom:10px;">Security Login</h2>
-        <p style="color:var(--text-muted); margin-bottom:30px;">Authorized Personnel Only</p>
-        <input type="password" id="adminPass" placeholder="••••••••" style="width:100%; padding:15px; border-radius:15px; border:2px solid #f1f5f9; margin-bottom:20px; font-size:18px; text-align:center; outline:none;">
-        <button onclick="checkAuth()" style="width:100%; padding:18px; background:var(--primary); color:white; font-size:16px;">Access Dashboard</button>
-    </div>
-</div>
-
 <div class="sidebar">
-    <div class="sidebar-brand">H4XTEAM ADMIN</div>
-    <div class="nav-link active" onclick="showTab(event, 'users')">👤 User Management</div>
-    <div class="nav-link" onclick="showTab(event, 'wingo')">🎯 Wingo Control</div>
-    <div class="nav-link" onclick="showTab(event, 'recharge')">📱 Recharge Requests</div>
-    <div class="nav-link" onclick="showTab(event, 'history')">📜 System Logs</div>
+    <div style="padding: 30px; font-size: 22px; font-weight: 800; color: var(--primary);">H4X ADMIN</div>
+    <div class="nav-item active" onclick="showTab(event, 'users')">👥 User Control</div>
+    <div class="nav-item" onclick="showTab(event, 'wingo')">🎯 Wingo Logic</div>
+    <div class="nav-item" onclick="showTab(event, 'deposits')">💰 Deposits</div>
+    <div class="nav-item" onclick="showTab(event, 'withdrawals')">🏧 Withdrawals</div>
+    <div class="nav-item" onclick="showTab(event, 'recharges')">📱 Mobile Recharge</div>
 </div>
 
 <div class="main">
     <div id="users" class="tab-content active">
-        <div class="header">
-            <h1 style="font-weight:800; font-size:28px;">Database Management</h1>
-            <div id="totalStats" style="font-weight:700; color:var(--text-muted);"></div>
-        </div>
-        
         <div class="card">
+            <h3>User Management (Win/Loss/Ban)</h3>
             <table>
-                <thead>
-                    <tr>
-                        <th>User Info</th>
-                        <th>Balance</th>
-                        <th>Logic Status</th>
-                        <th>Action Buttons</th>
-                    </tr>
-                </thead>
+                <thead><tr><th>Email</th><th>Balance</th><th>Ref (Ver)</th><th>Logic</th><th>Actions</th></tr></thead>
                 <tbody id="userList"></tbody>
             </table>
         </div>
     </div>
 
     <div id="wingo" class="tab-content">
-        <h1 style="font-weight:800; font-size:28px; margin-bottom:30px;">Wingo Prediction Fixer</h1>
-        <div class="grid">
-            <div class="card" style="text-align:center;">
-                <h3>🔴 Force RED</h3>
-                <p style="color:var(--text-muted); margin-bottom:20px;">Next round will be 100% RED</p>
-                <button class="btn-red" onclick="fixWingo('color','RED')">ACTIVATE RED</button>
+        <div class="card" style="text-align: center;">
+            <h3>Wingo Next Result Control</h3>
+            <div style="display: flex; gap: 20px; justify-content: center; margin-top: 20px;">
+                <button onclick="fixWingo('RED')" style="background:var(--danger); color:white; padding:20px 50px; font-size:18px;">🔴 FORCE RED</button>
+                <button onclick="fixWingo('GREEN')" style="background:var(--success); color:white; padding:20px 50px; font-size:18px;">🟢 FORCE GREEN</button>
             </div>
-            <div class="card" style="text-align:center;">
-                <h3>🟢 Force GREEN</h3>
-                <p style="color:var(--text-muted); margin-bottom:20px;">Next round will be 100% GREEN</p>
-                <button class="btn-green" onclick="fixWingo('color','GREEN')">ACTIVATE GREEN</button>
-            </div>
-        </div>
-        <div class="card" style="text-align:center;">
-            <button onclick="fixWingo('reset','')" style="background:#f1f5f9; color:var(--text-main); padding:15px 40px;">Reset to Automatic Logic</button>
+            <button onclick="fixWingo('RESET')" style="margin-top:20px; background:#f1f5f9; color:#64748b;">Reset to Auto</button>
         </div>
     </div>
 
-    <div id="recharge" class="tab-content">
-        <h1 style="font-weight:800; font-size:28px; margin-bottom:30px;">Pending Recharges</h1>
+    <div id="deposits" class="tab-content">
         <div class="card">
+            <h3>Pending Deposit Requests</h3>
             <table>
-                <thead><tr><th>User</th><th>Mobile</th><th>Operator</th><th>Amount</th><th>Decision</th></tr></thead>
+                <thead><tr><th>User</th><th>Amount</th><th>UTR Number</th><th>Date</th><th>Action</th></tr></thead>
+                <tbody id="depositList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="withdrawals" class="tab-content">
+        <div class="card">
+            <h3>Withdrawal Requests</h3>
+            <table>
+                <thead><tr><th>User</th><th>Amount</th><th>Bank/UPI</th><th>Status</th><th>Action</th></tr></thead>
+                <tbody id="withdrawList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="recharges" class="tab-content">
+        <div class="card">
+            <h3>Mobile Recharge Requests</h3>
+            <table>
+                <thead><tr><th>Number</th><th>Operator</th><th>Amount</th><th>User</th><th>Action</th></tr></thead>
                 <tbody id="rechargeList"></tbody>
             </table>
         </div>
@@ -131,7 +102,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, increment, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -144,99 +115,118 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    window.checkAuth = () => {
-        if(document.getElementById("adminPass").value === "admin123") {
-            document.getElementById("loginOverlay").style.fadeOut = "slow";
-            document.getElementById("loginOverlay").style.display = "none";
-            initAdmin();
-        } else alert("Invalid Admin Key");
-    };
-
     window.showTab = (e, id) => {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById(id).classList.add('active');
         e.currentTarget.classList.add('active');
     };
 
-    function initAdmin() {
-        // Users Logic with Force Win/Loss/Ban
-        onValue(ref(db, "users"), snap => {
-            let h = ""; let totalBal = 0;
-            snap.forEach(child => {
-                const u = child.val(); const uid = child.key;
-                totalBal += (u.balance || 0);
-                const statusBadge = u.forceWin ? '<span class="badge bg-win">FORCE WIN</span>' : 
-                                   u.forceLoss ? '<span class="badge bg-loss">FORCE LOSS</span>' : 
-                                   u.isBanned ? '<span class="badge" style="background:black;color:white">BANNED</span>' : 
-                                   '<span class="badge" style="background:#e2e8f0">NORMAL</span>';
+    // --- DATA LOADING ---
+    onValue(ref(db, "users"), snap => {
+        let h = "";
+        snap.forEach(child => {
+            const u = child.val();
+            const logic = u.forceWin ? 'WIN' : (u.forceLoss ? 'LOSS' : 'AUTO');
+            h += `<tr>
+                <td>${u.email}</td>
+                <td>₹${u.balance.toFixed(2)}</td>
+                <td>${u.verifiedCount || 0}</td>
+                <td><span class="badge" style="background:#e0e7ff">${logic}</span></td>
+                <td>
+                    <button class="btn-action" onclick="toggleUser('${child.key}','win',${u.forceWin})">Win</button>
+                    <button class="btn-action" onclick="toggleUser('${child.key}','loss',${u.forceLoss})">Loss</button>
+                    <button class="btn-reject" onclick="toggleUser('${child.key}','ban',${u.isBanned})">${u.isBanned?'Unban':'Ban'}</button>
+                </td>
+            </tr>`;
+        });
+        document.getElementById("userList").innerHTML = h;
+    });
 
+    onValue(ref(db, "deposit_requests"), snap => {
+        let h = "";
+        snap.forEach(child => {
+            const d = child.val();
+            if(d.status === "pending") {
                 h += `<tr>
-                    <td><b style="font-size:15px">${u.email}</b><br><small style="color:gray">${uid}</small></td>
-                    <td><b style="color:var(--primary)">₹${(u.balance || 0).toFixed(2)}</b></td>
-                    <td>${statusBadge}</td>
+                    <td>${d.email}</td><td>₹${d.amount}</td><td>${d.utr}</td>
+                    <td>${new Date(d.timestamp).toLocaleString()}</td>
                     <td>
-                        <div style="display:flex; gap:8px;">
-                            <button class="btn-win" onclick="setUserLogic('${uid}', 'win', ${u.forceWin})">Win</button>
-                            <button class="btn-loss" onclick="setUserLogic('${uid}', 'loss', ${u.forceLoss})">Loss</button>
-                            <button class="btn-ban" onclick="setUserLogic('${uid}', 'ban', ${u.isBanned})">${u.isBanned?'Unban':'Ban'}</button>
-                            <button class="btn-edit" onclick="editBal('${uid}')">₹ Edit</button>
-                        </div>
+                        <button class="btn-approve" onclick="managePayment('deposit','${child.key}','Approved','${d.uid}',${d.amount})">Approve</button>
+                        <button class="btn-reject" onclick="managePayment('deposit','${child.key}','Rejected')">Reject</button>
                     </td>
                 </tr>`;
-            });
-            document.getElementById("userList").innerHTML = h;
-            document.getElementById("totalStats").innerText = `Total Platform Balance: ₹${totalBal.toFixed(2)}`;
+            }
         });
+        document.getElementById("depositList").innerHTML = h || "No pending deposits";
+    });
 
-        // Recharges Logic
-        onValue(ref(db, "recharge_requests"), snap => {
-            let h = "";
-            snap.forEach(child => {
-                const r = child.val();
-                if(r.status === "Pending") {
-                    h += `<tr>
-                        <td>${r.email}</td><td>${r.mobile}</td><td>${r.operator}</td><td><b>₹${r.amount}</b></td>
-                        <td>
-                            <button class="btn-win" onclick="handleRecharge('${child.key}', 'Success')">Approve</button>
-                            <button class="btn-loss" onclick="handleRecharge('${child.key}', 'Rejected', '${r.uid}', ${r.amount})">Reject</button>
-                        </td>
-                    </tr>`;
-                }
-            });
-            document.getElementById("rechargeList").innerHTML = h || "<tr><td colspan='5' style='text-align:center;padding:40px;color:gray;'>No Pending Requests</td></tr>";
+    onValue(ref(db, "withdraw_requests"), snap => {
+        let h = "";
+        snap.forEach(child => {
+            const w = child.val();
+            if(w.status === "Pending") {
+                h += `<tr>
+                    <td>${w.email}</td><td>₹${w.amount}</td><td>${w.upi || w.bank}</td>
+                    <td><span class="badge status-pending">PENDING</span></td>
+                    <td>
+                        <button class="btn-approve" onclick="managePayment('withdraw','${child.key}','Approved')">Paid</button>
+                        <button class="btn-reject" onclick="managePayment('withdraw','${child.key}','Rejected','${w.uid}',${w.amount})">Reject</button>
+                    </td>
+                </tr>`;
+            }
         });
-    }
+        document.getElementById("withdrawList").innerHTML = h || "No pending withdrawals";
+    });
 
-    window.setUserLogic = (uid, type, current) => {
-        const updates = {};
-        if(type === 'win') { updates.forceWin = !current; updates.forceLoss = false; }
-        if(type === 'loss') { updates.forceLoss = !current; updates.forceWin = false; }
-        if(type === 'ban') { updates.isBanned = !current; }
-        update(ref(db, `users/${uid}`), updates);
+    onValue(ref(db, "recharge_requests"), snap => {
+        let h = "";
+        snap.forEach(child => {
+            const r = child.val();
+            if(r.status === "Pending") {
+                h += `<tr>
+                    <td>${r.mobile}</td><td>${r.operator}</td><td>₹${r.amount}</td><td>${r.email}</td>
+                    <td>
+                        <button class="btn-approve" onclick="updateRecharge('${child.key}','Success')">Success</button>
+                        <button class="btn-reject" onclick="updateRecharge('${child.key}','Rejected','${r.uid}',${r.amount})">Refund</button>
+                    </td>
+                </tr>`;
+            }
+        });
+        document.getElementById("rechargeList").innerHTML = h || "No recharges";
+    });
+
+    // --- LOGIC FUNCTIONS ---
+    window.toggleUser = (uid, type, current) => {
+        let updateData = {};
+        if(type==='win') { updateData.forceWin = !current; updateData.forceLoss = false; }
+        if(type==='loss') { updateData.forceLoss = !current; updateData.forceWin = false; }
+        if(type==='ban') { updateData.isBanned = !current; }
+        update(ref(db, `users/${uid}`), updateData);
     };
 
-    window.fixWingo = (type, val) => {
-        if(type === 'reset') {
-            update(ref(db, "admin_control/30"), { active: false });
-            alert("Switched to Automatic Result");
-        } else {
-            update(ref(db, "admin_control/30"), { active: true, color: val });
-            alert(`Next Result Forced to ${val}`);
-        }
-    };
-
-    window.handleRecharge = async (rid, status, uid, amt) => {
-        if(status === 'Rejected') {
+    window.managePayment = async (type, rid, status, uid, amt) => {
+        const path = type === 'deposit' ? 'deposit_requests' : 'withdraw_requests';
+        await update(ref(db, `${path}/${rid}`), { status: status });
+        if(status === 'Approved' && type === 'deposit') {
             await update(ref(db, `users/${uid}`), { balance: increment(amt) });
         }
-        await update(ref(db, `recharge_requests/${rid}`), { status: status });
-        alert(`Recharge ${status}`);
+        if(status === 'Rejected' && type === 'withdraw') {
+            await update(ref(db, `users/${uid}`), { balance: increment(amt) });
+        }
+        alert(type.toUpperCase() + " " + status);
     };
 
-    window.editBal = (uid) => {
-        let amt = prompt("Enter new balance amount:");
-        if(amt !== null) update(ref(db, `users/${uid}`), { balance: parseFloat(amt) });
+    window.updateRecharge = async (rid, status, uid, amt) => {
+        await update(ref(db, `recharge_requests/${rid}`), { status: status });
+        if(status === 'Rejected') await update(ref(db, `users/${uid}`), { balance: increment(amt) });
+        alert("Recharge " + status);
+    };
+
+    window.fixWingo = (color) => {
+        const val = color === 'RESET' ? {active: false} : {active: true, color: color};
+        update(ref(db, "admin_control/30"), val);
+        alert("Wingo Forced: " + color);
     };
 </script>
 </body>
