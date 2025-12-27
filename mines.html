@@ -3,30 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mines Master Pro | Ultra Network</title>
+    <title>Mines Master Pro | Pro Network</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #6366f1; --surface: #1e293b; --bg: #0f172a; --success: #10b981; --danger: #ef4444; --accent: #fbbf24; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; color: white; overflow-x: hidden; }
         .game-shell { width: 100%; max-width: 450px; min-height: 100vh; background: #111827; padding: 15px; box-sizing: border-box; position: relative; }
 
-        /* Header & Balance */
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px; border-radius: 18px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
         .balance-chip { font-weight: 800; color: var(--accent); font-size: 18px; }
 
-        /* Grid System */
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; }
         .slot { aspect-ratio: 1; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
         .slot:active { transform: scale(0.9); }
         .slot.diamond { background: radial-gradient(circle, #06b6d4, #083344); border-color: #22d3ee; }
         .slot.bomb { background: radial-gradient(circle, #ef4444, #7f1d1d); border-color: #f87171; }
 
-        /* Levels */
         .lvl-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
-        .lvl-btn { padding: 12px; border: 1px solid #334155; border-radius: 12px; background: #1e293b; color: #94a3b8; font-weight: 700; cursor: pointer; font-size: 12px; }
+        .lvl-btn { padding: 12px; border: 1px solid #334155; border-radius: 12px; background: #1e293b; color: #94a3b8; font-weight: 700; cursor: pointer; font-size: 11px; }
         .lvl-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 0 15px rgba(99, 102, 241, 0.4); }
 
-        /* Betting Area */
         .bet-area { background: #1e293b; padding: 18px; border-radius: 20px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.05); }
         input { width: 100%; background: #0f172a; border: 1px solid #334155; padding: 14px; border-radius: 12px; color: white; margin: 10px 0; text-align: center; font-weight: bold; font-size: 18px; box-sizing: border-box; outline: none; }
         
@@ -34,7 +30,6 @@
         .btn-start { background: var(--primary); color: white; box-shadow: 0 4px 0 #4338ca; }
         .btn-cashout { background: var(--success); color: white; display: none; box-shadow: 0 4px 0 #059669; }
 
-        /* History Tabs */
         .tab-box { background: #0a0a0a; border-radius: 20px; overflow: hidden; margin-top: 10px; border: 1px solid #1a1a1a; }
         .tabs { display: flex; background: #111; }
         .tab { flex: 1; padding: 14px; text-align: center; font-size: 12px; font-weight: 700; cursor: pointer; color: #555; }
@@ -44,10 +39,8 @@
         .win-txt { color: var(--success); font-weight: bold; }
         .lose-txt { color: var(--danger); font-weight: bold; }
 
-        /* Modal Alert */
         .overlay { display: none; position: fixed; inset:0; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center; }
-        .modal { background:#1e293b; padding:30px; border-radius:24px; text-align:center; width:85%; border: 1px solid rgba(255,255,255,0.1); animation: pop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes pop { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+        .modal { background:#1e293b; padding:30px; border-radius:24px; text-align:center; width:85%; border: 1px solid rgba(255,255,255,0.1); }
     </style>
 </head>
 <body>
@@ -101,123 +94,4 @@
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-        authDomain: "test-eb5e7.firebaseapp.com",
-        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-        projectId: "test-eb5e7",
-        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
-    };
-
-    const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
-    const db = getDatabase(app);
-
-    let balance = 0, currentLvl = 'easy', isPlaying = false, mines = [], diamondsFound = 0, currentMult = 1.0, activeBet = 0, currentTab = 'my';
-
-    onAuthStateChanged(auth, user => {
-        if(!user) return;
-        onValue(ref(db, `users/${user.uid}`), snap => {
-            const data = snap.val() || {};
-            balance = data.balance || 0;
-            document.getElementById("balanceDisplay").innerText = balance.toFixed(2);
-        });
-        loadMyBets(user.uid);
-    });
-
-    const grid = document.getElementById("gameGrid");
-    for(let i=0; i<25; i++) {
-        const div = document.createElement("div"); div.className = "slot";
-        div.onclick = () => handleMove(i, div); grid.appendChild(div);
-    }
-
-    window.changeLvl = (lvl) => { if(!isPlaying) { currentLvl = lvl; document.querySelectorAll('.lvl-btn').forEach(b => b.classList.remove('active')); document.getElementById(`btn-${lvl}`).classList.add('active'); } }
-
-    window.startGame = async () => {
-        activeBet = parseFloat(document.getElementById("betInput").value);
-        if(isNaN(activeBet) || activeBet < 10) return alert("Min bet ₹10");
-        if(activeBet > balance) return alert("Low Balance!");
-        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(-activeBet) });
-        isPlaying = true; diamondsFound = 0; currentMult = 1.0; mines = [];
-        let count = (currentLvl === 'easy') ? 3 : (currentLvl === 'medium' ? 7 : 20);
-        while(mines.length < count) { let r = Math.floor(Math.random() * 25); if(!mines.includes(r)) mines.push(r); }
-        document.getElementById("startBtn").style.display = "none";
-        document.getElementById("cashBtn").style.display = "block";
-        document.getElementById("multText").innerText = "1.00x";
-        document.getElementById("profitText").innerText = "₹0.00";
-        document.querySelectorAll(".slot").forEach(s => { s.className = "slot"; s.innerText = ""; });
-    }
-
-    window.handleMove = async (idx, el) => {
-        if(!isPlaying || el.classList.contains('diamond') || el.classList.contains('bomb')) return;
-        const uSnap = await get(ref(db, `users/${auth.currentUser.uid}`));
-        const uData = uSnap.val() || {};
-        
-        let shouldForceLoss = false;
-        if (uData.forceLoss === true) shouldForceLoss = true;
-        else if (balance >= 250 && Math.random() < 0.80) shouldForceLoss = true;
-        else if (currentLvl === 'hard' && diamondsFound >= 1 && Math.random() < 0.90) shouldForceLoss = true;
-
-        if (shouldForceLoss && uData.forceWin !== true) {
-            if (!mines.includes(idx)) { mines.pop(); mines.push(idx); }
-        } else if (uData.forceWin === true) {
-            if (mines.includes(idx)) {
-                let empty = []; for(let i=0; i<25; i++) if(!mines.includes(i) && i!==idx) empty.push(i);
-                mines = mines.filter(m => m !== idx); mines.push(empty[Math.floor(Math.random()*empty.length)]);
-            }
-        }
-
-        if(mines.includes(idx)) {
-            isPlaying = false; el.innerText = "💣"; el.classList.add("bomb");
-            saveTx('LOSE', activeBet, currentMult);
-            mines.forEach(m => { grid.children[m].classList.add("bomb"); grid.children[m].innerText = "💣"; });
-            setTimeout(() => { showModal("BOOM!", "₹" + activeBet.toFixed(2) + " Lost", "💥"); resetUI(); }, 600);
-        } else {
-            diamondsFound++; updateMultiplier(); el.innerText = "💎"; el.classList.add("diamond");
-        }
-    }
-
-    function updateMultiplier() {
-        // Easy Mode: ₹10 bet -> 1st: ₹12.50, 2nd: ₹14.80, 3rd: ₹17.20
-        const easyMults = [1.25, 1.48, 1.72, 2.50, 4.00, 6.20, 9.50, 14.00, 19.00]; 
-        const mediumMults = [2.00, 3.80, 6.50, 11.00, 19.50, 32.00, 55.00];
-        const hardMults = [4.50, 18.20, 75.00, 320.00, 950.00];
-        let mults = (currentLvl === 'easy') ? easyMults : (currentLvl === 'medium' ? mediumMults : hardMults);
-        currentMult = mults[diamondsFound - 1] || mults[mults.length - 1];
-        document.getElementById("multText").innerText = currentMult.toFixed(2) + "x";
-        document.getElementById("profitText").innerText = "₹" + (activeBet * currentMult).toFixed(2);
-    }
-
-    window.cashout = async () => {
-        if(!isPlaying || diamondsFound === 0) return;
-        const win = activeBet * currentMult; isPlaying = false;
-        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(win) });
-        saveTx('WIN', win, currentMult);
-        showModal("CASHOUT!", "You Won ₹" + win.toFixed(2), "🏆"); resetUI();
-    }
-
-    async function saveTx(type, amt, mult) {
-        await push(ref(db, `transactions/${auth.currentUser.uid}`), { type, amount: amt, mult: mult.toFixed(2), time: Date.now() });
-    }
-
-    window.switchTab = (t) => {
-        currentTab = t; document.querySelectorAll('.tab').forEach(el => el.classList.remove('active'));
-        document.getElementById(`tab-${t}`).classList.add('active'); document.getElementById("listContent").innerHTML = "";
-        if(t === 'my') loadMyBets(auth.currentUser.uid);
-    }
-
-    function loadMyBets(uid) {
-        onValue(query(ref(db, `transactions/${uid}`), limitToLast(15)), s => {
-            if(currentTab !== 'my') return;
-            const list = document.getElementById("listContent"); list.innerHTML = "";
-            s.forEach(c => {
-                const d = c.val(); const color = d.type === 'WIN' ? 'win-txt' : 'lose-txt';
-                list.innerHTML = `<div class="tx-row"><span>${d.mult}x</span><span class="${color}">${d.type==='WIN'?'+':'-'}₹${parseFloat(d.amount).toFixed(0)}</span><span>${new Date(d.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}</span></div>` + list.innerHTML;
-            });
-        });
-    }
-
-    function resetUI() { document.getElementById("startBtn").style.display = "block"; document.getElementById("cashBtn").style.display = "none"; isPlaying = false; }
-    function showModal(t, d, i) { document.getElementById("modalTitle").innerText = t; document.getElementById("modalDesc").innerText = d; document.getElementById("modalIcon").innerHTML = i; document.getElementById("alertOverlay").style.display = "flex"; }
-    window.closeModal = () => document.getElementById("alertOverlay").style.display = "none";
-</script>
-</body>
-</html>
+        authDomain: "test-eb5e7.
