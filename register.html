@@ -6,136 +6,25 @@
     <title>Join H4XTEAM | Premium Access</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #4361ee;
-            --primary-soft: #eef2ff;
-            --bg: #f4f7fe;
-            --white: #ffffff;
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text-dark);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .auth-container {
-            width: 100%;
-            max-width: 400px;
-            padding: 20px;
-        }
-
-        .auth-card {
-            background: var(--white);
-            padding: 40px 30px;
-            border-radius: 35px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.04);
-            text-align: center;
-        }
-
-        .logo-area {
-            width: 70px;
-            height: 70px;
-            background: var(--primary-soft);
-            color: var(--primary);
-            border-radius: 22px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 28px;
-            font-weight: 800;
-            margin: 0 auto 25px;
-        }
-
-        h1 {
-            font-size: 26px;
-            font-weight: 800;
-            margin-bottom: 10px;
-            letter-spacing: -0.5px;
-        }
-
-        p {
-            font-size: 14px;
-            color: var(--text-muted);
-            margin-bottom: 30px;
-        }
-
-        .input-group {
-            text-align: left;
-            margin-bottom: 20px;
-        }
-
-        label {
-            font-size: 12px;
-            font-weight: 700;
-            color: var(--text-muted);
-            margin-left: 5px;
-            margin-bottom: 8px;
-            display: block;
-            text-transform: uppercase;
-        }
-
-        input {
-            width: 100%;
-            padding: 16px 20px;
-            background: #f8fafc;
-            border: 2px solid #f1f5f9;
-            border-radius: 18px;
-            font-size: 15px;
-            font-weight: 600;
-            font-family: inherit;
-            box-sizing: border-box;
-            transition: 0.3s;
-            outline: none;
-        }
-
-        input:focus {
-            border-color: var(--primary);
-            background: #ffffff;
-            box-shadow: 0 10px 20px rgba(67, 97, 238, 0.05);
-        }
-
-        button {
-            width: 100%;
-            padding: 18px;
-            background: var(--primary);
-            color: white;
-            border: none;
-            border-radius: 18px;
-            font-size: 16px;
-            font-weight: 700;
-            cursor: pointer;
-            box-shadow: 0 10px 25px rgba(67, 97, 238, 0.25);
-            transition: 0.3s;
-            margin-top: 10px;
-        }
-
-        button:disabled {
-            background: #cbd5e1;
-            cursor: not-allowed;
-            box-shadow: none;
-        }
-
-        .footer-link {
-            margin-top: 25px;
-            display: block;
-            font-size: 14px;
-            font-weight: 600;
-            color: var(--primary);
-            text-decoration: none;
-        }
-
-        .footer-link span {
-            color: var(--text-muted);
-            font-weight: 400;
-        }
+        :root { --primary: #4361ee; --primary-hover: #3751d3; --bg: #f4f7fe; --white: #ffffff; --text-dark: #1e293b; --text-muted: #64748b; }
+        body { background: var(--bg); color: var(--text-dark); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .auth-container { width: 100%; max-width: 420px; padding: 20px; box-sizing: border-box; }
+        .auth-card { background: var(--white); padding: 40px 30px; border-radius: 32px; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.08); text-align: center; border: 1px solid rgba(255,255,255,0.8); }
+        .logo-area { width: 64px; height: 64px; background: linear-gradient(135deg, var(--primary), #7209b7); color: white; border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; margin: 0 auto 25px; box-shadow: 0 10px 20px rgba(67, 97, 238, 0.3); }
+        h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+        p { font-size: 14px; color: var(--text-muted); margin-bottom: 30px; line-height: 1.5; }
+        .input-group { text-align: left; margin-bottom: 18px; }
+        label { font-size: 11px; font-weight: 800; color: var(--text-dark); margin-left: 5px; margin-bottom: 8px; display: block; text-transform: uppercase; letter-spacing: 0.5px; }
+        input { width: 100%; padding: 15px 20px; background: #f8fafc; border: 2px solid #f1f5f9; border-radius: 16px; font-size: 15px; font-weight: 600; box-sizing: border-box; transition: 0.3s; outline: none; }
+        input:focus { border-color: var(--primary); background: #fff; box-shadow: 0 0 0 4px rgba(67, 97, 238, 0.1); }
+        button { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 10px; }
+        button:hover { background: var(--primary-hover); transform: translateY(-1px); }
+        button:disabled { background: #cbd5e1; cursor: not-allowed; transform: none; }
+        .resend-box { margin-top: 15px; display: none; }
+        .resend-btn { background: none; color: var(--primary); font-size: 13px; font-weight: 700; text-decoration: underline; padding: 5px; cursor: pointer; border: none; }
+        .footer-link { margin-top: 25px; display: block; font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; }
+        .footer-link span { color: var(--text-muted); font-weight: 400; }
+        .ref-badge { display: inline-block; padding: 4px 12px; background: #ecfdf5; color: #059669; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 15px; border: 1px solid #d1fae5; }
     </style>
 </head>
 <body>
@@ -143,8 +32,9 @@
 <div class="auth-container">
     <div class="auth-card">
         <div class="logo-area">H</div>
+        <div id="refIndicator"></div>
         <h1>Create Account</h1>
-        <p>A verification email will be sent to you.</p>
+        <p>A verification link will be sent to your email.</p>
 
         <div class="input-group">
             <label>Email Address</label>
@@ -157,6 +47,11 @@
         </div>
 
         <button id="regBtn" onclick="register()">Create My Account</button>
+        
+        <div class="resend-box" id="resendBox">
+            <span style="font-size: 12px; color: var(--text-muted);">Didn't get email?</span>
+            <button class="resend-btn" onclick="resendVerification()">Resend Link</button>
+        </div>
 
         <a href="index.html" class="footer-link">
             <span>Already have an account?</span> Sign In
@@ -166,7 +61,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getDatabase, ref, set, update, increment, get } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
     import { getAuth, createUserWithEmailAndPassword, sendEmailVerification, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
@@ -174,65 +69,79 @@
         authDomain: "test-eb5e7.firebaseapp.com",
         databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
         projectId: "test-eb5e7",
-        storageBucket: "test-eb5e7.appspot.com",
-        messagingSenderId: "366282855653",
-        appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-        measurementId: "G-ECKCTBLQJ8"
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
     };
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
 
+    // URL se Referral ID nikalna
+    const urlParams = new URLSearchParams(window.location.search);
+    const refID = urlParams.get('ref');
+
+    if(refID) {
+        document.getElementById('refIndicator').innerHTML = `<span class="ref-badge">Referral Applied</span>`;
+    }
+
     window.register = async function() {
         let email = document.getElementById("email").value;
         let pass = document.getElementById("pass").value;
         let btn = document.getElementById("regBtn");
 
-        if(!email || !pass) {
-            alert("Please fill all fields");
-            return;
-        }
-
-        if(pass.length < 6) {
-            alert("Password must be at least 6 characters");
-            return;
-        }
+        if(!email || !pass) return alert("Please fill all fields");
+        if(pass.length < 6) return alert("Password too short");
 
         btn.disabled = true;
-        btn.innerText = "Sending Email...";
+        btn.innerText = "Processing...";
 
         try {
-            // 1. Create the user
             const res = await createUserWithEmailAndPassword(auth, email, pass);
             const user = res.user;
 
-            // 2. Send Verification Link
+            // 1. Send Email
             await sendEmailVerification(user);
 
-            // 3. Save to Database
-            await set(ref(db, "users/" + user.uid), {
+            // 2. Save User Data + Referral Tracking Logic
+            const userData = {
                 email: email,
                 balance: 0,
-                deposits: 0,
-                lifetimeWins: 0,
                 vip: 0,
-                blocked: false,
+                totalWithdrawn: 0,
+                verifiedCount: 0, // Iska khud ka invite count
+                referredBy: refID || "none", // Jisne invite kiya uski ID
+                isVerified: false,
                 createdAt: Date.now()
-            });
+            };
 
-            // 4. Log out user immediately
-            // (Firebase logs users in automatically after signup, we must stop this)
+            await set(ref(db, "users/" + user.uid), userData);
+
+            // 3. Update Inviter's Count (If ref exists)
+            if(refID) {
+                // Hum inviter ka count badhayenge
+                // Note: Bonus tabhi milega jab user deposit karega (logic in admin panel)
+                await update(ref(db, `users/${refID}`), {
+                    verifiedCount: increment(1)
+                });
+            }
+
             await signOut(auth);
-
-            alert("Success! A verification link has been sent to your email. Please verify it to log in.");
-            window.location = "index.html";
+            
+            document.getElementById('resendBox').style.display = 'block';
+            alert("Account created! Verify your email before logging in.");
+            window.location.href = "index.html";
 
         } catch (error) {
             btn.disabled = false;
             btn.innerText = "Create My Account";
             alert(error.message);
         }
+    }
+
+    // Resend Logic (Naya Account Banane Ke Baad Agar Email Na Aaye)
+    window.resendVerification = async function() {
+        alert("Please log in first, then use the resend option if available, or try registering with a correct email.");
+        window.location.href = "index.html";
     }
 </script>
 </body>
