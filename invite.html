@@ -3,94 +3,36 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Affiliate Center | H4XTEAM</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <title>Invite | H4XTEAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #4361ee; --success: #06d6a0; --warning: #facc15; --bg: #f8f9fc; --surface: #ffffff; }
-        body { background: var(--bg); font-family: 'Inter', sans-serif; margin: 0; padding-bottom: 50px; }
-        .app-shell { width: 100%; max-width: 480px; margin: 0 auto; background: var(--surface); min-height: 100vh; padding: 20px; box-sizing: border-box; }
-        
-        /* Header */
-        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
-        .back-btn { font-size: 24px; text-decoration: none; color: #000; }
-
-        /* Progress Bar */
-        .reward-card { background: #fff; border: 1px solid #eee; border-radius: 20px; padding: 20px; margin-bottom: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.04); }
-        .prog-label { display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; margin-bottom: 10px; }
-        .progress-container { background: #f1f5f9; height: 10px; border-radius: 5px; overflow: hidden; }
-        .progress-fill { background: var(--primary); height: 100%; width: 0%; transition: 1s ease; }
-
-        /* Stats Grid */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px; }
-        .stat-box { background: #f8fafc; padding: 15px; border-radius: 15px; border: 1px solid #f1f5f9; }
-        .stat-val { display: block; font-size: 20px; font-weight: 800; color: var(--primary); }
-        .stat-label { font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; }
-
-        /* Commission Section */
-        .comm-card { background: linear-gradient(135deg, #1e293b, #0f172a); color: white; border-radius: 20px; padding: 20px; margin-bottom: 20px; }
-        .comm-row { display: flex; justify-content: space-between; margin-top: 15px; padding-top: 15px; border-top: 1px solid rgba(255,255,255,0.1); }
-
-        /* Link Box */
-        .link-section { background: #eff6ff; border: 2px dashed var(--primary); padding: 15px; border-radius: 15px; margin-top: 10px; }
-        .copy-btn { width: 100%; background: var(--primary); color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; margin-top: 10px; cursor: pointer; }
+        :root { --primary: #4361ee; --bg: #f8f9fc; }
+        body { background: var(--bg); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        .card { width: 100%; max-width: 400px; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
+        .prog-box { margin: 20px 0; }
+        .bar { height: 10px; background: #eee; border-radius: 10px; overflow: hidden; }
+        .fill { height: 100%; background: var(--primary); width: 0%; transition: 1s; }
+        .link-box { background: #f1f5f9; padding: 15px; border-radius: 15px; border: 2px dashed var(--primary); margin-top: 20px; word-break: break-all; font-size: 12px; font-weight: 700; color: var(--primary); }
+        .btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 15px; font-weight: 700; margin-top: 10px; cursor: pointer; }
     </style>
 </head>
 <body>
-
-<div class="app-shell">
-    <div class="header">
-        <a href="dashboard.html" class="back-btn">←</a>
-        <h2 style="margin:0; font-size: 18px;">Affiliate Dashboard</h2>
-    </div>
-
-    <div class="reward-card">
-        <div class="prog-label">
-            <span>Invite Milestone</span>
-            <span id="milestoneTxt" style="color:var(--primary)">0/10</span>
+<div class="card">
+    <h2 style="margin:0">Invite Friends</h2>
+    <div class="prog-box">
+        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:5px;">
+            <span>Progress</span> <span id="countTxt">0/10</span>
         </div>
-        <div class="progress-container">
-            <div class="progress-fill" id="progBar"></div>
-        </div>
-        <p style="font-size: 11px; color: #64748b; margin-top: 8px;">Get ₹50 at 5 refs, ₹100 at 10 refs.</p>
+        <div class="bar"><div class="fill" id="progFill"></div></div>
     </div>
-
-    <div class="stats-grid">
-        <div class="stat-box">
-            <span class="stat-val" id="count">0</span>
-            <span class="stat-label">Active Referrals</span>
-        </div>
-        <div class="stat-box">
-            <span class="stat-val" id="directEarn">₹0</span>
-            <span class="stat-label">Bonus Earned</span>
-        </div>
-    </div>
-
-    <div class="comm-card">
-        <span style="font-size: 12px; opacity: 0.8; font-weight: 600;">ESTIMATED WEEKLY COMMISSION</span>
-        <div style="font-size: 32px; font-weight: 800; margin: 5px 0;" id="weeklyComm">₹0.00</div>
-        <div class="comm-row">
-            <div>
-                <span class="stat-label" style="color:#cbd5e1">Team Balance</span>
-                <span style="display:block; font-weight:700;" id="teamBal">₹0</span>
-            </div>
-            <div>
-                <span class="stat-label" style="color:#cbd5e1">Team Withdraw</span>
-                <span style="display:block; font-weight:700;" id="teamWith">₹0</span>
-            </div>
-        </div>
-    </div>
-
-    <h3 style="font-size: 14px;">Your Invitation Link</h3>
-    <div class="link-section">
-        <div id="refLink" style="font-size: 12px; word-break: break-all; color: var(--primary); font-weight: 600;">Generating...</div>
-    </div>
-    <button class="copy-btn" onclick="copyLink()">Copy My Link</button>
+    <div class="link-box" id="refLink">Generating link...</div>
+    <button class="btn" onclick="copyLink()">Copy Link</button>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, update, increment, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -105,60 +47,24 @@
     const db = getDatabase(app);
 
     onAuthStateChanged(auth, user => {
-        if (!user) return location.href = 'index.html';
+        if(!user) return window.location.href = "index.html";
 
-        const link = `${window.location.origin}/register.html?ref=${user.uid}`;
-        document.getElementById('refLink').innerText = link;
+        // GitHub Specific Link Fix
+        const fullUrl = window.location.href.split('?')[0];
+        const baseUrl = fullUrl.substring(0, fullUrl.lastIndexOf('/'));
+        const finalLink = `${baseUrl}/register.html?ref=${user.uid}`;
+        document.getElementById('refLink').innerText = finalLink;
 
-        const userRef = ref(db, `users/${user.uid}`);
-        
-        onValue(userRef, async snap => {
-            const d = snap.val() || {};
-            const count = d.verifiedCount || 0;
-            
-            // 1. MILESTONE LOGIC (5=50, 10=100)
-            let bonus = 0;
-            if(count >= 5) bonus += 50;
-            if(count >= 10) bonus += 100;
-            
-            document.getElementById('count').innerText = count;
-            document.getElementById('directEarn').innerText = `₹${bonus}`;
-            document.getElementById('milestoneTxt').innerText = `${count}/10`;
-            
-            let pWidth = (count/10)*100;
-            document.getElementById('progBar').style.width = `${pWidth > 100 ? 100 : pWidth}%`;
-
-            // 2. WEEKLY COMMISSION TRACKING (Referral's Balance & Withdrawals)
-            // Hume sabhi users ko check karna hoga jinka 'referredBy' yeh user UID hai
-            onValue(ref(db, "users"), allUsers => {
-                let totalTeamBal = 0;
-                let totalTeamWith = 0;
-                
-                allUsers.forEach(child => {
-                    const u = child.val();
-                    if(u.referredBy === user.uid) {
-                        totalTeamBal += (u.balance || 0);
-                        totalTeamWith += (u.totalWithdrawn || 0); // Is field ko withdraw approve hote waqt admin panel update karega
-                    }
-                });
-
-                document.getElementById('teamBal').innerText = `₹${totalTeamBal.toFixed(2)}`;
-                document.getElementById('teamWith').innerText = `₹${totalTeamWith.toFixed(2)}`;
-                
-                // Commission Formula: 1% of Balance + 0.5% of Withdrawals (Aap change kar sakte hain)
-                if(count >= 10) {
-                    let comm = (totalTeamBal * 0.01) + (totalTeamWith * 0.005);
-                    document.getElementById('weeklyComm').innerText = `₹${comm.toFixed(2)}`;
-                } else {
-                    document.getElementById('weeklyComm').innerText = "Locked (Need 10 Refs)";
-                }
-            });
+        onValue(ref(db, `users/${user.uid}`), snap => {
+            const count = snap.val().verifiedCount || 0;
+            document.getElementById('countTxt').innerText = `${count}/10`;
+            document.getElementById('progFill').style.width = `${(count/10)*100}%`;
         });
     });
 
     window.copyLink = () => {
         navigator.clipboard.writeText(document.getElementById('refLink').innerText);
-        alert("Link Copied!");
+        alert("Copied!");
     };
 </script>
 </body>
