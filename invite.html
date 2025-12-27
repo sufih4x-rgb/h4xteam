@@ -4,156 +4,142 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Refer & Earn | H4XTEAM</title>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6366f1; --bg: #f8fafc; --card: #ffffff; }
-        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; }
-        .app { width: 100%; max-width: 480px; min-height: 100vh; padding: 20px; box-sizing: border-box; }
+        :root { --primary: #4361ee; --success: #06d6a0; --bg: #f8f9fc; --surface: #ffffff; }
+        body { background: var(--bg); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; }
+        .app-shell { width: 100%; max-width: 480px; min-height: 100vh; background: var(--surface); padding: 20px; box-sizing: border-box; }
         
-        .promo-card { 
-            background: linear-gradient(135deg, #6366f1 0%, #a855f7 100%); 
-            border-radius: 24px; padding: 30px; color: white; text-align: center; margin-bottom: 25px;
-            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
-        }
+        .header { display: flex; align-items: center; gap: 15px; margin-bottom: 30px; }
+        .back-btn { font-size: 24px; cursor: pointer; text-decoration: none; color: #000; }
+
+        /* Progress Bar Section */
+        .reward-card { background: #fff; border: 1px solid #eee; border-radius: 20px; padding: 20px; margin-bottom: 25px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); }
+        .progress-container { background: #f1f5f9; height: 12px; border-radius: 10px; margin: 15px 0; overflow: hidden; position: relative; }
+        .progress-fill { background: linear-gradient(90deg, var(--primary), #3f37c9); height: 100%; width: 0%; transition: 1s ease-in-out; }
+        .milestones { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; color: #64748b; }
+
+        /* Stats Grid */
         .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 25px; }
-        .stat-box { background: var(--card); padding: 20px; border-radius: 20px; text-align: center; border: 1px solid #e2e8f0; }
-        .stat-box h4 { margin: 0; font-size: 12px; color: #64748b; text-transform: uppercase; }
-        .stat-box p { margin: 5px 0 0; font-size: 20px; font-weight: 800; color: #1e293b; }
+        .stat-box { background: #f8fafc; padding: 15px; border-radius: 15px; text-align: center; border: 1px solid #f1f5f9; }
+        .stat-val { display: block; font-size: 24px; font-weight: 800; color: var(--primary); }
+        .stat-label { font-size: 11px; font-weight: 600; color: #94a3b8; }
 
-        .rewards-box { background: var(--card); border-radius: 20px; padding: 20px; border: 1px solid #e2e8f0; margin-bottom: 20px; }
-        .reward-item { display: flex; align-items: center; gap: 15px; margin-bottom: 15px; padding-bottom: 15px; border-bottom: 1px dotted #e2e8f0; }
-        .reward-item:last-child { border: none; margin: 0; padding: 0; }
-        .icon-circle { width: 40px; height: 40px; border-radius: 50%; background: #eef2ff; display: flex; align-items: center; justify-content: center; font-weight: 800; color: var(--primary); }
-
-        .invite-link-box { 
-            background: #f1f5f9; padding: 15px; border-radius: 15px; display: flex; 
-            justify-content: space-between; align-items: center; margin-top: 20px; border: 1px dashed #cbd5e1;
-        }
-        .copy-btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 10px; font-weight: 700; cursor: pointer; }
-        
-        .badge { font-size: 10px; padding: 3px 8px; border-radius: 5px; margin-left: 5px; }
-        .bg-pending { background: #fee2e2; color: #ef4444; }
-        .bg-verified { background: #dcfce7; color: #10b981; }
+        /* Invite Link Box */
+        .link-box { background: #eff6ff; border: 2px dashed var(--primary); padding: 15px; border-radius: 15px; display: flex; justify-content: space-between; align-items: center; margin-top: 20px; }
+        .link-text { font-size: 12px; color: var(--primary); font-weight: 600; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; padding-right: 10px; }
+        .copy-btn { background: var(--primary); color: white; border: none; padding: 8px 15px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 12px; }
     </style>
 </head>
 <body>
 
-<div class="app">
-    <div class="promo-card">
-        <h1 style="margin:0; font-size:28px; font-weight:800;">Refer & Earn</h1>
-        <p style="opacity:0.9; font-size:14px;">Invite friends and get up to ₹110 + 5% Lifetime Commission</p>
+<div class="app-shell">
+    <div class="header">
+        <a href="dashboard.html" class="back-btn">←</a>
+        <h2 style="margin:0; font-size: 20px; font-weight: 800;">Refer & Earn</h2>
+    </div>
+
+    <div class="reward-card">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span style="font-weight: 700; font-size: 14px;">Invite Progress</span>
+            <span id="nextReward" style="font-size: 11px; color: var(--success); font-weight: 700;">Loading...</span>
+        </div>
+        <div class="progress-container">
+            <div class="progress-fill" id="progBar"></div>
+        </div>
+        <div class="milestones">
+            <span>0</span>
+            <span>10 Ref</span>
+            <span>25 Ref</span>
+            <span>50 Ref</span>
+        </div>
     </div>
 
     <div class="stats-grid">
-        <div class="stat-box"><h4>Total Invites</h4><p id="totalInvites">0</p></div>
-        <div class="stat-box"><h4>Verified</h4><p id="verifiedInvites" style="color:#10b981;">0</p></div>
-    </div>
-
-    <div class="rewards-box">
-        <h3 style="margin:0 0 15px 0; font-size:16px;">Milestone Rewards</h3>
-        <div class="reward-item">
-            <div class="icon-circle">5</div>
-            <div style="flex:1;"><b>5 Friends Verified</b><br><small>Get ₹50 Instant Balance</small></div>
-            <div id="m1-status">🔒</div>
+        <div class="stat-box">
+            <span class="stat-val" id="totalRef">0</span>
+            <span class="stat-label">Total Invites</span>
         </div>
-        <div class="reward-item">
-            <div class="icon-circle">10</div>
-            <div style="flex:1;"><b>10 Friends Verified</b><br><small>Get ₹110 Total Reward</small></div>
-            <div id="m2-status">🔒</div>
-        </div>
-        <div class="reward-item">
-            <div class="icon-circle">11+</div>
-            <div style="flex:1;"><b>VIP Partner</b><br><small>5% Lifetime Commission</small></div>
-            <div id="m3-status">🔒</div>
+        <div class="stat-box">
+            <span class="stat-val" id="totalEarn">₹0</span>
+            <span class="stat-label">Refer Earnings</span>
         </div>
     </div>
 
-    <div class="rewards-box">
-        <h3 style="margin:0 0 15px 0; font-size:16px;">Your Invite Link</h3>
-        <div class="invite-link-box">
-            <code id="refLink" style="font-size:12px; color:#475569;">loading...</code>
-            <button class="copy-btn" onclick="copyRef()">Copy</button>
-        </div>
+    <h3 style="font-size: 15px; margin-bottom: 10px;">Your Unique Invite Link</h3>
+    <p style="font-size: 12px; color: #64748b; margin-top: 0;">Share this link and earn ₹100 for every active member.</p>
+    
+    <div class="link-box">
+        <span class="link-text" id="referralLink">Generating link...</span>
+        <button class="copy-btn" onclick="copyLink()">Copy</button>
     </div>
 
-    <h3 style="font-size:16px; margin: 20px 0 10px 5px;">Recent Invites</h3>
-    <div id="referList"></div>
+    <div style="margin-top: 30px;">
+        <h3 style="font-size: 15px;">How it works?</h3>
+        <div style="font-size: 13px; color: #64748b; line-height: 1.6;">
+            1. Share your link with friends.<br>
+            2. They register and deposit min ₹100.<br>
+            3. You get ₹100 instantly in your wallet!
+        </div>
+    </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, get, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getAuth } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = { /* Aapki Config Yahan Daalein */ };
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+    };
+
     const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
     const auth = getAuth(app);
+    const db = getDatabase(app);
 
-    auth.onAuthStateChanged(user => {
-        if(user) {
-            const myUid = user.uid;
-            document.getElementById('refLink').innerText = `https://h4xteam.com/reg.html?ref=${myUid}`;
-            loadReferData(myUid);
-        }
+    onAuthStateChanged(auth, user => {
+        if (!user) return location.href = 'index.html';
+
+        // 1. LINK GENERATION FIX
+        // Hume base URL chahiye jahan aapka register.html host hai
+        const baseUrl = window.location.origin; 
+        const inviteLink = `${baseUrl}/register.html?ref=${user.uid}`;
+        document.getElementById('referralLink').innerText = inviteLink;
+
+        // 2. LIVE STATS & PROGRESS TRACKING
+        const userRef = ref(db, `users/${user.uid}`);
+        onValue(userRef, snap => {
+            const data = snap.val() || {};
+            const count = data.verifiedCount || 0; // Verified refers hi count honge
+            
+            // Stats Update
+            document.getElementById('totalRef').innerText = count;
+            document.getElementById('totalEarn').innerText = `₹${count * 100}`;
+
+            // Progress Bar Logic
+            let progress = (count / 50) * 100;
+            if(progress > 100) progress = 100;
+            document.getElementById('progBar').style.width = `${progress}%`;
+
+            // Next Reward Text
+            if(count < 10) document.getElementById('nextReward').innerText = `${10 - count} more to Silver Bonus`;
+            else if(count < 25) document.getElementById('nextReward').innerText = `${25 - count} more to Gold Bonus`;
+            else if(count < 50) document.getElementById('nextReward').innerText = `${50 - count} more to VIP Bonus`;
+            else document.getElementById('nextReward').innerText = `Legendary Status Reached!`;
+        });
     });
 
-    async function loadReferData(uid) {
-        onValue(ref(db, `users/${uid}/referrals`), async (snap) => {
-            if(!snap.exists()) return;
-            
-            let listHtml = "";
-            let verifiedCount = 0;
-            let totalCount = 0;
-
-            const referrals = snap.val();
-            for(let refId in referrals) {
-                totalCount++;
-                const status = referrals[refId].status;
-                if(status === 'Verified') verifiedCount++;
-
-                listHtml += `
-                    <div class="reward-item" style="background:white; padding:12px; border-radius:12px; margin-bottom:8px;">
-                        <div style="flex:1;"><b>User: ${refId.substring(0,8)}...</b></div>
-                        <span class="badge ${status==='Verified'?'bg-verified':'bg-pending'}">${status}</span>
-                    </div>`;
-            }
-
-            document.getElementById('totalInvites').innerText = totalCount;
-            document.getElementById('verifiedInvites').innerText = verifiedCount;
-            document.getElementById('referList').innerHTML = listHtml;
-
-            checkMilestones(uid, verifiedCount);
+    // COPY FUNCTION
+    window.copyLink = () => {
+        const link = document.getElementById('referralLink').innerText;
+        navigator.clipboard.writeText(link).then(() => {
+            alert("Invite Link Copied to Clipboard!");
         });
-    }
-
-    async function checkMilestones(uid, count) {
-        const userRef = ref(db, `users/${uid}`);
-        const userSnap = await get(userRef);
-        const data = userSnap.val();
-
-        // Milestone 1: 5 Ref = 50 Rs
-        if(count >= 5 && !data.m1_claimed) {
-            await update(userRef, { balance: increment(50), m1_claimed: true });
-            alert("Congratulations! Received ₹50 for 5 referrals.");
-        }
-        // Milestone 2: 10 Ref = 110 Rs (60 extra add honge kyunki 50 pehle de diye)
-        if(count >= 10 && !data.m2_claimed) {
-            await update(userRef, { balance: increment(60), m2_claimed: true });
-            alert("Mega Bonus! Received ₹110 milestone reward.");
-        }
-        
-        // UI Update
-        if(data.m1_claimed) document.getElementById('m1-status').innerText = "✅";
-        if(data.m2_claimed) document.getElementById('m2-status').innerText = "✅";
-        if(count >= 11) document.getElementById('m3-status').innerText = "🔥 Active";
-    }
-
-    window.copyRef = () => {
-        const link = document.getElementById('refLink').innerText;
-        navigator.clipboard.writeText(link);
-        alert("Link Copied!");
-    }
+    };
 </script>
 </body>
 </html>
