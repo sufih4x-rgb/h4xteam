@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H4X Master Admin v5.0</title>
+    <title>H4X Master Admin v6.0</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #6366f1; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; --dark: #0f172a; --white: #ffffff; }
@@ -17,9 +17,9 @@
 
         /* Main Content */
         .main { margin-left: 260px; width: 100%; padding: 30px; box-sizing: border-box; }
-        .card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-bottom: 25px; border: 1px solid #e2e8f0; }
+        .card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 4px 20px rgba(0,0,0,0.02); margin-bottom: 25px; border: 1px solid #e2e8f0; overflow-x: auto; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; min-width: 800px; }
         th { text-align: left; padding: 12px; background: #f1f5f9; font-size: 11px; text-transform: uppercase; color: #64748b; }
         td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; font-weight: 600; }
 
@@ -28,31 +28,32 @@
         .btn-approve { background: #dcfce7; color: #166534; }
         .btn-reject { background: #fee2e2; color: #991b1b; }
         .btn-action { background: #e0e7ff; color: #4361ee; }
+        .btn-edit { background: #fef3c7; color: #92400e; }
         
         .tab-content { display: none; }
         .tab-content.active { display: block; }
         
         .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; }
-        .status-pending { background: #fef3c7; color: #92400e; }
+        input[type="number"] { width: 80px; padding: 5px; border: 1px solid #ddd; border-radius: 5px; }
     </style>
 </head>
 <body>
 
 <div class="sidebar">
     <div style="padding: 30px; font-size: 22px; font-weight: 800; color: var(--primary);">H4X ADMIN</div>
-    <div class="nav-item active" onclick="showTab(event, 'users')">👥 User Control</div>
+    <div class="nav-item active" onclick="showTab(event, 'users')">👥 Users & Balance</div>
     <div class="nav-item" onclick="showTab(event, 'wingo')">🎯 Wingo Logic</div>
     <div class="nav-item" onclick="showTab(event, 'deposits')">💰 Deposits</div>
     <div class="nav-item" onclick="showTab(event, 'withdrawals')">🏧 Withdrawals</div>
-    <div class="nav-item" onclick="showTab(event, 'recharges')">📱 Mobile Recharge</div>
+    <div class="nav-item" onclick="showTab(event, 'recharges')">📱 Recharges</div>
 </div>
 
 <div class="main">
     <div id="users" class="tab-content active">
         <div class="card">
-            <h3>User Management (Win/Loss/Ban)</h3>
+            <h3>User Management (Balance/VIP/Status)</h3>
             <table>
-                <thead><tr><th>Email</th><th>Balance</th><th>Ref (Ver)</th><th>Logic</th><th>Actions</th></tr></thead>
+                <thead><tr><th>Email</th><th>Balance</th><th>Edit Bal</th><th>VIP</th><th>Logic</th><th>Actions</th></tr></thead>
                 <tbody id="userList"></tbody>
             </table>
         </div>
@@ -73,7 +74,7 @@
         <div class="card">
             <h3>Pending Deposit Requests</h3>
             <table>
-                <thead><tr><th>User</th><th>Amount</th><th>UTR Number</th><th>Date</th><th>Action</th></tr></thead>
+                <thead><tr><th>User</th><th>Amount</th><th>UTR Number</th><th>Action</th></tr></thead>
                 <tbody id="depositList"></tbody>
             </table>
         </div>
@@ -83,7 +84,7 @@
         <div class="card">
             <h3>Withdrawal Requests</h3>
             <table>
-                <thead><tr><th>User</th><th>Amount</th><th>Bank/UPI</th><th>Status</th><th>Action</th></tr></thead>
+                <thead><tr><th>User</th><th>Amount</th><th>Method</th><th>Action</th></tr></thead>
                 <tbody id="withdrawList"></tbody>
             </table>
         </div>
@@ -91,9 +92,9 @@
 
     <div id="recharges" class="tab-content">
         <div class="card">
-            <h3>Mobile Recharge Requests</h3>
+            <h3>Mobile Recharges</h3>
             <table>
-                <thead><tr><th>Number</th><th>Operator</th><th>Amount</th><th>User</th><th>Action</th></tr></thead>
+                <thead><tr><th>Number</th><th>Operator</th><th>Amount</th><th>Action</th></tr></thead>
                 <tbody id="rechargeList"></tbody>
             </table>
         </div>
@@ -122,81 +123,43 @@
         e.currentTarget.classList.add('active');
     };
 
-    // --- DATA LOADING ---
+    // --- USER LIST WITH BALANCE EDIT ---
     onValue(ref(db, "users"), snap => {
         let h = "";
         snap.forEach(child => {
             const u = child.val();
+            const uid = child.key;
             const logic = u.forceWin ? 'WIN' : (u.forceLoss ? 'LOSS' : 'AUTO');
             h += `<tr>
                 <td>${u.email}</td>
-                <td>₹${u.balance.toFixed(2)}</td>
-                <td>${u.verifiedCount || 0}</td>
+                <td>₹${(u.balance || 0).toFixed(2)}</td>
+                <td>
+                    <input type="number" id="amt_${uid}" placeholder="Amt">
+                    <button class="btn-approve" onclick="editBalance('${uid}', 'add')">+</button>
+                    <button class="btn-reject" onclick="editBalance('${uid}', 'sub')">-</button>
+                </td>
+                <td>VIP ${u.vip || 0}</td>
                 <td><span class="badge" style="background:#e0e7ff">${logic}</span></td>
                 <td>
-                    <button class="btn-action" onclick="toggleUser('${child.key}','win',${u.forceWin})">Win</button>
-                    <button class="btn-action" onclick="toggleUser('${child.key}','loss',${u.forceLoss})">Loss</button>
-                    <button class="btn-reject" onclick="toggleUser('${child.key}','ban',${u.isBanned})">${u.isBanned?'Unban':'Ban'}</button>
+                    <button class="btn-action" onclick="toggleUser('${uid}','win',${u.forceWin})">Win</button>
+                    <button class="btn-action" onclick="toggleUser('${uid}','loss',${u.forceLoss})">Loss</button>
+                    <button class="btn-reject" onclick="toggleUser('${uid}','ban',${u.isBanned})">${u.isBanned?'Unban':'Ban'}</button>
                 </td>
             </tr>`;
         });
         document.getElementById("userList").innerHTML = h;
     });
 
-    onValue(ref(db, "deposit_requests"), snap => {
-        let h = "";
-        snap.forEach(child => {
-            const d = child.val();
-            if(d.status === "pending") {
-                h += `<tr>
-                    <td>${d.email}</td><td>₹${d.amount}</td><td>${d.utr}</td>
-                    <td>${new Date(d.timestamp).toLocaleString()}</td>
-                    <td>
-                        <button class="btn-approve" onclick="managePayment('deposit','${child.key}','Approved','${d.uid}',${d.amount})">Approve</button>
-                        <button class="btn-reject" onclick="managePayment('deposit','${child.key}','Rejected')">Reject</button>
-                    </td>
-                </tr>`;
-            }
-        });
-        document.getElementById("depositList").innerHTML = h || "No pending deposits";
-    });
+    // Edit Balance Function
+    window.editBalance = async (uid, type) => {
+        const amt = parseFloat(document.getElementById(`amt_${uid}`).value);
+        if(!amt || amt <= 0) return alert("Enter valid amount");
+        const finalAmt = type === 'add' ? amt : -amt;
+        await update(ref(db, `users/${uid}`), { balance: increment(finalAmt) });
+        alert("Balance Updated!");
+    };
 
-    onValue(ref(db, "withdraw_requests"), snap => {
-        let h = "";
-        snap.forEach(child => {
-            const w = child.val();
-            if(w.status === "Pending") {
-                h += `<tr>
-                    <td>${w.email}</td><td>₹${w.amount}</td><td>${w.upi || w.bank}</td>
-                    <td><span class="badge status-pending">PENDING</span></td>
-                    <td>
-                        <button class="btn-approve" onclick="managePayment('withdraw','${child.key}','Approved')">Paid</button>
-                        <button class="btn-reject" onclick="managePayment('withdraw','${child.key}','Rejected','${w.uid}',${w.amount})">Reject</button>
-                    </td>
-                </tr>`;
-            }
-        });
-        document.getElementById("withdrawList").innerHTML = h || "No pending withdrawals";
-    });
-
-    onValue(ref(db, "recharge_requests"), snap => {
-        let h = "";
-        snap.forEach(child => {
-            const r = child.val();
-            if(r.status === "Pending") {
-                h += `<tr>
-                    <td>${r.mobile}</td><td>${r.operator}</td><td>₹${r.amount}</td><td>${r.email}</td>
-                    <td>
-                        <button class="btn-approve" onclick="updateRecharge('${child.key}','Success')">Success</button>
-                        <button class="btn-reject" onclick="updateRecharge('${child.key}','Rejected','${r.uid}',${r.amount})">Refund</button>
-                    </td>
-                </tr>`;
-            }
-        });
-        document.getElementById("rechargeList").innerHTML = h || "No recharges";
-    });
-
-    // --- LOGIC FUNCTIONS ---
+    // Toggle Win/Loss/Ban
     window.toggleUser = (uid, type, current) => {
         let updateData = {};
         if(type==='win') { updateData.forceWin = !current; updateData.forceLoss = false; }
@@ -205,6 +168,55 @@
         update(ref(db, `users/${uid}`), updateData);
     };
 
+    // --- DEPOSITS ---
+    onValue(ref(db, "deposit_requests"), snap => {
+        let h = "";
+        snap.forEach(child => {
+            const d = child.val();
+            if(d.status === "pending") {
+                h += `<tr><td>${d.email}</td><td>₹${d.amount}</td><td>${d.utr}</td>
+                <td>
+                    <button class="btn-approve" onclick="managePayment('deposit','${child.key}','Approved','${d.uid}',${d.amount})">Approve</button>
+                    <button class="btn-reject" onclick="managePayment('deposit','${child.key}','Rejected')">Reject</button>
+                </td></tr>`;
+            }
+        });
+        document.getElementById("depositList").innerHTML = h || "No pending deposits";
+    });
+
+    // --- WITHDRAWALS ---
+    onValue(ref(db, "withdraw_requests"), snap => {
+        let h = "";
+        snap.forEach(child => {
+            const w = child.val();
+            if(w.status === "Pending") {
+                h += `<tr><td>${w.email}</td><td>₹${w.amount}</td><td>${w.upi || 'Bank'}</td>
+                <td>
+                    <button class="btn-approve" onclick="managePayment('withdraw','${child.key}','Approved')">Paid</button>
+                    <button class="btn-reject" onclick="managePayment('withdraw','${child.key}','Rejected','${w.uid}',${w.amount})">Refund</button>
+                </td></tr>`;
+            }
+        });
+        document.getElementById("withdrawList").innerHTML = h || "No pending withdrawals";
+    });
+
+    // --- RECHARGES ---
+    onValue(ref(db, "recharge_requests"), snap => {
+        let h = "";
+        snap.forEach(child => {
+            const r = child.val();
+            if(r.status === "Pending") {
+                h += `<tr><td>${r.mobile}</td><td>${r.operator}</td><td>₹${r.amount}</td>
+                <td>
+                    <button class="btn-approve" onclick="updateRecharge('${child.key}','Success')">Success</button>
+                    <button class="btn-reject" onclick="updateRecharge('${child.key}','Rejected','${r.uid}',${r.amount})">Refund</button>
+                </td></tr>`;
+            }
+        });
+        document.getElementById("rechargeList").innerHTML = h || "No recharges";
+    });
+
+    // Common Payment Manager
     window.managePayment = async (type, rid, status, uid, amt) => {
         const path = type === 'deposit' ? 'deposit_requests' : 'withdraw_requests';
         await update(ref(db, `${path}/${rid}`), { status: status });
