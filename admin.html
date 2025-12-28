@@ -3,164 +3,228 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H4X Master Admin v9.4 | Full Control</title>
+    <title>H4X Master Admin v11 | Ultimate Control</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #6366f1; --success: #10b981; --danger: #ef4444; --dark: #0f172a; --warning: #f59e0b; }
-        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; display: flex; }
-        #adminAuth { position: fixed; inset: 0; background: var(--dark); z-index: 9999; display: flex; align-items: center; justify-content: center; }
-        .auth-card { background: white; padding: 40px; border-radius: 24px; width: 340px; text-align: center; }
-        .sidebar { width: 260px; height: 100vh; background: var(--dark); color: white; position: fixed; overflow-y: auto; z-index: 100; }
+        body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: #f8fafc; display: flex; color: #1e293b; }
+        
+        .sidebar { width: 260px; height: 100vh; background: var(--dark); color: white; position: fixed; }
         .nav-item { padding: 14px 25px; cursor: pointer; transition: 0.3s; font-weight: 600; color: #94a3b8; display: flex; align-items: center; gap: 12px; font-size: 13px; }
         .nav-item.active { background: var(--primary); color: white; }
-        .main { margin-left: 260px; width: calc(100% - 260px); padding: 30px; box-sizing: border-box; display: none; }
-        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #e2e8f0; }
+        
+        .main { margin-left: 260px; width: calc(100% - 260px); padding: 30px; box-sizing: border-box; }
+        .card { background: white; border-radius: 15px; padding: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #e2e8f0; }
+        
         table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th { text-align: left; padding: 12px; background: #f8fafc; font-size: 11px; text-transform: uppercase; color: #64748b; border-bottom: 2px solid #edf2f7; }
-        td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 12px; vertical-align: middle; }
-        .stats-box { font-size: 10px; color: #64748b; margin-top: 5px; background: #f8fafc; padding: 8px; border-radius: 8px; }
-        .vault-txt { color: var(--warning); font-weight: 800; font-size: 11px; }
-        button { border: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 10px; margin-right: 2px; }
-        .btn-success { background: #dcfce7; color: #166534; } 
-        .btn-danger { background: #fee2e2; color: #991b1b; } 
-        .btn-primary { background: var(--primary); color: white; }
-        .floating-chat { position: fixed; bottom: 20px; right: 20px; background: var(--primary); color: white; padding: 15px; border-radius: 50%; cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.2); }
+        th { text-align: left; padding: 12px; background: #f1f5f9; font-size: 11px; color: #64748b; text-transform: uppercase; }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 13px; }
+        
+        .btn-action { padding: 6px 12px; border-radius: 6px; font-weight: 700; cursor: pointer; border: none; font-size: 11px; }
+        .bg-success { background: var(--success); color: white; }
+        .bg-danger { background: var(--danger); color: white; }
+        .bg-warning { background: var(--warning); color: white; }
+        .bg-primary { background: var(--primary); color: white; }
+
+        .badge { padding: 4px 8px; border-radius: 6px; font-size: 10px; font-weight: 700; }
+        .badge-success { background: #dcfce7; color: #166534; }
+        .badge-danger { background: #fee2e2; color: #991b1b; }
+
         .tab-content { display: none; } .tab-content.active { display: block; }
+        .section-title { margin-top: 30px; color: var(--primary); font-size: 14px; text-transform: uppercase; letter-spacing: 1px; }
+        
+        /* Chat UI */
+        .chat-container { height: 300px; overflow-y: auto; background: #f1f5f9; padding: 15px; border-radius: 10px; margin-bottom: 10px; display: flex; flex-direction: column; gap: 8px; }
+        .msg { padding: 8px 12px; border-radius: 10px; max-width: 70%; font-size: 12px; }
+        .msg.admin { background: var(--primary); color: white; align-self: flex-end; }
+        .msg.user { background: white; color: black; align-self: flex-start; border: 1px solid #ddd; }
     </style>
 </head>
 <body>
 
-<div id="adminAuth">
-    <div class="auth-card">
-        <h2>ADMIN LOGIN</h2>
-        <input type="email" id="adminEmail" placeholder="Email" style="width:100%; margin-bottom:12px; padding:12px; border-radius:8px; border:1px solid #ddd;">
-        <input type="password" id="adminPass" placeholder="Password" style="width:100%; margin-bottom:20px; padding:12px; border-radius:8px; border:1px solid #ddd;">
-        <button class="btn-primary" style="width:100%; padding:15px;" onclick="adminLogin()">SECURE LOGIN</button>
-    </div>
-</div>
-
 <div class="sidebar">
-    <div style="padding: 25px; font-weight: 800; font-size: 18px; color: var(--primary);">H4X CORE v9.4</div>
-    <div class="nav-item active" onclick="showTab(event, 'users')">👥 Users & Rigging</div>
+    <div style="padding: 25px; font-weight: 800; font-size: 18px; color: var(--primary);">H4X CONTROL</div>
+    <div class="nav-item active" onclick="showTab(event, 'users')">👥 User & Rigging</div>
     <div class="nav-item" onclick="showTab(event, 'deposits')">💰 Deposits</div>
     <div class="nav-item" onclick="showTab(event, 'withdrawals')">🏧 Withdrawals</div>
-    <div class="nav-item" onclick="showTab(event, 'recharges')">📱 Recharges</div>
+    <div class="nav-item" onclick="showTab(event, 'recharge')">📱 SIM Recharge</div>
+    <div class="nav-item" onclick="showTab(event, 'refer')">🎁 Refer Rewards</div>
+    <div class="nav-item" onclick="showTab(event, 'chat')">💬 Live Chat</div>
 </div>
 
-<div class="main" id="adminMain">
+<div class="main">
     <div id="users" class="tab-content active">
         <div class="card">
-            <h3>Control Center (Balance Edit/Ban/Rig)</h3>
+            <h3>User Management & Balance Editor</h3>
             <table>
-                <thead><tr><th>User Info</th><th>Balance Control</th><th>Rigging</th><th>Status</th></tr></thead>
+                <thead><tr><th>User</th><th>Wallet / Vault</th><th>Rigging</th><th>Status</th><th>Edit</th></tr></thead>
                 <tbody id="userList"></tbody>
             </table>
         </div>
     </div>
 
-    <div id="deposits" class="tab-content"><div class="card"><h3>💰 Deposit Logs</h3><table><thead><tr><th>Email</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody id="depositList"></tbody></table></div></div>
-    <div id="withdrawals" class="tab-content"><div class="card"><h3>🏧 Withdrawal Logs</h3><table><thead><tr><th>Email</th><th>Amount</th><th>UPI/Bank</th><th>Status</th><th>Action</th></tr></thead><tbody id="withdrawList"></tbody></table></div></div>
-    <div id="recharges" class="tab-content"><div class="card"><h3>📱 Recharge Logs</h3><table><thead><tr><th>Email</th><th>Plan</th><th>Status</th><th>Action</th></tr></thead><tbody id="rechargeList"></tbody></table></div></div>
-</div>
+    <div id="deposits" class="tab-content">
+        <div class="card">
+            <h3>💰 Pending Deposits</h3>
+            <table>
+                <thead><tr><th>Email</th><th>Amount</th><th>UTR</th><th>Action</th></tr></thead>
+                <tbody id="depositPending"></tbody>
+            </table>
+            <h4 class="section-title">Last Transactions</h4>
+            <table id="depositHistory"></table>
+        </div>
+    </div>
 
-<div class="floating-chat" onclick="alert('Live Chat Support: Feature Connected to Firebase Messages')">💬</div>
+    <div id="withdrawals" class="tab-content">
+        <div class="card">
+            <h3>🏧 Pending Withdrawals</h3>
+            <table>
+                <thead><tr><th>Email</th><th>Amount</th><th>UPI/Bank</th><th>Action</th></tr></thead>
+                <tbody id="withdrawPending"></tbody>
+            </table>
+            <h4 class="section-title">Last Transactions</h4>
+            <table id="withdrawHistory"></table>
+        </div>
+    </div>
+
+    <div id="recharge" class="tab-content">
+        <div class="card">
+            <h3>📱 SIM Recharge Requests</h3>
+            <table>
+                <thead><tr><th>Mobile</th><th>Operator</th><th>Plan</th><th>Email</th><th>Action</th></tr></thead>
+                <tbody id="rechargeList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="chat" class="tab-content">
+        <div class="card">
+            <h3>💬 Live Chat Support</h3>
+            <select id="chatTarget" style="width:100%; padding:10px; margin-bottom:10px; border-radius:8px;"></select>
+            <div class="chat-container" id="chatBox"></div>
+            <div style="display:flex; gap:10px;">
+                <input type="text" id="chatInput" style="flex:1; padding:10px; border-radius:8px; border:1px solid #ddd;" placeholder="Type message...">
+                <button class="btn-action bg-primary" onclick="sendAdminMsg()">Send</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="refer" class="tab-content">
+        <div class="card">
+            <h3>🎁 Refer Reward Claims</h3>
+            <table>
+                <thead><tr><th>User</th><th>Reward Amount</th><th>Action</th></tr></thead>
+                <tbody id="referList"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, increment, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, onValue, update, set, push, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-        authDomain: "test-eb5e7.firebaseapp.com",
-        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-        projectId: "test-eb5e7",
-        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
-    };
-
+    const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const auth = getAuth(app);
 
-    window.adminLogin = async () => {
-        try {
-            await signInWithEmailAndPassword(auth, document.getElementById('adminEmail').value, document.getElementById('adminPass').value);
-            document.getElementById('adminAuth').style.display = 'none';
-            document.getElementById('adminMain').style.display = 'block';
-            loadData();
-        } catch(e) { alert("Login Failed!"); }
-    };
+    // --- USER & BALANCE EDITOR ---
+    onValue(ref(db, 'users'), snap => {
+        let h = "", rH = "", chatTargets = "<option value=''>Select User to Chat</option>";
+        snap.forEach(c => {
+            const u = c.val();
+            h += `<tr>
+                <td>${u.email}</td>
+                <td>W: ₹${u.balance || 0}<br><small>V: ₹${u.vault_balance || 0}</small></td>
+                <td>
+                    <button class="btn-action" style="background:${u.forceWin?'#10b981':'#ddd'}" onclick="rig('${c.key}','w')">W</button>
+                    <button class="btn-action" style="background:${u.forceLoss?'#ef4444':'#ddd'}" onclick="rig('${c.key}','l')">L</button>
+                </td>
+                <td><button class="btn-action bg-danger" onclick="ban('${c.key}',${u.isBanned})">${u.isBanned?'UNBAN':'BAN'}</button></td>
+                <td><button class="btn-action bg-warning" onclick="editBalance('${c.key}')">✎ Edit</button></td>
+            </tr>`;
+            if(u.referBalance > 0) rH += `<tr><td>${u.email}</td><td>₹${u.referBalance}</td><td><button class="btn-action bg-warning" onclick="approveRefer('${c.key}',${u.referBalance})">Approve</button></td></tr>`;
+            chatTargets += `<option value="${c.key}">${u.email}</option>`;
+        });
+        document.getElementById('userList').innerHTML = h;
+        document.getElementById('referList').innerHTML = rH || "No refer claims";
+        document.getElementById('chatTarget').innerHTML = chatTargets;
+    });
 
-    function loadData() {
-        onValue(ref(db, "/"), snap => {
-            const d = snap.val() || {};
-
-            // 1. Users Logic
-            let uH = "";
-            for(let id in (d.users || {})) {
-                const u = d.users[id];
-                uH += `<tr>
-                    <td><b>${u.email}</b><div class="stats-box">W:₹${u.totalWin||0} | L:₹${u.totalLoss||0}</div></td>
-                    <td>
-                        ₹${(u.balance||0).toFixed(2)} <button onclick="editBal('${id}', ${u.balance||0})">✎ Edit</button>
-                        <br><span class="vault-txt">Vault: ₹${(u.vault_balance||0).toFixed(2)}</span>
-                    </td>
-                    <td>
-                        <button class="${u.forceWin?'btn-success':''}" onclick="toggleRig('${id}','w')">W</button>
-                        <button class="${u.forceLoss?'btn-danger':''}" onclick="toggleRig('${id}','l')">L</button>
-                        <button onclick="toggleRig('${id}','reset')">Reset</button>
-                    </td>
-                    <td>
-                        <button class="${u.isBanned?'btn-danger':''}" onclick="toggleBan('${id}',${u.isBanned||false})">${u.isBanned?'UNBAN':'BAN'}</button>
-                        <button onclick="alert('Opening chat with ${u.email}')">📩</button>
-                    </td>
-                </tr>`;
+    // --- DEPOSITS & WITHDRAWALS FIX ---
+    onValue(ref(db, 'transactions'), snap => {
+        let depP = "", witP = "", depH = "<thead><tr><th>Email</th><th>Amt</th><th>Status</th></tr></thead>", witH = "<thead><tr><th>Email</th><th>Amt</th><th>Status</th></tr></thead>";
+        snap.forEach(c => {
+            const t = c.val();
+            const row = `<td>${t.email}</td><td>₹${t.amount}</td>`;
+            if(t.status === 'Pending') {
+                if(t.type === 'Deposit') depP += `<tr>${row}<td>${t.utr || 'N/A'}</td><td><button class="btn-action bg-success" onclick="approveFinance('${c.key}','${t.uid}',${t.amount},'Deposit')">✔</button> <button class="btn-action bg-danger" onclick="updateStatus('transactions','${c.key}','Rejected')">✖</button></td></tr>`;
+                else witP += `<tr>${row}<td><small>${t.upiId || t.bankDetails || 'N/A'}</small></td><td><button class="btn-action bg-success" onclick="updateStatus('transactions','${c.key}','Approved')">Paid</button> <button class="btn-action bg-danger" onclick="updateStatus('transactions','${c.key}','Rejected')">✖</button></td></tr>`;
+            } else {
+                const badge = `<span class="badge ${t.status==='Approved'?'badge-success':'badge-danger'}">${t.status}</span>`;
+                if(t.type === 'Deposit') depH += `<tr>${row}<td>${badge}</td></tr>`;
+                else witH += `<tr>${row}<td>${badge}</td></tr>`;
             }
-            document.getElementById("userList").innerHTML = uH;
-
-            // 2. Load Others (Deposits/Withdrawals/Recharges) with the same Logic as before...
-            renderTable(d.withdrawals, 'withdrawList', 'withdrawals');
-            renderTable(d.recharge_requests, 'rechargeList', 'recharge_requests');
-            renderTable(d.deposit_requests, 'depositList', 'deposit_requests');
         });
-    }
+        document.getElementById('depositPending').innerHTML = depP || "No pending deposits";
+        document.getElementById('withdrawPending').innerHTML = witP || "No pending withdrawals";
+        document.getElementById('depositHistory').innerHTML = depH;
+        document.getElementById('withdrawHistory').innerHTML = witH;
+    });
 
-    window.editBal = (id, cur) => {
-        let n = prompt("Enter New Balance Amount:", cur);
-        if(n !== null) update(ref(db, `users/${id}`), { balance: parseFloat(n) });
+    // --- LIVE CHAT LOGIC ---
+    window.sendAdminMsg = () => {
+        const uid = document.getElementById('chatTarget').value;
+        const msg = document.getElementById('chatInput').value;
+        if(!uid || !msg) return;
+        push(ref(db, `chats/${uid}`), { text: msg, sender: 'admin', time: Date.now() });
+        document.getElementById('chatInput').value = "";
     };
 
-    window.toggleRig = (id, m) => {
-        update(ref(db, `users/${id}`), { forceWin: m==='w', forceLoss: m==='l' });
-        if(m === 'reset') update(ref(db, `users/${id}`), { forceWin: false, forceLoss: false });
+    document.getElementById('chatTarget').onchange = (e) => {
+        const uid = e.target.value;
+        if(!uid) return;
+        onValue(ref(db, `chats/${uid}`), snap => {
+            let h = "";
+            snap.forEach(c => {
+                const m = c.val();
+                h += `<div class="msg ${m.sender}">${m.text}</div>`;
+            });
+            const box = document.getElementById('chatBox');
+            box.innerHTML = h;
+            box.scrollTop = box.scrollHeight;
+        });
     };
 
-    window.toggleBan = (id, s) => update(ref(db, `users/${id}`), { isBanned: !s });
-
-    // Helper functions for action approvals (Same logic as v9.3)
-    window.appWith = (k) => update(ref(db, `withdrawals/${k}`), { status: "Approved" });
-    window.appRec = (k) => update(ref(db, `recharge_requests/${k}`), { status: "Success" });
-    window.appDep = (k, uid, a) => {
-        update(ref(db, `users/${uid}`), { balance: increment(a) });
-        update(ref(db, `deposit_requests/${k}`), { status: "approved" });
-    };
-
-    function renderTable(data, elementId, path) {
+    // --- RECHARGE LOGIC ---
+    onValue(ref(db, 'recharge_requests'), snap => {
         let h = "";
-        Object.entries(data || {}).forEach(([k, r]) => {
-            let color = (r.status === 'Pending' || r.status === 'pending') ? '#f59e0b' : (r.status === 'Rejected' || r.status === 'rejected' ? 'red' : 'green');
-            h += `<tr><td>${r.email}</td><td>₹${r.amount}</td><td>${r.upi || r.mobile || 'N/A'}</td><td style="color:${color};font-weight:bold">${r.status}</td>
-            <td><button class="btn-success" onclick="approveAny('${path}','${k}','${r.uid}',${r.amount})">✔</button></td></tr>`;
+        snap.forEach(c => {
+            const r = c.val();
+            if(r.status === 'Pending') {
+                h += `<tr><td>${r.mobile}</td><td>${r.operator}</td><td>₹${r.amount}</td><td>${r.userEmail}</td>
+                <td><button class="btn-action bg-success" onclick="updateStatus('recharge_requests','${c.key}','Paid')">✔</button>
+                <button class="btn-action bg-danger" onclick="updateStatus('recharge_requests','${c.key}','Rejected')">✖</button></td></tr>`;
+            }
         });
-        document.getElementById(elementId).innerHTML = h || "<tr><td colspan='5'>No Data</td></tr>";
-    }
+        document.getElementById('rechargeList').innerHTML = h || "No requests";
+    });
 
-    window.approveAny = (p, k, uid, a) => {
-        if(p === 'withdrawals') window.appWith(k);
-        else if(p === 'recharge_requests') window.appRec(k);
-        else if(p === 'deposit_requests') window.appDep(k, uid, a);
+    // --- ACTIONS ---
+    window.approveFinance = async (tid, uid, amt, type) => {
+        if(type === 'Deposit') await update(ref(db, `users/${uid}`), { balance: increment(Number(amt)) });
+        update(ref(db, `transactions/${tid}`), { status: 'Approved' });
+        alert("Deposit Approved & Balance Updated!");
+    };
+    
+    window.editBalance = (uid) => {
+        const newBal = prompt("Enter New Wallet Balance:");
+        if(newBal !== null) update(ref(db, `users/${uid}`), { balance: Number(newBal) });
     };
 
+    window.rig = (id, type) => update(ref(db, `users/${id}`), { forceWin: type==='w', forceLoss: type==='l' });
+    window.ban = (id, s) => update(ref(db, `users/${id}`), { isBanned: !s });
+    window.updateStatus = (path, id, status) => update(ref(db, `${path}/${id}`), { status: status });
     window.showTab = (e, id) => {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
