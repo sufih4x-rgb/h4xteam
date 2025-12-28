@@ -1,3 +1,5 @@
+<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, set, get, update, onValue, increment, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
@@ -8,33 +10,29 @@
         authDomain: "test-eb5e7.firebaseapp.com",
         databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
         projectId: "test-eb5e7",
-        storageBucket: "test-eb5e7.appspot.com",
-        messagingSenderId: "366282855653",
-        appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-        measurementId: "G-ECKCTBLQJ8"
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
     };
 
-    // --- INITIALIZATION FIXED ---
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
 
     let uid = "", balance = 0, selection = null, gameTime = 30, currentMatch = "", hasBet = false;
 
-    // --- ANTI-CHEAT SHIELD (Unhurt) ---
+    // --- ANTI-CHEAT SHIELD ---
     const activateShield = () => {
         document.addEventListener("visibilitychange", () => {
             if (document.hidden) {
-                document.body.innerHTML = "<div style='color:white;text-align:center;padding:50px;'><h1>SECURITY LOCK</h1><p>Predictor switching detected. Reload to continue.</p></div>";
+                document.body.innerHTML = "<div style='background:#0f172a;height:100vh;color:white;text-align:center;padding:50px;'><h1>🛡️ SECURITY LOCK</h1><p>Predictor switching detected. Reload to continue.</p></div>";
             }
         });
-        document.onkeydown = (e) => { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false; };
     };
     activateShield();
 
-    // --- QUANTUM MATH LOGIC (Unhurt) ---
+    // --- QUANTUM MATH LOGIC ---
     function quantumLogic(period) {
-        const seed = parseInt(period.slice(-4));
+        if(!period) return 'RED';
+        const seed = parseInt(period.toString().slice(-4));
         const hour = new Date().getHours();
         const calculation = ((seed * 7) + (hour * 3)) % 10;
         return (calculation % 2 === 0) ? 'GREEN' : 'RED';
@@ -46,14 +44,18 @@
             onValue(ref(db, `users/${uid}`), s => {
                 if(s.exists()){
                     balance = s.val().balance || 0;
-                    document.getElementById("balDisplay").innerText = balance.toFixed(2);
+                    const balDisp = document.getElementById("balDisplay");
+                    if(balDisp) balDisp.innerText = balance.toFixed(2);
                 }
             });
             loadHistory();
             initChart();
+        } else {
+            // window.location.href = "login.html"; // Agar login page hai toh
         }
     });
 
+    // --- MAIN GAME TIMER ---
     setInterval(async () => {
         const now = Math.floor(Date.now() / 1000);
         const rem = gameTime - (now % gameTime);
@@ -63,19 +65,25 @@
             currentMatch = matchId;
             document.getElementById("periodId").innerText = currentMatch;
             hasBet = false;
+            // Reset button text
+            document.getElementById("placeBet").innerText = "CONFIRM STAKE";
         }
 
         document.getElementById("timer").innerText = `00:${rem < 10 ? '0'+rem : rem}`;
         
         if(rem > 5) {
             const pred = quantumLogic(currentMatch);
-            document.getElementById("aiColor").innerText = pred;
-            document.getElementById("aiColor").style.color = pred === 'RED' ? 'var(--danger)' : 'var(--success)';
+            const aiDisp = document.getElementById("aiColor");
+            aiDisp.innerText = pred;
+            aiDisp.style.color = pred === 'RED' ? '#ef4444' : '#10b981';
             document.getElementById("placeBet").disabled = false;
         } else {
             document.getElementById("aiColor").innerText = "WAITING...";
             document.getElementById("placeBet").disabled = true;
-            if(rem === 1) processResult();
+            if(rem === 1) {
+                // Thoda delay taaki admin result set kar sake
+                setTimeout(() => processResult(), 500);
+            }
         }
     }, 1000);
 
@@ -86,76 +94,105 @@
     };
 
     window.confirmStake = async () => {
-        const amt = parseInt(document.getElementById("amtInput").value);
-        if(!selection) return alert("Pick Color!");
-        if(amt < 10 || amt > balance) return alert("Check Amount/Balance");
-        await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
-        await set(ref(db, `bets_${gameTime}/${currentMatch}/${uid}`), { color: selection, amount: amt });
-        hasBet = true;
-        document.getElementById("placeBet").innerText = "STAKED ✓";
+        const amtInput = document.getElementById("amtInput");
+        const amt = parseInt(amtInput.value);
+        if(!selection) return alert("Please select Red or Green!");
+        if(amt < 10) return alert("Minimum bet is ₹10");
+        if(amt > balance) return alert("Insufficient Balance!");
+        if(hasBet) return alert("Already bet placed for this round!");
+
+        try {
+            await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
+            await set(ref(db, `bets_${gameTime}/${currentMatch}/${uid}`), { 
+                color: selection, 
+                amount: amt,
+                email: auth.currentUser.email 
+            });
+            hasBet = true;
+            document.getElementById("placeBet").innerText = "STAKED ✓";
+            document.getElementById("placeBet").disabled = true;
+        } catch (e) {
+            alert("Betting Error: " + e.message);
+        }
     };
 
     async function processResult() {
-        const resRef = ref(db, `results_${gameTime}/${currentMatch}`);
-        const snap = await get(resRef);
-        let finalColor = "";
+        try {
+            const resRef = ref(db, `results_${gameTime}/${currentMatch}`);
+            const snap = await get(resRef);
+            let finalColor = "";
 
-        if(snap.exists()) {
-            finalColor = snap.val().color;
-        } else {
-            finalColor = quantumLogic(currentMatch);
-            await set(resRef, { color: finalColor, timestamp: Date.now() });
-        }
-        if(hasBet) checkWinLoss(finalColor);
+            if(snap.exists()) {
+                finalColor = snap.val().color;
+            } else {
+                finalColor = quantumLogic(currentMatch);
+                // Save default if admin didn't force
+                await set(resRef, { color: finalColor, timestamp: Date.now() });
+            }
+            if(hasBet) checkWinLoss(finalColor);
+        } catch (e) { console.error(e); }
     }
 
     async function checkWinLoss(resColor) {
         const myBetSnap = await get(ref(db, `bets_${gameTime}/${currentMatch}/${uid}`));
         if(!myBetSnap.exists()) return;
+        
         const b = myBetSnap.val();
         const win = b.color === resColor;
         const winAmt = win ? b.amount * 1.92 : 0;
 
         if(win) {
-            await update(ref(db, `users/${uid}`), { balance: increment(winAmt) });
-            confetti({ particleCount: 150, spread: 60, origin: { y: 0.7 } });
+            await update(ref(db, `users/${uid}`), { 
+                balance: increment(winAmt),
+                totalWin: increment(winAmt)
+            });
+            // CONFETTI EFFECT
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+        } else {
+            await update(ref(db, `users/${uid}`), { totalLoss: increment(b.amount) });
         }
 
+        // Show Popup
         document.getElementById("resStatus").innerText = win ? "WINNER!" : "LOST";
-        document.getElementById("resStatus").style.color = win ? "var(--success)" : "var(--danger)";
+        document.getElementById("resStatus").style.color = win ? "#10b981" : "#ef4444";
         document.getElementById("resIcon").innerText = win ? "🏆" : "❌";
         document.getElementById("resValue").innerText = win ? "+₹" + winAmt.toFixed(2) : "-₹" + b.amount;
         document.getElementById("resOverlay").style.display = "flex";
+        
         hasBet = false;
         loadHistory();
     }
 
     window.closeOverlay = () => {
         document.getElementById("resOverlay").style.display = "none";
-        document.getElementById("placeBet").innerText = "CONFIRM STAKE";
-        selection = null;
-        document.querySelectorAll('.c-btn').forEach(b => b.classList.remove('selected'));
     };
 
     function loadHistory() {
         const hRef = query(ref(db, `results_${gameTime}`), limitToLast(10));
         onValue(hRef, snap => {
             const list = document.getElementById("historyList");
+            if(!list) return;
             list.innerHTML = "";
             snap.forEach(child => {
                 const data = child.val();
-                list.innerHTML = `<div class="history-row"><span style="color:#64748b; font-weight:800;">#${child.key.slice(-4)}</span><span style="font-weight:900; color:${data.color==='RED'?'var(--danger)':'var(--success)'}">${data.color}</span><div class="res-dot" style="background:${data.color==='RED'?'var(--danger)':'var(--success)'}"></div></div>` + list.innerHTML;
+                list.innerHTML = `
+                <div class="history-row">
+                    <span style="color:#64748b; font-weight:800;">#${child.key.slice(-4)}</span>
+                    <span style="font-weight:900; color:${data.color==='RED'?'#ef4444':'#10b981'}">${data.color}</span>
+                    <div class="res-dot" style="background:${data.color==='RED'?'#ef4444':'#10b981'}"></div>
+                </div>` + list.innerHTML;
             });
         });
     }
 
     function initChart() {
         const chart = document.getElementById("trendChart");
+        if(!chart) return;
         setInterval(() => {
             const bar = document.createElement("div");
             bar.className = "bar";
             bar.style.height = Math.random() * 80 + 20 + "%";
-            bar.style.background = Math.random() > 0.5 ? 'var(--success)' : 'var(--danger)';
+            bar.style.background = Math.random() > 0.5 ? '#10b981' : '#ef4444';
             chart.appendChild(bar);
             if(chart.children.length > 20) chart.removeChild(chart.children[0]);
         }, 2000);
