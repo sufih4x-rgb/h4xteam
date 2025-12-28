@@ -8,45 +8,50 @@
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
         :root { --bg: #05070a; --card: #12141d; --primary: #ea1d39; --accent: #2ecc71; --gold: #f1c40f; }
-        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow: hidden; }
         
-        .nav { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: var(--card); border-bottom: 2px solid #1f222e; sticky top:0; z-index:100; }
-        .bal-chip { background: #000; padding: 8px 15px; border-radius: 50px; border: 1.5px solid var(--gold); color: var(--gold); font-weight: 900; }
+        .nav { padding: 12px 15px; display: flex; justify-content: space-between; align-items: center; background: var(--card); border-bottom: 2px solid #1f222e; }
+        .bal-chip { background: #000; padding: 6px 12px; border-radius: 50px; border: 1.5px solid var(--gold); color: var(--gold); font-weight: 900; font-size: 14px; }
 
-        .stage { height: 280px; position: relative; background: radial-gradient(circle at bottom left, #1a1010, #05070a); overflow: hidden; display: flex; justify-content: center; align-items: center; }
-        #multiplier { font-size: 60px; font-weight: 900; z-index: 10; font-variant-numeric: tabular-nums; }
-        #plane { position: absolute; bottom: 20%; left: 10%; width: 85px; z-index: 5; display: none; filter: drop-shadow(0 0 15px var(--primary)); }
-        .flew-away { position: absolute; color: var(--primary); font-size: 26px; font-weight: 900; display: none; z-index: 12; top: 20%; }
-
-        .bet-area { background: var(--card); padding: 20px; border-radius: 25px 25px 0 0; border-top: 1px solid #2d313f; }
-        input { width: 100%; background: #000; border: 1.5px solid #333; padding: 15px; border-radius: 12px; color: #fff; font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 15px; box-sizing: border-box; }
+        /* Game Stage */
+        .stage { height: 260px; position: relative; background: radial-gradient(circle at bottom left, #1a1010, #05070a); overflow: hidden; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #multiplier { font-size: 55px; font-weight: 900; z-index: 10; transition: 0.1s; text-shadow: 0 0 20px rgba(234, 29, 57, 0.3); }
+        #plane { position: absolute; bottom: 20%; left: 10%; width: 75px; z-index: 5; display: none; filter: drop-shadow(0 0 15px var(--primary)); transition: 0.2s linear; }
+        .phase-msg { position: absolute; top: 15%; font-size: 14px; font-weight: 800; color: #64748b; letter-spacing: 1px; text-transform: uppercase; }
         
-        .btn { width: 100%; padding: 18px; border-radius: 15px; border: none; font-weight: 900; font-size: 17px; cursor: pointer; transition: 0.1s; }
-        .btn-bet { background: var(--accent); color: white; box-shadow: 0 5px 0 #27ae60; }
-        .btn-cash { background: var(--gold); color: #000; display: none; box-shadow: 0 5px 0 #c29d0b; }
-        .btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
+        .timer-bar { position: absolute; bottom: 0; left: 0; height: 3px; background: var(--primary); transition: width 1s linear; width: 0%; }
 
-        .history { display: flex; gap: 8px; padding: 10px; overflow-x: auto; background: #0a0c12; border-bottom: 1px solid #1f222e; scrollbar-width: none; }
-        .h-item { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; background: #1a1d26; min-width: 40px; text-align: center; }
+        /* Controls */
+        .bet-area { background: var(--card); padding: 20px; border-radius: 25px 25px 0 0; border-top: 1px solid #2d313f; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
+        .input-box { background: #000; border: 1.5px solid #333; padding: 12px; border-radius: 12px; color: #fff; font-size: 22px; font-weight: 800; text-align: center; width: 100%; box-sizing: border-box; outline: none; margin-bottom: 12px; }
+        
+        .btn { width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.2s; text-transform: uppercase; }
+        .btn-bet { background: var(--accent); color: white; box-shadow: 0 4px 0 #1e8449; }
+        .btn-bet:disabled { background: #1f2937; color: #4b5563; box-shadow: none; cursor: not-allowed; }
+        .btn-cash { background: var(--gold); color: #000; display: none; box-shadow: 0 4px 0 #b79106; }
+
+        .history { display: flex; gap: 6px; padding: 10px; overflow-x: auto; background: #0a0c12; border-bottom: 1px solid #1f222e; scrollbar-width: none; }
+        .h-item { padding: 3px 8px; border-radius: 6px; font-size: 10px; font-weight: 800; background: #1a1d26; color: #94a3b8; border: 1px solid #2d313f; }
     </style>
 </head>
 <body>
 
 <div class="nav">
-    <div style="font-weight: 900; font-size: 18px;">AVIATOR <span style="color:var(--primary)">SYNC</span></div>
+    <div style="font-weight: 900; font-size: 16px;">AVIATOR <span style="color:var(--primary)">ELITE</span></div>
     <div class="bal-chip">₹<span id="uBal">0.00</span></div>
 </div>
 
 <div class="history" id="historyBar"></div>
 
 <div class="stage">
+    <div class="phase-msg" id="phaseText">WAITING FOR NEXT ROUND...</div>
     <div id="multiplier">1.00x</div>
-    <div class="flew-away" id="msg">FLEW AWAY!</div>
     <img id="plane" src="https://i.ibb.co/Y7XvX0k/plane.png" alt="plane">
+    <div class="timer-bar" id="tBar"></div>
 </div>
 
 <div class="bet-area">
-    <input type="number" id="amtInp" value="10" min="10">
+    <input type="number" class="input-box" id="amtInp" value="10" min="10">
     <button id="bBtn" class="btn btn-bet" onclick="placeBet()">BET</button>
     <button id="cBtn" class="btn btn-cash" onclick="cashOut()">CASH OUT</button>
 </div>
@@ -61,19 +66,19 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let uid = "", bal = 0, betAmt = 0, hasBet = false, isFlying = false;
+    let uid = "", bal = 0, betAmt = 0, hasBet = false, currentX = 1.0, isCashedOut = false;
 
     onAuthStateChanged(auth, u => {
         if(!u) return; uid = u.uid;
         onValue(ref(db, `users/${uid}`), s => {
-            bal = s.val().balance || 0;
+            bal = s.val()?.balance || 0;
             document.getElementById("uBal").innerText = bal.toFixed(2);
         });
         syncGame();
         loadHistory();
     });
 
-    // GLOBAL SYNC LOGIC
+    // GLOBAL SYNC ENGINE
     function syncGame() {
         onValue(ref(db, `aviator_live`), (snapshot) => {
             const data = snapshot.val();
@@ -81,73 +86,109 @@
 
             const plane = document.getElementById("plane");
             const multText = document.getElementById("multiplier");
-            const msg = document.getElementById("msg");
+            const phase = document.getElementById("phaseText");
+            const tBar = document.getElementById("tBar");
+            const bBtn = document.getElementById("bBtn");
+            const cBtn = document.getElementById("cBtn");
 
-            if(data.status === "FLYING") {
-                isFlying = true;
-                plane.style.display = "block";
-                msg.style.display = "none";
-                multText.innerText = data.currentX.toFixed(2) + "x";
-                multText.style.color = "white";
-                
-                // Animation logic
-                plane.style.left = Math.min(75, 10 + (data.currentX * 4)) + "%";
-                plane.style.bottom = Math.min(75, 20 + (data.currentX * 5)) + "%";
+            currentX = data.currentX || 1.0;
 
-                document.getElementById("bBtn").disabled = true;
-            } else {
-                isFlying = false;
+            if(data.status === "BETTING") {
+                phase.innerText = `NEXT ROUND IN ${data.timer}s`;
+                phase.style.color = "var(--accent)";
+                multText.innerText = "1.00x";
+                multText.style.color = "#4b5563";
                 plane.style.display = "none";
-                msg.style.display = "block";
-                multText.style.color = "var(--primary)";
+                tBar.style.width = (data.timer / 15 * 100) + "%";
                 
-                document.getElementById("bBtn").disabled = false;
-                document.getElementById("cBtn").style.display = "none";
-                document.getElementById("bBtn").style.display = "block";
+                bBtn.disabled = false;
+                bBtn.style.display = "block";
+                cBtn.style.display = "none";
+                isCashedOut = false;
+            } 
+            else if(data.status === "FLYING") {
+                phase.innerText = "PLANE IS FLYING";
+                phase.style.color = "var(--primary)";
+                multText.innerText = currentX.toFixed(2) + "x";
+                multText.style.color = "white";
+                plane.style.display = "block";
+                tBar.style.width = "0%";
+
+                // Realistic Movement
+                plane.style.left = Math.min(80, 10 + (currentX * 5)) + "%";
+                plane.style.bottom = Math.min(70, 20 + (currentX * 6)) + "%";
+
+                bBtn.disabled = true;
+                if(hasBet && !isCashedOut) {
+                    bBtn.style.display = "none";
+                    cBtn.style.display = "block";
+                    cBtn.innerText = `CASH OUT ₹${(betAmt * currentX).toFixed(2)}`;
+                }
+            } 
+            else if(data.status === "CRASHED") {
+                phase.innerText = "FLEW AWAY!";
+                phase.style.color = "var(--primary)";
+                multText.style.color = "var(--primary)";
+                plane.style.display = "none";
                 hasBet = false;
+                
+                setTimeout(() => {
+                    if(!hasBet) {
+                        bBtn.style.display = "block";
+                        cBtn.style.display = "none";
+                    }
+                }, 1000);
             }
         });
     }
 
     window.placeBet = async () => {
         const amt = parseFloat(document.getElementById("amtInp").value);
-        if(amt < 10 || amt > bal) return alert("Check Balance!");
+        if(amt < 10) return alert("Min Bet ₹10");
+        if(amt > bal) return alert("Low Balance!");
         
+        // Phase check from local state
+        const phase = document.getElementById("phaseText").innerText;
+        if(phase.includes("FLYING") || phase.includes("FLEW")) return alert("Wait for next round!");
+
         await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
         betAmt = amt;
         hasBet = true;
+        isCashedOut = false;
         
-        document.getElementById("bBtn").style.display = "none";
-        document.getElementById("cBtn").style.display = "block";
-        document.getElementById("cBtn").innerText = `CASH OUT (₹${amt})`;
+        document.getElementById("bBtn").disabled = true;
+        document.getElementById("bBtn").innerText = "BET PLACED";
         
-        // Push user bet to global pool for admin to see
-        push(ref(db, `global_bets`), { uid, amt, time: Date.now() });
+        // Transaction Record
+        push(ref(db, `transactions/${uid}`), { type: 'BET', amount: amt, time: Date.now() });
     };
 
     window.cashOut = async () => {
-        if(!hasBet || !isFlying) return;
+        if(!hasBet || isCashedOut) return;
         
-        const currentX = parseFloat(document.getElementById("multiplier").innerText);
+        isCashedOut = true;
         const win = betAmt * currentX;
         
-        hasBet = false;
-        await update(ref(db, `users/${uid}`), { balance: increment(win) });
+        await update(ref(db, `users/${uid}`), { balance: increment(win), totalWin: increment(win) });
         
-        confetti({ particleCount: 100, spread: 60, origin: { y: 0.7 } });
+        // UI Updates
+        confetti({ particleCount: 150, spread: 70, origin: { y: 0.8 } });
         document.getElementById("cBtn").style.display = "none";
         document.getElementById("bBtn").style.display = "block";
-        alert(`Won ₹${win.toFixed(2)}!`);
+        document.getElementById("bBtn").innerText = "BET";
+        
+        // Save Win Tx
+        push(ref(db, `transactions/${uid}`), { type: 'WIN', amount: win, mult: currentX.toFixed(2), time: Date.now() });
     };
 
     function loadHistory() {
-        onValue(query(ref(db, `aviator_history`), limitToLast(15)), s => {
+        onValue(query(ref(db, `aviator_history`), limitToLast(12)), s => {
             const bar = document.getElementById("historyBar");
             bar.innerHTML = "";
             s.forEach(c => {
                 const x = c.val().x;
-                const col = x > 2 ? '#9c27b0' : (x > 1.5 ? '#3498db' : '#666');
-                bar.innerHTML = `<div class="h-item" style="color:${col}">${x}x</div>` + bar.innerHTML;
+                const col = x >= 2.0 ? '#9333ea' : (x >= 1.5 ? '#2563eb' : '#64748b');
+                bar.innerHTML = `<div class="h-item" style="color:${col}; border-color:${col}44">${x.toFixed(2)}x</div>` + bar.innerHTML;
             });
         });
     }
