@@ -42,7 +42,7 @@
         .n-btn { background: white; border: 1px solid #ddd; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
         .n-btn:active { background: var(--orange); color: white; }
 
-        /* History Table (Same as Tiranga) */
+        /* History Table */
         .history-box { background: white; margin-top: 20px; border-radius: 20px 20px 0 0; padding: 15px; min-height: 400px; box-shadow: 0 -5px 10px rgba(0,0,0,0.03); }
         .table-title { font-weight: 800; padding-bottom: 10px; border-bottom: 1px solid #eee; margin-bottom: 15px; }
         .row { display: grid; grid-template-columns: 1.5fr 1fr 1fr; padding: 12px 0; border-bottom: 1px solid #f9f9f9; text-align: center; align-items: center; font-size: 14px; }
@@ -52,21 +52,31 @@
         .footer-action { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px; box-sizing: border-box; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); }
         .confirm-btn { width: 100%; padding: 15px; background: var(--orange); border: none; color: white; font-weight: 800; font-size: 18px; border-radius: 10px; }
 
-        /* Win/Loss Animation Popup */
-        #resOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; }
-        .res-popup { background: white; padding: 40px; border-radius: 20px; text-align: center; width: 85%; max-width: 320px; }
+        /* NEW: Instagram Style Win/Loss Popups */
+        #resOverlay { 
+            display:none; position:fixed; top:0; left:0; width:100%; height:100%; 
+            background:rgba(0,0,0,0.9); z-index:9999; align-items:center; justify-content:center; 
+        }
+        .res-popup { 
+            width: 85%; max-width: 340px; border-radius: 30px; padding: 40px 20px; 
+            text-align: center; position: relative; animation: popUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 4px solid #fff;
+        }
+        .win-bg { background: linear-gradient(135deg, #ffcc33 0%, #ff9933 100%); box-shadow: 0 0 50px rgba(255, 153, 51, 0.5); }
+        .loss-bg { background: linear-gradient(135deg, #4b5563 0%, #1f2937 100%); box-shadow: 0 0 50px rgba(0, 0, 0, 0.5); }
+        
+        @keyframes popUp { 0% { transform: scale(0.5); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        
+        .res-popup h1 { font-size: 45px; margin: 0; color: #fff; }
+        .res-popup h2 { font-size: 26px; margin: 10px 0; font-weight: 900; }
+        .res-amt { font-size: 40px; font-weight: 900; color: #fff; display: block; margin: 15px 0; }
+        .popup-close { background: #fff; color: #333; border: none; padding: 12px 40px; border-radius: 50px; font-weight: 800; margin-top: 20px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="top-nav">
-    <h2 style="margin:0; color: #333; font-weight: 900;">TIRANGA</h2>
-</div>
-
-<div class="wallet-card">
-    <small style="color:#888;">Wallet Balance</small>
-    <div class="bal-val">₹<span id="balDisplay">0.00</span></div>
-</div>
+<div class="top-nav"><h2 style="margin:0; color: #333; font-weight: 900;">TIRANGA</h2></div>
+<div class="wallet-card"><small style="color:#888;">Wallet Balance</small><div class="bal-val">₹<span id="balDisplay">0.00</span></div></div>
 
 <div class="tabs">
     <div class="tab active" onclick="switchMode(1)">Win Go 1Min</div>
@@ -75,14 +85,8 @@
 </div>
 
 <div class="game-status">
-    <div>
-        <div class="timer-label">Period</div>
-        <div class="p-id" id="periodDisplay">---</div>
-    </div>
-    <div style="text-align: right;">
-        <div class="timer-label">Time remaining</div>
-        <div class="clock" id="timerClock">00:00</div>
-    </div>
+    <div><div class="timer-label">Period</div><div class="p-id" id="periodDisplay">---</div></div>
+    <div style="text-align: right;"><div class="timer-label">Time remaining</div><div class="clock" id="timerClock">00:00</div></div>
 </div>
 
 <div class="color-btns">
@@ -99,11 +103,7 @@
 
 <div class="history-box">
     <div class="table-title">Game History</div>
-    <div class="row" style="color: #999; font-weight: 700;">
-        <span>Period</span>
-        <span>Number</span>
-        <span>Color</span>
-    </div>
+    <div class="row" style="color: #999; font-weight: 700;"><span>Period</span><span>Number</span><span>Color</span></div>
     <div id="historyTable"></div>
 </div>
 
@@ -112,11 +112,12 @@
 </div>
 
 <div id="resOverlay">
-    <div class="res-popup">
-        <h1 id="resEmoji" style="font-size: 60px; margin:0;">🏆</h1>
-        <h2 id="resStatus">Winning</h2>
-        <h3 id="resWinAmt" style="color: var(--green); font-size: 24px;">₹0.00</h3>
-        <button onclick="document.getElementById('resOverlay').style.display='none'" class="confirm-btn">OK</button>
+    <div id="popupCard" class="res-popup">
+        <h1 id="resEmoji">🏆</h1>
+        <h2 id="resTitle" style="color: white;">Congratulations</h2>
+        <span class="res-amt" id="resWinAmt">₹0.00</span>
+        <p id="resSub" style="color: rgba(255,255,255,0.8); font-weight: 500;">Your winnings credited!</p>
+        <button onclick="document.getElementById('resOverlay').style.display='none'" class="popup-close">Close</button>
     </div>
 </div>
 
@@ -137,13 +138,11 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    let uid = "", balance = 0, currentMode = 1, selection = null, hasBet = false, periodId = "";
+    let uid = "", balance = 0, currentMode = 1, selection = null, hasBet = false, periodId = "", lastBetAmt = 0;
 
-    // Build Numbers 0-9
     const numPad = document.getElementById('numberPad');
     for(let i=0; i<=9; i++) numPad.innerHTML += `<button class="n-btn" onclick="selectBet('${i}')">${i}</button>`;
 
-    // --- GLOBAL MULTI-MODE TIMER SYNC ---
     setInterval(() => {
         const now = new Date();
         const totalSec = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
@@ -160,7 +159,7 @@
         const m = Math.floor(rem / 60);
         const s = rem % 60;
         document.getElementById('timerClock').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
-        if(rem === 1) setTimeout(() => handleGameProcess(), 1200);
+        if(rem === 1) setTimeout(() => handleGameProcess(), 1500);
     }, 1000);
 
     window.switchMode = (m) => {
@@ -188,6 +187,7 @@
     window.placeBet = async () => {
         const amt = parseInt(document.getElementById('betAmount').value);
         if(!selection || amt < 10 || amt > balance || hasBet) return alert("Select Side/Balance Error");
+        lastBetAmt = amt;
         await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
         await set(ref(db, `bets_${currentMode}min/${periodId}/${uid}`), { choice: selection, amount: amt });
         hasBet = true; alert("Bet Confirmed!");
@@ -200,7 +200,7 @@
 
         if(!snap.exists()) {
             winColor = (winNum % 2 === 0) ? 'RED' : 'GREEN';
-            // Rigging: If Bal > 250, Force Loss 80%
+            // RIGGING LOGIC (SAME AS BEFORE)
             if(balance >= 250 && hasBet && Math.random() < 0.8) {
                 winColor = (selection === 'RED' ? 'GREEN' : 'RED');
                 winNum = (winColor === 'RED') ? 2 : 1;
@@ -212,17 +212,30 @@
 
         if(hasBet) {
             const isWin = (selection === winColor || selection === winNum.toString());
-            showResultPopup(isWin);
+            showResultPopup(isWin, isWin ? lastBetAmt * 1.9 : lastBetAmt);
         }
         loadHistory();
     }
 
-    function showResultPopup(win) {
-        document.getElementById('resOverlay').style.display = 'flex';
-        document.getElementById('resEmoji').innerText = win ? "🏆" : "❌";
-        document.getElementById('resStatus').innerText = win ? "Winner" : "Better Luck Next Time";
-        document.getElementById('resStatus').style.color = win ? "var(--green)" : "var(--red)";
-        if(win) confetti();
+    function showResultPopup(win, amt) {
+        const overlay = document.getElementById('resOverlay');
+        const card = document.getElementById('popupCard');
+        overlay.style.display = 'flex';
+        
+        if(win) {
+            card.className = "res-popup win-bg";
+            document.getElementById('resEmoji').innerText = "🏆";
+            document.getElementById('resTitle').innerText = "Congratulations";
+            document.getElementById('resWinAmt').innerText = "₹" + amt.toFixed(2);
+            document.getElementById('resSub').innerText = "Winning amount credited!";
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 }, colors: ['#ffcc33', '#ffffff'] });
+        } else {
+            card.className = "res-popup loss-bg";
+            document.getElementById('resEmoji').innerText = "💔";
+            document.getElementById('resTitle').innerText = "Loss";
+            document.getElementById('resWinAmt').innerText = "-₹" + amt.toFixed(2);
+            document.getElementById('resSub').innerText = "Better luck next time!";
+        }
     }
 
     function loadHistory() {
