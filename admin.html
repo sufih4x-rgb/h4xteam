@@ -3,57 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H4X Master Admin v7.0 | Ultimate Analytics</title>
+    <title>H4X Master Admin v7.5 | Ultimate Analytics</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #6366f1; --success: #10b981; --danger: #ef4444; --dark: #0f172a; }
+        :root { --primary: #6366f1; --success: #10b981; --danger: #ef4444; --dark: #0f172a; --warning: #f59e0b; }
         body { margin: 0; font-family: 'Plus Jakarta Sans', sans-serif; background: #f1f5f9; display: flex; }
         #adminAuth { position: fixed; inset: 0; background: var(--dark); z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .auth-card { background: white; padding: 40px; border-radius: 24px; width: 340px; text-align: center; }
-        .sidebar { width: 260px; height: 100vh; background: var(--dark); color: white; position: fixed; }
-        .nav-item { padding: 14px 25px; cursor: pointer; transition: 0.3s; font-weight: 600; color: #94a3b8; display: flex; align-items: center; gap: 12px; font-size: 14px; }
+        
+        /* Sidebar */
+        .sidebar { width: 260px; height: 100vh; background: var(--dark); color: white; position: fixed; overflow-y: auto; }
+        .nav-item { padding: 14px 25px; cursor: pointer; transition: 0.3s; font-weight: 600; color: #94a3b8; display: flex; align-items: center; gap: 12px; font-size: 13px; }
+        .nav-item:hover { background: rgba(255,255,255,0.05); }
         .nav-item.active { background: var(--primary); color: white; }
+        
+        /* Main Content */
         .main { margin-left: 260px; width: calc(100% - 260px); padding: 30px; box-sizing: border-box; display: none; }
         .card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #e2e8f0; }
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-        th { text-align: left; padding: 12px; background: #f8fafc; font-size: 10px; text-transform: uppercase; color: #64748b; }
-        td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 12px; font-weight: 600; }
+        
+        /* Tables */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white; }
+        th { text-align: left; padding: 12px; background: #f8fafc; font-size: 11px; text-transform: uppercase; color: #64748b; border-bottom: 2px solid #edf2f7; }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 12px; font-weight: 600; vertical-align: middle; }
+        
+        /* Utils */
         .stats-box { font-size: 10px; color: #64748b; margin-top: 4px; line-height: 1.4; }
         .win-txt { color: var(--success); } .loss-txt { color: var(--danger); }
-        input { padding: 8px; border: 1px solid #cbd5e1; border-radius: 8px; width: 70px; }
-        button { border: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 11px; }
-        .btn-success { background: #dcfce7; color: #166534; } .btn-danger { background: #fee2e2; color: #991b1b; } .btn-primary { background: var(--primary); color: white; }
+        input { padding: 8px 12px; border: 1px solid #cbd5e1; border-radius: 8px; font-size: 13px; outline: none; }
+        button { border: none; padding: 8px 16px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 11px; transition: 0.2s; }
+        button:active { transform: scale(0.95); }
+        .btn-success { background: #dcfce7; color: #166534; } 
+        .btn-danger { background: #fee2e2; color: #991b1b; } 
+        .btn-primary { background: var(--primary); color: white; }
         .tab-content { display: none; } .tab-content.active { display: block; }
+        
+        .live-indicator { width: 10px; height: 10px; background: var(--success); border-radius: 50%; display: inline-block; margin-right: 5px; animation: blink 1s infinite; }
+        @keyframes blink { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body>
 
 <div id="adminAuth">
     <div class="auth-card">
-        <h2 style="color:var(--primary)">ADMIN v7.0</h2>
-        <input type="email" id="adminEmail" placeholder="Email" style="width:100%; margin-bottom:10px;">
-        <input type="password" id="adminPass" placeholder="Password" style="width:100%; margin-bottom:20px;">
-        <button class="btn-primary" style="width:100%" onclick="adminLogin()">Login</button>
+        <h2 style="color:var(--primary); margin-bottom: 5px;">ADMIN PANEL</h2>
+        <p style="color:#64748b; font-size: 12px; margin-bottom: 25px;">H4X CORE v7.5 SECURE ACCESS</p>
+        <input type="email" id="adminEmail" placeholder="Admin Email" style="width:100%; margin-bottom:12px; box-sizing: border-box;">
+        <input type="password" id="adminPass" placeholder="Password" style="width:100%; margin-bottom:20px; box-sizing: border-box;">
+        <button class="btn-primary" style="width:100%; padding: 14px;" onclick="adminLogin()">System Login</button>
     </div>
 </div>
 
 <div class="sidebar">
-    <div style="padding: 25px; font-weight: 800; font-size: 18px; color: var(--primary);">H4X CORE v7.0</div>
+    <div style="padding: 25px; font-weight: 800; font-size: 18px; color: var(--primary); letter-spacing: -0.5px;">H4X CORE <span style="color:white">v7.5</span></div>
     <div class="nav-item active" onclick="showTab(event, 'users')">👥 User Analytics</div>
-    <div class="nav-item" onclick="showTab(event, 'games')">🎮 Game Control</div>
-    <div class="nav-item" onclick="showTab(event, 'rewards')">🎁 Refer Rewards</div>
-    <div class="nav-item" onclick="showTab(event, 'deposits')">💰 Deposits</div>
-    <div class="nav-item" onclick="showTab(event, 'withdrawals')">🏧 Withdrawals</div>
-    <div class="nav-item" onclick="showTab(event, 'recharges')">📱 Recharges</div>
+    <div class="nav-item" onclick="showTab(event, 'games')">🎯 Game Controller</div>
+    <div class="nav-item" onclick="showTab(event, 'deposits')">💰 Deposit Requests</div>
+    <div class="nav-item" onclick="showTab(event, 'withdrawals')">🏧 Withdraw Requests</div>
+    <div class="nav-item" onclick="showTab(event, 'rewards')">🎁 Referral Rewards</div>
+    <div class="nav-item" onclick="showTab(event, 'recharges')">📱 Mobile Recharges</div>
 </div>
 
 <div class="main" id="adminMain">
+    
     <div id="users" class="tab-content active">
         <div class="card">
-            <h3>User Engine (Stats & Balance Editor)</h3>
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+                <h3>User Management</h3>
+                <span style="font-size: 12px; color: #64748b;">Live Users Tracking</span>
+            </div>
             <table>
                 <thead>
-                    <tr><th>User Info</th><th>Balance</th><th>Edit Bal (+/-)</th><th>Rigging</th><th>Status</th></tr>
+                    <tr><th>User Details</th><th>Balance</th><th>Edit Balance</th><th>Rigging (F.Win/Loss)</th></tr>
                 </thead>
                 <tbody id="userList"></tbody>
             </table>
@@ -62,28 +82,68 @@
 
     <div id="games" class="tab-content">
         <div class="card">
-            <h3>🎯 Global Wingo</h3>
-            <button class="btn-success" onclick="fixW('GREEN')">FORCE GREEN</button>
-            <button class="btn-danger" onclick="fixW('RED')">FORCE RED</button>
-            <button onclick="fixW('RESET')">AUTO AI</button>
+            <h3>✈️ Aviator Live Sync Control</h3>
+            <div style="background: #f8fafc; padding: 20px; border-radius: 15px; display: flex; gap: 20px; align-items: center;">
+                <div>
+                    <div style="font-size: 12px; color: #64748b;">Current Phase</div>
+                    <div id="aviStatus" style="font-weight: 800; color: var(--primary);">LOADING...</div>
+                </div>
+                <div>
+                    <div style="font-size: 12px; color: #64748b;">Multiplier</div>
+                    <div id="aviMult" style="font-weight: 800; font-size: 24px;">1.00x</div>
+                </div>
+                <div style="flex: 1; text-align: right;">
+                    <input type="number" id="aviC" placeholder="Force Crash (e.g. 1.50)" style="width: 150px;">
+                    <button class="btn-primary" onclick="fixAviator()">FORCE CRASH</button>
+                    <button onclick="resetAviator()">AUTO AI</button>
+                </div>
+            </div>
         </div>
+
         <div class="card">
-            <h3>✈️ Global Aviator</h3>
-            <input type="number" id="aviC" placeholder="Crash Point">
-            <button class="btn-primary" onclick="fixA()">SET CRASH</button>
-            <button onclick="resetA()">AUTO</button>
+            <h3>🎯 Wingo (Color Prediction)</h3>
+            <p style="font-size: 12px; color: #64748b;">Agle 30 second ke liye color fix karein:</p>
+            <button class="btn-success" onclick="fixWingo('GREEN')">NEXT GREEN</button>
+            <button class="btn-danger" onclick="fixWingo('RED')">NEXT RED</button>
+            <button onclick="fixWingo('RESET')">AUTO AI MODE</button>
         </div>
     </div>
 
-    <div id="rewards" class="tab-content"><div class="card"><h3>Milestone Rewards</h3><table><tbody id="rewardList"></tbody></table></div></div>
-    <div id="deposits" class="tab-content"><div class="card"><h3>Deposits</h3><tbody id="depositList"></tbody></div></div>
-    <div id="withdrawals" class="tab-content"><div class="card"><h3>Withdrawals</h3><tbody id="withdrawList"></tbody></div></div>
-    <div id="recharges" class="tab-content"><div class="card"><h3>Recharges</h3><tbody id="rechargeList"></tbody></div></div>
+    <div id="deposits" class="tab-content">
+        <div class="card">
+            <h3>💰 Pending Deposits</h3>
+            <table>
+                <thead><tr><th>User Email</th><th>Amount</th><th>Action</th></tr></thead>
+                <tbody id="depositList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="withdrawals" class="tab-content">
+        <div class="card">
+            <h3>🏧 Withdrawal Requests</h3>
+            <table>
+                <thead><tr><th>User Info</th><th>Amount</th><th>Method</th><th>Action</th></tr></thead>
+                <tbody id="withdrawList"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="rewards" class="tab-content">
+        <div class="card">
+            <h3>🎁 Referral Milestones</h3>
+            <table>
+                <thead><tr><th>User</th><th>Referrals</th><th>Reward</th><th>Action</th></tr></thead>
+                <tbody id="rewardList"></tbody>
+            </table>
+        </div>
+    </div>
+
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, increment, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, increment, set, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
     const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
@@ -91,62 +151,102 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
+    // Login
     window.adminLogin = async () => {
         try {
             await signInWithEmailAndPassword(auth, document.getElementById('adminEmail').value, document.getElementById('adminPass').value);
             document.getElementById('adminAuth').style.display = 'none';
             document.getElementById('adminMain').style.display = 'block';
-        } catch(e) { alert("Error!"); }
+        } catch(e) { alert("Invalid Credentials!"); }
     };
 
+    // Tab Switcher
     window.showTab = (e, id) => {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
         document.getElementById(id).classList.add('active'); e.currentTarget.classList.add('active');
     };
 
+    // Main Listener
     onValue(ref(db, "/"), snap => {
         const d = snap.val(); if(!d) return;
         
-        // --- USERS WITH WIN/LOSS ANALYTICS ---
-        let uH = ""; let rH = "";
+        // 1. User List
+        let uH = "";
         for(let id in d.users) {
             const u = d.users[id];
-            const tw = u.totalWin || 0; const tl = u.totalLoss || 0;
-            const net = tw - tl;
+            const net = (u.totalWin || 0) - (u.totalLoss || 0);
             uH += `<tr>
-                <td>${u.email}<div class="stats-box">Bet: ₹${u.totalBet || 0} | <span class="win-txt">Win: ₹${tw}</span> | <span class="loss-txt">Loss: ₹${tl}</span><br>Net: <b style="color:${net>=0?'green':'red'}">₹${net}</b></div></td>
+                <td>${u.email}<div class="stats-box">Total Bet: ₹${u.totalBet || 0} | <span class="win-txt">W: ₹${u.totalWin || 0}</span> | <span class="loss-txt">L: ₹${u.totalLoss || 0}</span><br>Net: <b style="color:${net>=0?'green':'red'}">₹${net}</b></div></td>
                 <td>₹${(u.balance||0).toFixed(2)}</td>
-                <td><input type="number" id="b_${id}"><button onclick="editB('${id}')">Ok</button></td>
-                <td><button class="btn-success" onclick="setR('${id}','w')">W</button><button class="btn-danger" onclick="setR('${id}','l')">L</button><button onclick="setR('${id}','r')">↺</button></td>
-                <td>${u.forceWin?'WIN':(u.forceLoss?'LOSS':'AUTO')}</td>
+                <td><input type="number" id="b_${id}" style="width:60px" placeholder="+/-"> <button class="btn-primary" onclick="editBalance('${id}')">Fix</button></td>
+                <td>
+                    <button class="btn-success" onclick="toggleRig('${id}','w')">${u.forceWin?'[WIN]':'Win'}</button>
+                    <button class="btn-danger" onclick="toggleRig('${id}','l')">${u.forceLoss?'[LOSS]':'Loss'}</button>
+                    <button onclick="toggleRig('${id}','r')">Reset</button>
+                </td>
             </tr>`;
-
-            if(u.activeReferrals >= 5 && !u.reward5) rH += `<tr><td>${u.email}</td><td>${u.activeReferrals} Ref</td><td>₹50</td><td><button onclick="claimR('${id}',5,50)">Approve</button></td></tr>`;
         }
         document.getElementById("userList").innerHTML = uH;
-        document.getElementById("rewardList").innerHTML = rH || "No Rewards";
 
-        // Deposits, Withdrawals, Recharges (Logic preserved from v6.8)
-        let depH = ""; for(let k in d.deposit_requests) { const dr = d.deposit_requests[k]; if(dr.status==="pending") depH += `<tr><td>${dr.email}</td><td>₹${dr.amount}</td><td><button onclick="appD('${k}','${dr.uid}',${dr.amount})">Approve</button></td></tr>`; }
-        document.getElementById("depositList").innerHTML = depH;
+        // 2. Deposits
+        let depH = "";
+        for(let k in d.deposit_requests) {
+            const dr = d.deposit_requests[k];
+            if(dr.status === "pending") {
+                depH += `<tr><td>${dr.email}</td><td>₹${dr.amount}</td><td><button class="btn-success" onclick="approveDep('${k}','${dr.uid}',${dr.amount})">Approve</button></td></tr>`;
+            }
+        }
+        document.getElementById("depositList").innerHTML = depH || "<tr><td colspan='3'>No pending deposits</td></tr>";
+
+        // 3. Aviator Live Sync
+        const avi = d.aviator_live;
+        if(avi) {
+            document.getElementById("aviStatus").innerText = avi.status;
+            document.getElementById("aviMult").innerText = (avi.currentX || 1.0).toFixed(2) + "x";
+            document.getElementById("aviMult").style.color = avi.status === "FLYING" ? "#10b981" : "#ef4444";
+        }
     });
 
-    // BALANCE EDITOR WITH NOTIFICATION LOGIC
-    window.editB = async (id) => {
-        const v = parseFloat(document.getElementById(`b_${id}`).value);
-        if(isNaN(v)) return;
-        const type = v > 0 ? "Credit" : "Debit";
-        await update(ref(db, `users/${id}`), { balance: increment(v) });
-        // Send Notification to user
-        set(ref(db, `notifications/${id}`), { msg: `Amount ${type}ed: ₹${Math.abs(v)}`, time: Date.now() });
-        alert("Balance Adjusted & Notification Sent!");
+    // --- Action Functions ---
+    window.editBalance = (id) => {
+        const amt = parseFloat(document.getElementById(`b_${id}`).value);
+        if(!amt) return;
+        update(ref(db, `users/${id}`), { balance: increment(amt) });
+        set(ref(db, `notifications/${id}/${Date.now()}`), { msg: `Wallet Updated: ₹${amt}`, time: Date.now() });
+        alert("Balance Updated!");
     };
 
-    window.setR = (id, t) => { let o = {forceWin:false, forceLoss:false}; if(t==='w') o.forceWin=true; if(t==='l') o.forceLoss=true; update(ref(db, `users/${id}`), o); };
-    window.fixW = (c) => update(ref(db, "admin_control/30"), c==='RESET'?{active:false}:{active:true, color:c});
-    window.fixA = () => { const v = parseFloat(document.getElementById("aviC").value); if(v) update(ref(db, "admin_control/aviator"), {active:true, crashAt:v}); };
-    window.resetA = () => update(ref(db, "admin_control/aviator"), {active:false});
+    window.toggleRig = (id, type) => {
+        let updateData = { forceWin: false, forceLoss: false };
+        if(type === 'w') updateData.forceWin = true;
+        if(type === 'l') updateData.forceLoss = true;
+        update(ref(db, `users/${id}`), updateData);
+    };
+
+    window.fixAviator = () => {
+        const crash = parseFloat(document.getElementById("aviC").value);
+        if(!crash) return alert("Enter crash point");
+        update(ref(db, "admin_control/aviator"), { active: true, crashAt: crash });
+        alert("Next round will crash at " + crash + "x");
+    };
+
+    window.resetAviator = () => {
+        update(ref(db, "admin_control/aviator"), { active: false });
+        alert("Aviator set to Auto AI");
+    };
+
+    window.fixWingo = (color) => {
+        const active = color !== 'RESET';
+        update(ref(db, "admin_control/wingo"), { active: active, color: color });
+        alert(active ? "Next Wingo: " + color : "Wingo set to Auto");
+    };
+
+    window.approveDep = async (key, uid, amt) => {
+        await update(ref(db, `users/${uid}`), { balance: increment(amt) });
+        await update(ref(db, `deposit_requests/${key}`), { status: "approved" });
+        alert("Deposit Approved!");
+    };
 </script>
 </body>
 </html>
