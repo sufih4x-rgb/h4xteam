@@ -13,8 +13,9 @@
         .balance-chip { font-weight: 800; color: var(--accent); font-size: 18px; }
         .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; min-height: 300px; }
         .slot { aspect-ratio: 1; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
-        .slot.diamond { background: radial-gradient(circle, #06b6d4, #083344); border-color: #22d3ee; }
-        .slot.bomb { background: radial-gradient(circle, #ef4444, #7f1d1d); border-color: #f87171; }
+        .slot.diamond { background: radial-gradient(circle, #06b6d4, #083344); border-color: #22d3ee; transform: scale(0.95); }
+        .slot.bomb { background: radial-gradient(circle, #ef4444, #7f1d1d); border-color: #f87171; animation: shake 0.2s; }
+        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(3px); } 50% { transform: translateX(-3px); } 100% { transform: translateX(0); } }
         .lvl-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
         .lvl-btn { padding: 12px; border: 1px solid #334155; border-radius: 12px; background: #1e293b; color: #94a3b8; font-weight: 700; cursor: pointer; font-size: 11px; }
         .lvl-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
@@ -75,12 +76,12 @@
     const db = getDatabase(app);
 
     let balance = 0, currentLvl = 'easy', isPlaying = false, mines = [], diamondsFound = 0, currentMult = 1.0, activeBet = 0;
-    let lastGameWin = false; 
-
+    
+    // Updated Multipliers for better progression
     const mTable = {
-        easy: [1.20, 1.88, 2.11, 3.00, 4.50, 6.00, 8.00, 9.00],
-        medium: [1.50, 2.00, 4.50, 5.00, 7.00, 13.00],
-        hard: [7.00, 19.00] 
+        easy: [1.20, 1.88, 2.11, 3.00, 4.20, 6.00, 8.00, 12.00],
+        medium: [2.50, 5.00, 12.00, 25.00, 50.00, 100.00],
+        hard: [24.00, 100.00] 
     };
 
     const grid = document.getElementById("gameGrid");
@@ -127,21 +128,30 @@
 
         const uSnap = await get(ref(db, `users/${auth.currentUser.uid}`));
         const uData = uSnap.val() || {};
-        let risk = 0.15; 
+        
+        // --- RIGGING ENGINE v8.6 ---
+        let risk = 0.10; 
 
-        // --- SMART RIGGING v8.4 ---
-        if (uData.forceLoss) risk = 1.0;
-        else if (uData.forceWin) risk = 0.0;
-        else {
-            if (currentLvl === 'easy' && diamondsFound >= 3) risk = 0.88;
-            if (balance >= 180) { // Balance Protection Mode
-                if (lastGameWin) risk = 0.92; 
-                else risk = 0.40; // 40% chance to lose even after a loss
+        if (uData.forceLoss) {
+            risk = 1.0;
+        } else if (uData.forceWin) {
+            risk = 0.0;
+        } else {
+            if (currentLvl === 'easy') {
+                // Easy Mode: 60% loss chance between 3-6 diamonds, then high risk
+                if (diamondsFound < 3) risk = 0.30;
+                else if (diamondsFound < 6) risk = 0.60;
+                else risk = 0.90;
+            } else {
+                // Medium & Hard Mode: 90% chance to lose every time
+                risk = 0.90;
             }
-            if (balance >= 350) risk = 0.98; // Hard Kill
+
+            // Balance Protection (₹350+ equals instant kill)
+            if (balance >= 350) risk = 0.98;
         }
 
-        // Apply Shift
+        // Apply Rigging (Shift bomb if needed)
         if (Math.random() < risk && !uData.forceWin) {
             if (!mines.includes(idx)) { mines.pop(); mines.push(idx); }
         }
@@ -166,7 +176,7 @@
     window.cashout = async () => {
         if(!isPlaying || diamondsFound === 0) return;
         let win = activeBet * currentMult;
-        isPlaying = false; lastGameWin = true;
+        isPlaying = false;
         await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(win), totalWin: increment(win) });
         saveTx('WIN', win);
         showModal("CASHOUT!", "Won ₹"+win.toFixed(2), "🏆");
@@ -174,7 +184,7 @@
     }
 
     function gameOver(won) {
-        isPlaying = false; lastGameWin = false;
+        isPlaying = false;
         mines.forEach(m => { grid.children[m].classList.add("bomb"); grid.children[m].innerText = "💣"; });
         saveTx('LOSE', activeBet);
         setTimeout(() => { showModal("BOOM!", "Lost ₹"+activeBet, "💥"); resetUI(); }, 600);
