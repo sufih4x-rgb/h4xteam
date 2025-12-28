@@ -3,215 +3,153 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Elite Aviator | Pro Engine</title>
+    <title>Aviator Elite | Global Sync</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.5.1/dist/confetti.browser.min.js"></script>
     <style>
-        :root { --bg: #000; --card: #1b1c21; --primary: #cb011a; --accent: #28a745; --gold: #ffc107; }
+        :root { --bg: #05070a; --card: #12141d; --primary: #ea1d39; --accent: #2ecc71; --gold: #f1c40f; }
         body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 0; overflow-x: hidden; }
         
-        .app-wrapper { max-width: 450px; margin: auto; min-height: 100vh; display: flex; flex-direction: column; }
+        .nav { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: var(--card); border-bottom: 2px solid #1f222e; sticky top:0; z-index:100; }
+        .bal-chip { background: #000; padding: 8px 15px; border-radius: 50px; border: 1.5px solid var(--gold); color: var(--gold); font-weight: 900; }
+
+        .stage { height: 280px; position: relative; background: radial-gradient(circle at bottom left, #1a1010, #05070a); overflow: hidden; display: flex; justify-content: center; align-items: center; }
+        #multiplier { font-size: 60px; font-weight: 900; z-index: 10; font-variant-numeric: tabular-nums; }
+        #plane { position: absolute; bottom: 20%; left: 10%; width: 85px; z-index: 5; display: none; filter: drop-shadow(0 0 15px var(--primary)); }
+        .flew-away { position: absolute; color: var(--primary); font-size: 26px; font-weight: 900; display: none; z-index: 12; top: 20%; }
+
+        .bet-area { background: var(--card); padding: 20px; border-radius: 25px 25px 0 0; border-top: 1px solid #2d313f; }
+        input { width: 100%; background: #000; border: 1.5px solid #333; padding: 15px; border-radius: 12px; color: #fff; font-size: 20px; font-weight: 800; text-align: center; margin-bottom: 15px; box-sizing: border-box; }
         
-        .top-nav { padding: 15px; display: flex; justify-content: space-between; align-items: center; background: var(--card); border-bottom: 1px solid #333; }
-        .bal-box { background: #000; padding: 5px 15px; border-radius: 20px; border: 1px solid var(--gold); color: var(--gold); font-weight: 900; }
+        .btn { width: 100%; padding: 18px; border-radius: 15px; border: none; font-weight: 900; font-size: 17px; cursor: pointer; transition: 0.1s; }
+        .btn-bet { background: var(--accent); color: white; box-shadow: 0 5px 0 #27ae60; }
+        .btn-cash { background: var(--gold); color: #000; display: none; box-shadow: 0 5px 0 #c29d0b; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
 
-        .history-bar { display: flex; gap: 8px; padding: 10px; background: #0a0a0a; overflow-x: auto; scrollbar-width: none; }
-        .h-tag { padding: 4px 12px; background: #222; border-radius: 10px; font-size: 11px; font-weight: 700; min-width: 45px; text-align: center; }
-        .h-tag.high { color: #9c27b0; }
-        .h-tag.low { color: #3498db; }
-
-        .stage { height: 260px; position: relative; background: radial-gradient(circle at bottom left, #1c1c1c, #000); overflow: hidden; display: flex; justify-content: center; align-items: center; border-bottom: 2px solid #222; }
-        #multiplier { font-size: 55px; font-weight: 900; z-index: 10; transition: color 0.3s; }
-        #plane { position: absolute; bottom: 20%; left: 10%; width: 80px; z-index: 5; display: none; filter: drop-shadow(0 0 10px var(--primary)); }
-        .flew-away { position: absolute; color: var(--primary); font-size: 24px; font-weight: 900; display: none; z-index: 12; top: 20%; }
-
-        .bet-box { background: var(--card); padding: 15px; border-radius: 0 0 20px 20px; }
-        .input-row { display: flex; gap: 10px; margin-bottom: 12px; }
-        input { flex: 1; background: #000; border: 1px solid #444; padding: 12px; border-radius: 10px; color: #fff; font-size: 18px; font-weight: 700; text-align: center; }
-        
-        .btn { width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 900; font-size: 16px; cursor: pointer; }
-        .btn-bet { background: var(--accent); color: white; box-shadow: 0 4px 0 #1e7e34; }
-        .btn-cash { background: var(--gold); color: black; display: none; box-shadow: 0 4px 0 #d39e00; }
-
-        .tx-section { flex-grow: 1; background: #0a0a0a; margin-top: 10px; padding: 15px; }
-        .tx-header { font-size: 12px; color: #666; display: flex; justify-content: space-between; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
-        .tx-list { display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: hidden; }
-        .tx-row { display: flex; justify-content: space-between; background: #16171b; padding: 10px; border-radius: 8px; font-size: 13px; animation: slideIn 0.3s ease-out; }
-        @keyframes slideIn { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
-        .win-amt { color: var(--accent); font-weight: 700; }
-        .lose-amt { color: var(--primary); }
+        .history { display: flex; gap: 8px; padding: 10px; overflow-x: auto; background: #0a0c12; border-bottom: 1px solid #1f222e; scrollbar-width: none; }
+        .h-item { padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 700; background: #1a1d26; min-width: 40px; text-align: center; }
     </style>
 </head>
 <body>
 
-<div class="app-wrapper">
-    <div class="top-nav">
-        <div style="font-weight: 900; letter-spacing: 1px;">AVIATOR <span style="color:var(--primary)">PRO</span></div>
-        <div class="bal-box">₹<span id="uBal">0.00</span></div>
-    </div>
+<div class="nav">
+    <div style="font-weight: 900; font-size: 18px;">AVIATOR <span style="color:var(--primary)">SYNC</span></div>
+    <div class="bal-chip">₹<span id="uBal">0.00</span></div>
+</div>
 
-    <div class="history-bar" id="historyBar"></div>
+<div class="history" id="historyBar"></div>
 
-    <div class="stage">
-        <div id="multiplier">1.00x</div>
-        <div class="flew-away" id="msg">FLEW AWAY!</div>
-        <img id="plane" src="https://i.ibb.co/Y7XvX0k/plane.png" alt="plane">
-    </div>
+<div class="stage">
+    <div id="multiplier">1.00x</div>
+    <div class="flew-away" id="msg">FLEW AWAY!</div>
+    <img id="plane" src="https://i.ibb.co/Y7XvX0k/plane.png" alt="plane">
+</div>
 
-    <div class="bet-box">
-        <div class="input-row">
-            <input type="number" id="amtInp" value="10" min="10">
-        </div>
-        <button id="bBtn" class="btn btn-bet" onclick="handleBet()">BET</button>
-        <button id="cBtn" class="btn btn-cash" onclick="claimWin()">CASH OUT</button>
-    </div>
-
-    <div class="tx-section">
-        <div class="tx-header">
-            <span>Live Bets</span>
-            <span>Profit</span>
-        </div>
-        <div class="tx-list" id="txList"></div>
-    </div>
+<div class="bet-area">
+    <input type="number" id="amtInp" value="10" min="10">
+    <button id="bBtn" class="btn btn-bet" onclick="placeBet()">BET</button>
+    <button id="cBtn" class="btn btn-cash" onclick="cashOut()">CASH OUT</button>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, update, get, increment, push, limitToLast, query } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, get, increment, set, push, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = {
-        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-        authDomain: "test-eb5e7.firebaseapp.com",
-        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-        projectId: "test-eb5e7",
-        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
-    };
-
+    const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let bal = 0, currentX = 1.0, active = false, betAmt = 0, engine, crashAt = 0;
-    const names = ["Aarav","Aditya","Arjun","Vivaan","Nilay","Sia","Ananya","Kavya","Rohan","Sahil","Vikram","Suresh","Rahul","Priya","Neha","Amit","Vicky","Sunny","Deepak","Jyoti","Pooja","Manish","Karan","Ishita","Megha","Rishi","Abhi","Tanya","Zoya","Kabir","Aryan","Aman","Sonal","Preeti","Kunal","Varun","Nisha","Ankit","Manoj","Rajesh","Sunita","Lata","Gaurav","Harish","Bina","Tarun","Sagar","Heena","Umesh","Payal","Rani","Bobby","Ravi","Sumit","Anil","Kapil","Ashok","Vinay","Sanjay","Geeta","Reena","Shweta","Sneha","Ritu","Bablu","Golu","Pinki","Chintu","Mona","Kittu","Dheeraj","Pankaj","Nitin","Mohit","Rohit","Shivam","Satyam","Shubham","Mayank","Piyush","Ansh","Yash","Kanak","Dolly","Bunty","Tinku","Sonu","Monu","Chunnu","Pappu","Guddu","Raju","Sanju","Bittu","Lalu","Bhola","Mintu","Pintu"];
+    let uid = "", bal = 0, betAmt = 0, hasBet = false, isFlying = false;
 
     onAuthStateChanged(auth, u => {
-        if(!u) return;
-        onValue(ref(db, `users/${u.uid}`), s => {
+        if(!u) return; uid = u.uid;
+        onValue(ref(db, `users/${uid}`), s => {
             bal = s.val().balance || 0;
             document.getElementById("uBal").innerText = bal.toFixed(2);
         });
+        syncGame();
         loadHistory();
-        startFakeBets();
     });
 
-    window.handleBet = async () => {
-        const val = parseFloat(document.getElementById("amtInp").value);
-        if(val < 10 || isNaN(val)) return alert("Min bet ₹10");
-        if(val > bal) return alert("Insufficient Balance!");
-        
-        betAmt = val;
-        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(-val) });
-        
-        document.getElementById("bBtn").style.display = "none";
-        document.getElementById("cBtn").style.display = "block";
-        setupCrash();
-    };
+    // GLOBAL SYNC LOGIC
+    function syncGame() {
+        onValue(ref(db, `aviator_live`), (snapshot) => {
+            const data = snapshot.val();
+            if(!data) return;
 
-    async function setupCrash() {
-        const snap = await get(ref(db, `users/${auth.currentUser.uid}`));
-        const data = snap.val();
-        
-        // --- UPDATED RIGGING LOGIC ---
-        if(data.forceLoss) {
-            crashAt = 1.00;
-        } else if(data.forceWin) {
-            crashAt = (Math.random() * 5 + 3).toFixed(2);
-        } else if(bal >= 250) {
-            // Profit Trap: 70% Chance to crash early if balance > 250
-            if(Math.random() < 0.70) {
-                crashAt = (Math.random() * 0.10 + 1.01).toFixed(2); // Crashes between 1.01 and 1.11
+            const plane = document.getElementById("plane");
+            const multText = document.getElementById("multiplier");
+            const msg = document.getElementById("msg");
+
+            if(data.status === "FLYING") {
+                isFlying = true;
+                plane.style.display = "block";
+                msg.style.display = "none";
+                multText.innerText = data.currentX.toFixed(2) + "x";
+                multText.style.color = "white";
+                
+                // Animation logic
+                plane.style.left = Math.min(75, 10 + (data.currentX * 4)) + "%";
+                plane.style.bottom = Math.min(75, 20 + (data.currentX * 5)) + "%";
+
+                document.getElementById("bBtn").disabled = true;
             } else {
-                crashAt = (Math.random() * 1.5 + 1.1).toFixed(2);
+                isFlying = false;
+                plane.style.display = "none";
+                msg.style.display = "block";
+                multText.style.color = "var(--primary)";
+                
+                document.getElementById("bBtn").disabled = false;
+                document.getElementById("cBtn").style.display = "none";
+                document.getElementById("bBtn").style.display = "block";
+                hasBet = false;
             }
-        } else {
-            crashAt = (Math.random() * 2.2 + 1.1).toFixed(2);
-        }
-        startFlight();
-    }
-
-    function startFlight() {
-        active = true; currentX = 1.0;
-        const p = document.getElementById("plane");
-        p.style.display = "block";
-        document.getElementById("msg").style.display = "none";
-        document.getElementById("multiplier").style.color = "white";
-
-        engine = setInterval(() => {
-            currentX += 0.01 * (currentX);
-            document.getElementById("multiplier").innerText = currentX.toFixed(2) + "x";
-            
-            p.style.left = Math.min(70, (10 + (currentX * 5))) + "%";
-            p.style.bottom = Math.min(70, (20 + (currentX * 6))) + "%";
-
-            if(currentX >= crashAt) finishRound(false);
-        }, 100);
-    }
-
-    async function finishRound(won) {
-        clearInterval(engine);
-        active = false;
-        const finalX = currentX.toFixed(2);
-        
-        document.getElementById("plane").style.display = "none";
-        document.getElementById("msg").style.display = "block";
-        document.getElementById("multiplier").style.color = won ? "var(--accent)" : "var(--primary)";
-
-        await push(ref(db, `aviator_history`), { x: finalX });
-
-        setTimeout(() => {
-            document.getElementById("bBtn").style.display = "block";
-            document.getElementById("cBtn").style.display = "none";
-            document.getElementById("multiplier").innerText = "1.00x";
-        }, 2500);
-    }
-
-    window.claimWin = async () => {
-        if(!active) return;
-        const payout = betAmt * currentX;
-        active = false;
-        clearInterval(engine);
-        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(payout) });
-        finishRound(true);
-    };
-
-    function loadHistory() {
-        onValue(query(ref(db, `aviator_history`), limitToLast(12)), s => {
-            const bar = document.getElementById("historyBar");
-            bar.innerHTML = "";
-            s.forEach(child => {
-                const val = child.val().x;
-                const cls = val > 2 ? 'high' : 'low';
-                bar.innerHTML = `<div class="h-tag ${cls}">${val}x</div>` + bar.innerHTML;
-            });
         });
     }
 
-    function startFakeBets() {
-        const list = document.getElementById("txList");
-        setInterval(() => {
-            if(active) return; // Don't spam during player's turn
-            const name = names[Math.floor(Math.random() * names.length)];
-            const x = (Math.random() * 2 + 1.1).toFixed(2);
-            const amt = Math.floor(Math.random() * 500) + 50;
-            const profit = (amt * x).toFixed(0);
-            
-            const row = document.createElement('div');
-            row.className = "tx-row";
-            row.innerHTML = `<span>${name}****</span><span class="win-amt">₹${profit} (${x}x)</span>`;
-            
-            list.prepend(row);
-            if(list.children.length > 8) list.lastChild.remove();
-        }, 2000);
+    window.placeBet = async () => {
+        const amt = parseFloat(document.getElementById("amtInp").value);
+        if(amt < 10 || amt > bal) return alert("Check Balance!");
+        
+        await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
+        betAmt = amt;
+        hasBet = true;
+        
+        document.getElementById("bBtn").style.display = "none";
+        document.getElementById("cBtn").style.display = "block";
+        document.getElementById("cBtn").innerText = `CASH OUT (₹${amt})`;
+        
+        // Push user bet to global pool for admin to see
+        push(ref(db, `global_bets`), { uid, amt, time: Date.now() });
+    };
+
+    window.cashOut = async () => {
+        if(!hasBet || !isFlying) return;
+        
+        const currentX = parseFloat(document.getElementById("multiplier").innerText);
+        const win = betAmt * currentX;
+        
+        hasBet = false;
+        await update(ref(db, `users/${uid}`), { balance: increment(win) });
+        
+        confetti({ particleCount: 100, spread: 60, origin: { y: 0.7 } });
+        document.getElementById("cBtn").style.display = "none";
+        document.getElementById("bBtn").style.display = "block";
+        alert(`Won ₹${win.toFixed(2)}!`);
+    };
+
+    function loadHistory() {
+        onValue(query(ref(db, `aviator_history`), limitToLast(15)), s => {
+            const bar = document.getElementById("historyBar");
+            bar.innerHTML = "";
+            s.forEach(c => {
+                const x = c.val().x;
+                const col = x > 2 ? '#9c27b0' : (x > 1.5 ? '#3498db' : '#666');
+                bar.innerHTML = `<div class="h-item" style="color:${col}">${x}x</div>` + bar.innerHTML;
+            });
+        });
     }
 </script>
 </body>
