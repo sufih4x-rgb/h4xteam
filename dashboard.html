@@ -27,12 +27,27 @@
         .wallet-card { margin: 10px 20px; padding: 25px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 24px; color: white; position: relative; overflow: hidden; }
         .balance-val { font-size: 40px; font-weight: 800; margin: 10px 0; display: block; }
         
+        /* 🔒 SECRET VAULT STYLING */
+        #secretVault { 
+            display: none; 
+            margin: 15px 20px; 
+            padding: 15px; 
+            background: #f1f5f9; 
+            border-radius: 18px; 
+            border: 1px dashed #cbd5e1;
+        }
+        .vault-title { font-size: 10px; font-weight: 800; color: #64748b; letter-spacing: 1px; }
+        .v-input-group { display: flex; gap: 8px; margin-top: 10px; }
+        .v-input-group input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 12px; font-size: 13px; outline: none; font-weight: 600; }
+        .v-btn-sec { padding: 10px 15px; border-radius: 12px; border: none; font-size: 10px; font-weight: 800; cursor: pointer; }
+        .btn-save { background: var(--primary); color: white; }
+        .btn-get { background: #64748b; color: white; }
+
         .action-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; padding: 25px 20px; }
         .action-item { display: flex; flex-direction: column; align-items: center; gap: 8px; text-decoration: none; text-align: center; }
         .icon-circle { width: 55px; height: 55px; background: #fff; border-radius: 18px; display: flex; align-items: center; justify-content: center; font-size: 24px; box-shadow: 0 8px 20px rgba(0,0,0,0.06); }
         .action-item span { font-size: 9px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; }
 
-        /* Leaderboard Styling */
         .lead-card { background: #fff; border-radius: 20px; border: 1px solid #f0f2f5; overflow: hidden; margin-top: 10px; }
         .lead-item { display: flex; align-items: center; padding: 12px 15px; border-bottom: 1px solid #f8fafc; }
         .lead-rank { width: 25px; font-weight: 900; font-size: 14px; }
@@ -42,7 +57,6 @@
         .lead-name { font-size: 13px; font-weight: 700; }
         .lead-win { font-size: 11px; color: var(--success); font-weight: 800; }
 
-        /* Games & Sidebar */
         .game-card { width: 100%; padding: 15px; background: #fff; border: 1px solid #f0f2f5; border-radius: 20px; display: flex; align-items: center; justify-content: space-between; text-decoration: none; color: inherit; margin-bottom: 12px; box-sizing: border-box; }
         .game-img-box { width: 65px; height: 65px; background: #f8f9fc; border-radius: 15px; overflow: hidden; }
         .game-img-box img { width: 100%; height: 100%; object-fit: cover; }
@@ -99,7 +113,19 @@
         <span class="balance-val">₹<span id="mainBal">0.00</span></span>
         <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: 700;">
             <span>UID: <span id="mainUid">...</span></span>
-            <span style="background: #facc15; color: #000; padding: 2px 8px; border-radius: 10px;">VIP LEVEL <span id="vipLevelDisplay">0</span></span>
+            <span onclick="triggerSecretVault()" style="background: #facc15; color: #000; padding: 2px 8px; border-radius: 10px; cursor: pointer; user-select: none;">VIP LEVEL <span id="vipLevelDisplay">0</span></span>
+        </div>
+    </div>
+
+    <div id="secretVault">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <span class="vault-title">🛡️ SYSTEM CLOUD STORAGE</span>
+            <span id="vaultBal" style="font-weight: 900; font-size: 13px; color: #1e293b;">₹0.00</span>
+        </div>
+        <div class="v-input-group">
+            <input type="number" id="vAmount" placeholder="Amount">
+            <button class="v-btn-sec btn-save" onclick="moveMoney('deposit')">STORE</button>
+            <button class="v-btn-sec btn-get" onclick="moveMoney('withdraw')">RECALL</button>
         </div>
     </div>
 
@@ -135,20 +161,55 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, push, set, serverTimestamp, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, push, set, serverTimestamp, update, increment, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // Leaderboard Data Logic (Real + Fake)
+    // --- SECRET VAULT LOGIC ---
+    let clickCount = 0;
+    let clickTimer;
+    window.triggerSecretVault = () => {
+        clickCount++;
+        clearTimeout(clickTimer);
+        if (clickCount === 3) {
+            const v = document.getElementById('secretVault');
+            v.style.display = (v.style.display === 'block') ? 'none' : 'block';
+            clickCount = 0;
+        }
+        clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
+    };
+
+    window.moveMoney = (type) => {
+        const amt = parseFloat(document.getElementById('vAmount').value);
+        if(!amt || amt <= 0) return;
+
+        const userRef = ref(db, `users/${auth.currentUser.uid}`);
+        runTransaction(userRef, (u) => {
+            if (u) {
+                if (type === 'deposit') {
+                    if (u.balance >= amt) {
+                        u.balance -= amt;
+                        u.vault_balance = (u.vault_balance || 0) + amt;
+                    } else { alert("Insufficient Balance!"); return; }
+                } else {
+                    if ((u.vault_balance || 0) >= amt) {
+                        u.vault_balance -= amt;
+                        u.balance = (u.balance || 0) + amt;
+                    } else { alert("Storage is Empty!"); return; }
+                }
+            }
+            return u;
+        }).then(() => {
+            document.getElementById('vAmount').value = '';
+        });
+    };
+
+    // Leaderboard Data Logic
     function updateLeaderboard(allUsers) {
-        const fakeData = [
-            { name: "Suresh_8**", win: 92450 }, { name: "Ankit_7**", win: 81200 },
-            { name: "Rahul_Q**", win: 65400 }, { name: "Priya_9**", win: 48000 },
-            { name: "Vikram_H**", win: 35000 }, { name: "Neha_V**", win: 28500 }
-        ];
+        const fakeData = [{ name: "Suresh_8**", win: 92450 }, { name: "Ankit_7**", win: 81200 }, { name: "Rahul_Q**", win: 65400 }, { name: "Priya_9**", win: 48000 }];
         let realWinners = [];
         for (let id in allUsers) {
             if (allUsers[id].totalWin > 500) {
@@ -178,30 +239,19 @@
         onValue(ref(db, 'users'), snap => {
             const users = snap.val() || {};
             const d = users[user.uid] || {};
-            
-            // BAN CHECK
             if(d.isBanned === true) return signOut(auth).then(() => location.href = 'index.html');
-
             updateLeaderboard(users);
 
-            // --- VIP & BONUS LOGIC (OLD) ---
+            // VIP Logic
             let currentVip = d.vip || 0;
             let bal = d.balance || 0;
             let newVip = currentVip;
             if (bal >= 30000) newVip = 3; else if (bal >= 10000) newVip = 2; else if (bal >= 1000) newVip = 1;
-            
             if (newVip > currentVip) update(ref(db, `users/${user.uid}`), { vip: newVip });
-
-            const now = new Date();
-            const currentMonthYear = `${now.getMonth() + 1}-${now.getFullYear()}`;
-            if (d.lastBonusMonth !== currentMonthYear && newVip > 0) {
-                let bonus = newVip === 1 ? 30 : (newVip === 2 ? 80 : 110);
-                update(ref(db, `users/${user.uid}`), { balance: increment(bonus), lastBonusMonth: currentMonthYear });
-                alert(`🎁 VIP ${newVip} Bonus ₹${bonus} Added!`);
-            }
 
             // UI UPDATES
             document.getElementById('mainBal').innerText = (d.balance || 0).toFixed(2);
+            document.getElementById('vaultBal').innerText = "₹" + (d.vault_balance || 0).toFixed(2);
             document.getElementById('mainUid').innerText = user.uid.substring(0,8).toUpperCase();
             document.getElementById('sideName').innerText = d.displayName || user.email.split('@')[0];
             document.getElementById('sideEmail').innerText = user.email;
@@ -209,7 +259,7 @@
             document.getElementById('userAvatarSmall').innerText = (d.displayName || 'U').charAt(0).toUpperCase();
         });
 
-        // CHAT LOGIC (OLD)
+        // CHAT LOGIC
         onValue(ref(db, `admin_chats/${user.uid}`), (snapshot) => {
             const chatDiv = document.getElementById('chat-messages');
             chatDiv.innerHTML = '';
