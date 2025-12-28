@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H4X Master Admin v7.7 | Full Control</title>
+    <title>H4X Master Admin v7.8 | Fix & Control</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #6366f1; --success: #10b981; --danger: #ef4444; --dark: #0f172a; --warning: #f59e0b; }
@@ -11,25 +11,26 @@
         #adminAuth { position: fixed; inset: 0; background: var(--dark); z-index: 9999; display: flex; align-items: center; justify-content: center; }
         .auth-card { background: white; padding: 40px; border-radius: 24px; width: 340px; text-align: center; }
         
-        .sidebar { width: 260px; height: 100vh; background: var(--dark); color: white; position: fixed; overflow-y: auto; }
+        .sidebar { width: 260px; height: 100vh; background: var(--dark); color: white; position: fixed; overflow-y: auto; z-index: 100; }
         .nav-item { padding: 14px 25px; cursor: pointer; transition: 0.3s; font-weight: 600; color: #94a3b8; display: flex; align-items: center; gap: 12px; font-size: 13px; }
         .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
         .nav-item.active { background: var(--primary); color: white; }
         
         .main { margin-left: 260px; width: calc(100% - 260px); padding: 30px; box-sizing: border-box; display: none; }
-        .card { background: white; border-radius: 20px; padding: 25px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #e2e8f0; }
+        .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #e2e8f0; }
         
-        table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         th { text-align: left; padding: 12px; background: #f8fafc; font-size: 11px; text-transform: uppercase; color: #64748b; border-bottom: 2px solid #edf2f7; }
         td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 12px; vertical-align: middle; }
         
-        .stats-box { font-size: 10px; color: #64748b; margin-top: 5px; background: #f8fafc; padding: 5px; border-radius: 5px; }
-        .win-txt { color: var(--success); font-weight: 700; } 
-        .loss-txt { color: var(--danger); font-weight: 700; }
+        .stats-box { font-size: 10px; color: #64748b; margin-top: 5px; background: #f8fafc; padding: 8px; border-radius: 8px; line-height: 1.5; }
+        .win-txt { color: var(--success); font-weight: 800; } 
+        .loss-txt { color: var(--danger); font-weight: 800; }
         
         button { border: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 10px; transition: 0.2s; }
         .btn-success { background: #dcfce7; color: #166534; } 
         .btn-danger { background: #fee2e2; color: #991b1b; } 
+        .btn-primary { background: var(--primary); color: white; }
         .tab-content { display: none; } .tab-content.active { display: block; }
     </style>
 </head>
@@ -37,17 +38,17 @@
 
 <div id="adminAuth">
     <div class="auth-card">
-        <h2>ADMIN LOGIN</h2>
-        <input type="email" id="adminEmail" placeholder="Email" style="width:100%; margin-bottom:10px; padding:10px;">
-        <input type="password" id="adminPass" placeholder="Password" style="width:100%; margin-bottom:20px; padding:10px;">
-        <button style="background:var(--primary); color:white; width:100%; padding:15px; border-radius:10px;" onclick="adminLogin()">ENTER SYSTEM</button>
+        <h2 style="color:var(--primary)">ADMIN ACCESS</h2>
+        <input type="email" id="adminEmail" placeholder="Admin Email" style="width:100%; margin-bottom:12px; padding:12px; border-radius:8px; border:1px solid #ddd;">
+        <input type="password" id="adminPass" placeholder="Password" style="width:100%; margin-bottom:20px; padding:12px; border-radius:8px; border:1px solid #ddd;">
+        <button class="btn-primary" style="width:100%; padding:15px; font-size:14px;" onclick="adminLogin()">SECURE LOGIN</button>
     </div>
 </div>
 
 <div class="sidebar">
-    <div style="padding: 25px; font-weight: 800; font-size: 18px; color: var(--primary);">H4X ADMIN</div>
-    <div class="nav-item active" onclick="showTab(event, 'users')">👥 User Rigging</div>
-    <div class="nav-item" onclick="showTab(event, 'games')">🎮 Game Control</div>
+    <div style="padding: 25px; font-weight: 800; font-size: 18px; color: var(--primary);">H4X CORE <span style="color:white">v7.8</span></div>
+    <div class="nav-item active" onclick="showTab(event, 'users')">👥 User Analytics</div>
+    <div class="nav-item" onclick="showTab(event, 'games')">🎮 Game Controller</div>
     <div class="nav-item" onclick="showTab(event, 'deposits')">💰 Deposits</div>
     <div class="nav-item" onclick="showTab(event, 'withdrawals')">🏧 Withdrawals</div>
     <div class="nav-item" onclick="showTab(event, 'recharges')">📱 Mobile Recharges</div>
@@ -58,9 +59,9 @@
     
     <div id="users" class="tab-content active">
         <div class="card">
-            <h3>User Analytics & Force Control</h3>
+            <h3>All Users & Rigging Logic</h3>
             <table>
-                <thead><tr><th>User Details</th><th>Balance</th><th>Rigging</th></tr></thead>
+                <thead><tr><th>User Detail & History</th><th>Balance</th><th>Action</th><th>Rigging</th></tr></thead>
                 <tbody id="userList"></tbody>
             </table>
         </div>
@@ -70,28 +71,44 @@
         <div class="card">
             <h3>📱 Pending Mobile Recharges</h3>
             <table>
-                <thead><tr><th>User</th><th>Number / Plan</th><th>Status</th><th>Action</th></tr></thead>
+                <thead><tr><th>User Email</th><th>Number / Plan</th><th>Action</th></tr></thead>
                 <tbody id="rechargeList"></tbody>
             </table>
         </div>
     </div>
 
     <div id="deposits" class="tab-content">
-        <div class="card"><h3>💰 Deposit Requests</h3><table><tbody id="depositList"></tbody></table></div>
+        <div class="card">
+            <h3>💰 Pending Deposits</h3>
+            <table>
+                <thead><tr><th>User Email</th><th>Amount</th><th>Action</th></tr></thead>
+                <tbody id="depositList"></tbody>
+            </table>
+        </div>
     </div>
 
     <div id="withdrawals" class="tab-content">
-        <div class="card"><h3>🏧 Withdrawal Requests</h3><table><tbody id="withdrawList"></tbody></table></div>
+        <div class="card">
+            <h3>🏧 Withdrawal Requests</h3>
+            <table>
+                <thead><tr><th>User Info</th><th>Amount</th><th>UPI/Bank</th><th>Action</th></tr></thead>
+                <tbody id="withdrawList"></tbody>
+            </table>
+        </div>
     </div>
 
     <div id="games" class="tab-content">
-        <div class="card"><h3>🎯 Wingo Control</h3><button class="btn-success" onclick="fixWingo('GREEN')">GREEN</button><button class="btn-danger" onclick="fixWingo('RED')">RED</button></div>
+        <div class="card">
+            <h3>🎯 Wingo (Color Prediction)</h3>
+            <button class="btn-success" style="padding:15px;" onclick="fixWingo('GREEN')">NEXT GREEN</button>
+            <button class="btn-danger" style="padding:15px;" onclick="fixWingo('RED')">NEXT RED</button>
+            <button onclick="fixWingo('RESET')" style="padding:15px;">AUTO AI MODE</button>
+        </div>
     </div>
 
     <div id="chat" class="tab-content">
-        <div class="card"><h3>💬 Support Messages</h3><div id="chatList"></div></div>
+        <div class="card"><h3>💬 Live Chat Messages</h3><div id="chatList"></div></div>
     </div>
-
 </div>
 
 <script type="module">
@@ -109,7 +126,7 @@
             await signInWithEmailAndPassword(auth, document.getElementById('adminEmail').value, document.getElementById('adminPass').value);
             document.getElementById('adminAuth').style.display = 'none';
             document.getElementById('adminMain').style.display = 'block';
-        } catch(e) { alert("Error!"); }
+        } catch(e) { alert("Invalid Admin Credentials!"); }
     };
 
     window.showTab = (e, id) => {
@@ -121,62 +138,94 @@
     onValue(ref(db, "/"), snap => {
         const d = snap.val(); if(!d) return;
 
-        // User Rigging Data
+        // 1. User Logic + Win/Loss History
         let uH = "";
         for(let id in d.users) {
             const u = d.users[id];
-            uH += `<tr><td><b>${u.email}</b><div class="stats-box"><span class="win-txt">W: ₹${u.totalWin||0}</span> | <span class="loss-txt">L: ₹${u.totalLoss||0}</span></div></td><td>₹${(u.balance||0).toFixed(2)}</td><td><button class="${u.forceWin?'btn-success':''}" onclick="toggleRig('${id}','w')">W</button> <button class="${u.forceLoss?'btn-danger':''}" onclick="toggleRig('${id}','l')">L</button></td></tr>`;
+            uH += `<tr>
+                <td>
+                    <b>${u.email}</b>
+                    <div class="stats-box">
+                        <span class="win-txt">Win: ₹${u.totalWin||0}</span> | <span class="loss-txt">Loss: ₹${u.totalLoss||0}</span><br>
+                        Dep: ₹${u.totalDeposit||0} | With: ₹${u.totalWithdraw||0}
+                    </div>
+                </td>
+                <td>₹${(u.balance||0).toFixed(2)}</td>
+                <td><input type="number" id="bal_${id}" placeholder="+/-" style="width:60px; padding:5px;"> <button class="btn-primary" onclick="addBal('${id}')">Fix</button></td>
+                <td>
+                    <button class="${u.forceWin?'btn-success':''}" onclick="toggleRig('${id}','w')">W</button>
+                    <button class="${u.forceLoss?'btn-danger':''}" onclick="toggleRig('${id}','l')">L</button>
+                    <button onclick="toggleRig('${id}','r')">Reset</button>
+                </td>
+            </tr>`;
         }
         document.getElementById("userList").innerHTML = uH;
 
-        // RECHARGE LIST LOGIC (RESTORED)
+        // 2. Recharge Logic
         let recH = "";
-        for(let k in d.recharges) {
-            const r = d.recharges[k];
-            if(r.status === "pending") {
-                recH += `<tr><td>${r.email}</td><td><b>${r.mobile}</b><br>Plan: ₹${r.plan}</td><td>PENDING</td><td><button class="btn-success" onclick="approveRec('${k}')">Done</button> <button class="btn-danger">Fail</button></td></tr>`;
+        const recData = d.recharges || {};
+        for(let k in recData) {
+            if(recData[k].status === "pending") {
+                recH += `<tr><td>${recData[k].email}</td><td><b>${recData[k].mobile}</b><br>Plan: ₹${recData[k].plan}</td><td><button class="btn-success" onclick="appRec('${k}')">Done</button></td></tr>`;
             }
         }
-        document.getElementById("rechargeList").innerHTML = recH || "No Recharges";
+        document.getElementById("rechargeList").innerHTML = recH || "<tr><td colspan='3'>No pending recharges</td></tr>";
 
-        // Deposits & Withdrawals
-        let depH = "", withH = "";
-        for(let k in d.deposit_requests) {
-            const r = d.deposit_requests[k];
-            if(r.status === "pending") depH += `<tr><td>${r.email}</td><td>₹${r.amount}</td><td><button class="btn-success" onclick="approveDep('${k}','${r.uid}',${r.amount})">Approve</button></td></tr>`;
+        // 3. Deposit Logic
+        let depH = "";
+        const depData = d.deposit_requests || {};
+        for(let k in depData) {
+            if(depData[k].status === "pending") {
+                depH += `<tr><td>${depData[k].email}</td><td>₹${depData[k].amount}</td><td><button class="btn-success" onclick="appDep('${k}','${depData[k].uid}',${depData[k].amount})">Approve</button></td></tr>`;
+            }
         }
-        for(let k in d.withdraw_requests) {
-            const w = d.withdraw_requests[k];
-            if(w.status === "pending") withH += `<tr><td>${w.email}<br><small>${w.upi}</small></td><td>₹${w.amount}</td><td><button class="btn-success" onclick="approveWith('${k}')">Paid</button></td></tr>`;
+        document.getElementById("depositList").innerHTML = depH || "<tr><td colspan='3'>No pending deposits</td></tr>";
+
+        // 4. Withdrawal Logic
+        let withH = "";
+        const withData = d.withdraw_requests || {};
+        for(let k in withData) {
+            if(withData[k].status === "pending") {
+                withH += `<tr><td>${withData[k].email}</td><td>₹${withData[k].amount}</td><td>${withData[k].upi || 'Bank'}</td><td><button class="btn-success" onclick="appWith('${k}')">Mark Paid</button></td></tr>`;
+            }
         }
-        document.getElementById("depositList").innerHTML = depH;
-        document.getElementById("withdrawList").innerHTML = withH;
+        document.getElementById("withdrawList").innerHTML = withH || "<tr><td colspan='4'>No pending withdrawals</td></tr>";
     });
 
+    window.addBal = (id) => {
+        const val = parseFloat(document.getElementById(`bal_${id}`).value);
+        if(!val) return;
+        update(ref(db, `users/${id}`), { balance: increment(val) });
+        alert("Balance Updated!");
+    };
+
     window.toggleRig = (id, type) => {
-        let dat = { forceWin: false, forceLoss: false };
-        if(type === 'w') dat.forceWin = true;
-        if(type === 'l') dat.forceLoss = true;
-        update(ref(db, `users/${id}`), dat);
+        let updateData = { forceWin: false, forceLoss: false };
+        if(type === 'w') updateData.forceWin = true;
+        if(type === 'l') updateData.forceLoss = true;
+        update(ref(db, `users/${id}`), updateData);
     };
 
-    window.approveRec = (k) => {
-        update(ref(db, `recharges/${k}`), { status: "completed" });
-        alert("Recharge Success!");
-    };
-
-    window.approveDep = (k, uid, amt) => {
+    window.appDep = (k, uid, amt) => {
         update(ref(db, `users/${uid}`), { balance: increment(amt), totalDeposit: increment(amt) });
         update(ref(db, `deposit_requests/${k}`), { status: "approved" });
+        alert("Deposit Successful!");
     };
 
-    window.approveWith = (k) => {
+    window.appWith = (k) => {
         update(ref(db, `withdraw_requests/${k}`), { status: "paid" });
+        alert("Withdrawal Paid!");
     };
 
-    window.fixWingo = (c) => {
-        update(ref(db, "admin_control/wingo"), { active: true, color: c });
-        alert("Fixed: " + c);
+    window.appRec = (k) => {
+        update(ref(db, `recharges/${k}`), { status: "completed" });
+        alert("Recharge Completed!");
+    };
+
+    window.fixWingo = (color) => {
+        const active = color !== 'RESET';
+        update(ref(db, "admin_control/wingo"), { active: active, color: color });
+        alert(active ? "Next Wingo Fixed: " + color : "Wingo Reset to AI");
     };
 </script>
 </body>
