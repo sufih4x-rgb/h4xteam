@@ -3,64 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Invite | H4XTEAM</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;800&display=swap" rel="stylesheet">
+    <title>Invite Friends | H4XTEAM</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root { --primary: #4361ee; --bg: #f8f9fc; }
-        body { background: var(--bg); font-family: 'Inter', sans-serif; margin: 0; padding: 20px; display: flex; justify-content: center; }
+        :root { --primary: #4361ee; --bg: #f4f7fe; --white: #ffffff; --text-dark: #1e293b; --text-muted: #64748b; --success: #10b981; }
+        body { background: var(--bg); color: var(--text-dark); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 20px; box-sizing: border-box; }
+        .container { max-width: 450px; margin: 0 auto; }
+        .card { background: var(--white); border-radius: 30px; padding: 25px; box-shadow: 0 15px 35px rgba(0,0,0,0.05); margin-bottom: 20px; text-align: center; }
         
-        /* OLD UI DESIGN - SAME TO SAME */
-        .card { width: 100%; max-width: 400px; background: white; padding: 25px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        .prog-box { margin: 20px 0; }
-        .bar { height: 10px; background: #eee; border-radius: 10px; overflow: hidden; }
-        .fill { height: 100%; background: var(--primary); width: 0%; transition: 1s; }
+        /* Progress UI */
+        .pg-container { background: #f1f5f9; height: 12px; border-radius: 10px; overflow: hidden; margin: 15px 0; border: 1px solid #e2e8f0; }
+        #progressBar { width: 0%; height: 100%; background: linear-gradient(90deg, #4361ee, #4cc9f0); transition: 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
         
-        .link-box { 
-            background: #f1f5f9; 
-            padding: 15px; 
-            border-radius: 15px; 
-            border: 2px dashed var(--primary); 
-            margin-top: 20px; 
-            word-break: break-all; 
-            font-size: 12px; 
-            font-weight: 700; 
-            color: var(--primary); 
-            cursor: pointer;
-            text-align: center;
-        }
-        
-        .btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 15px; font-weight: 700; margin-top: 10px; cursor: pointer; }
+        .milestone-box { display: flex; justify-content: space-between; align-items: center; padding: 12px 15px; background: #f8fafc; border-radius: 18px; margin-bottom: 10px; border: 1px solid #f1f5f9; text-align: left; }
+        .milestone-box.claimed { background: #dcfce7; border-color: #bbf7d0; }
+        .status-tag { font-size: 10px; font-weight: 800; padding: 4px 8px; border-radius: 8px; background: #e2e8f0; color: #64748b; }
+        .status-tag.active { background: #10b981; color: white; }
 
-        /* Transaction History (Adding within the Old UI Card) */
-        .tx-title { font-size: 13px; font-weight: 800; margin-top: 25px; border-top: 1px solid #f1f5f9; padding-top: 15px; }
-        .tx-item { display: flex; justify-content: space-between; font-size: 12px; padding: 8px 0; border-bottom: 1px dotted #eee; }
+        /* Link Box */
+        .link-box { background: #f8fafc; border: 2px dashed #cbd5e1; padding: 15px; border-radius: 20px; margin-top: 10px; }
+        .input-area { background: white; border: 1px solid #e2e8f0; border-radius: 12px; display: flex; padding: 10px; margin: 10px 0; align-items: center; }
+        input { flex: 1; border: none; outline: none; font-size: 12px; font-weight: 600; color: var(--primary); background: transparent; }
+        
+        .btn { width: 100%; padding: 15px; background: var(--primary); color: white; border: none; border-radius: 15px; font-size: 15px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .btn:active { transform: scale(0.98); }
+        .nav-btn { display: block; margin-top: 15px; text-decoration: none; font-size: 13px; font-weight: 700; color: var(--text-muted); }
     </style>
 </head>
 <body>
 
-<div class="card">
-    <h2 style="margin:0">Invite Friends</h2>
-    
-    <div class="prog-box">
-        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:700; margin-bottom:5px;">
-            <span>Active Referrals (After Deposit)</span> <span id="countTxt">0/10</span>
+<div class="container">
+    <div class="card">
+        <h2 style="margin:0; font-size:22px;">Refer & Earn</h2>
+        <p style="font-size:13px; color:var(--text-muted);">Invite 10 friends and earn up to ₹160</p>
+
+        <div class="pg-container">
+            <div id="progressBar"></div>
         </div>
-        <div class="bar"><div class="fill" id="progFill"></div></div>
+        <div style="display:flex; justify-content:space-between; font-size:12px; font-weight:800;">
+            <span id="activeCount">0 Active Refers</span>
+            <span>Goal: 10</span>
+        </div>
     </div>
 
-    <div class="link-box" id="refLink" onclick="copyLink()">Generating link...</div>
-    <button class="btn" onclick="copyLink()">Copy Link</button>
+    <div class="card">
+        <h3 style="text-align:left; font-size:16px; margin-bottom:15px;">Milestone Rewards</h3>
+        
+        <div id="box5" class="milestone-box">
+            <div>
+                <div style="font-size:14px; font-weight:700;">🎁 5 Friends Reward</div>
+                <div style="font-size:11px; color:var(--text-muted);">Bonus: ₹50.00</div>
+            </div>
+            <span id="tag5" class="status-tag">LOCKED 🔒</span>
+        </div>
 
-    <div class="tx-title">Transaction History</div>
-    <div id="earningHistory" style="margin-top:10px;">
-        <p style="font-size:11px; color:#999; text-align:center;">No milestone rewards yet.</p>
+        <div id="box10" class="milestone-box">
+            <div>
+                <div style="font-size:14px; font-weight:700;">🎁 10 Friends Reward</div>
+                <div style="font-size:11px; color:var(--text-muted);">Bonus: ₹110.00</div>
+            </div>
+            <span id="tag10" class="status-tag">LOCKED 🔒</span>
+        </div>
+    </div>
+
+    <div class="card link-box">
+        <h3 style="margin:0; font-size:14px;">Copy Your Unique Link</h3>
+        <div class="input-area">
+            <input id="refLink" readonly type="text" value="Generating link...">
+        </div>
+        <button id="copyBtn" class="btn" onclick="copyLink()">Copy Invite Link</button>
+        <a href="dashboard.html" class="nav-btn">Back to Dashboard</a>
     </div>
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, update, increment, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+    import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -71,85 +90,59 @@
     };
 
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getDatabase(app);
+    const auth = getAuth(app);
 
     onAuthStateChanged(auth, user => {
-        if(!user) return window.location.href = "index.html";
+        if(user) {
+            // 1. Generate Link
+            const baseUrl = window.location.origin + window.location.pathname.replace("invite.html", "register.html");
+            document.getElementById('refLink').value = `${baseUrl}?ref=${user.uid}`;
 
-        // GITHUB PAGES LINK FIX
-        const currentPath = window.location.pathname;
-        const directory = currentPath.substring(0, currentPath.lastIndexOf('/'));
-        const finalLink = `${window.location.protocol}//${window.location.host}${directory}/register.html?ref=${user.uid}`;
-        document.getElementById('refLink').innerText = finalLink;
+            // 2. Track Data Real-time
+            onValue(ref(db, `users/${user.uid}`), snap => {
+                if(snap.exists()){
+                    const d = snap.val();
+                    const active = d.activeReferrals || 0;
+                    
+                    // Update Progress
+                    const progress = (active / 10) * 100;
+                    document.getElementById('progressBar').style.width = Math.min(progress, 100) + "%";
+                    document.getElementById('activeCount').innerText = `${active} Active Refers`;
 
-        // PROGRESS BAR & REWARD SYSTEM
-        onValue(ref(db, `users/${user.uid}`), snap => {
-            if (snap.exists()) {
-                const data = snap.val();
-                const activeCount = data.activeReferrals || 0; // Admin jab deposit approve karega tab ye +1 hoga
-                const claimed = data.claimedRewards || {};
-
-                document.getElementById('countTxt').innerText = `${activeCount}/10`;
-                document.getElementById('progFill').style.width = `${Math.min((activeCount/10)*100, 100)}%`;
-
-                // Milestone Logic
-                checkMilestones(user.uid, activeCount, claimed);
-            }
-        });
-
-        // TRANSACTION HISTORY UPDATE
-        onValue(ref(db, `transactions/${user.uid}`), snap => {
-            const container = document.getElementById('earningHistory');
-            if(snap.exists()){
-                container.innerHTML = '';
-                const txs = Object.values(snap.val()).reverse();
-                txs.forEach(tx => {
-                    if(tx.type === "milestone"){
-                        container.innerHTML += `
-                            <div class="tx-item">
-                                <span>${tx.note}</span>
-                                <b style="color:#2ec4b6">+₹${tx.amount}</b>
-                            </div>`;
+                    // Update UI for 5 Refers
+                    if(d.claimedRewards?.m5){
+                        document.getElementById('box5').classList.add('claimed');
+                        document.getElementById('tag5').innerText = "CLAIMED ✓";
+                        document.getElementById('tag5').classList.add('active');
                     }
-                });
-            }
-        });
+                    
+                    // Update UI for 10 Refers
+                    if(d.claimedRewards?.m10){
+                        document.getElementById('box10').classList.add('claimed');
+                        document.getElementById('tag10').innerText = "CLAIMED ✓";
+                        document.getElementById('tag10').classList.add('active');
+                    }
+                }
+            });
+        } else {
+            window.location.href = "index.html";
+        }
     });
 
-    async function checkMilestones(uid, count, claimed) {
-        let updates = {};
-        let triggered = false;
-
-        // Reward 1: 5 Refers -> ₹50
-        if (count >= 5 && !claimed.m5) {
-            updates[`users/${uid}/balance`] = increment(50);
-            updates[`users/${uid}/claimedRewards/m5`] = true;
-            addRecord(uid, 50, "5 Active Refer Reward");
-            triggered = true;
-        }
-
-        // Reward 2: 10 Refers -> ₹110
-        if (count >= 10 && !claimed.m10) {
-            updates[`users/${uid}/balance`] = increment(110);
-            updates[`users/${uid}/claimedRewards/m10`] = true;
-            addRecord(uid, 110, "10 Active Refer Reward");
-            triggered = true;
-        }
-
-        if (triggered) await update(ref(db), updates);
-    }
-
-    function addRecord(uid, amt, note) {
-        push(ref(db, `transactions/${uid}`), {
-            amount: amt, note: note, type: "milestone", timestamp: Date.now()
+    window.copyLink = function() {
+        const linkInput = document.getElementById('refLink');
+        linkInput.select();
+        navigator.clipboard.writeText(linkInput.value).then(() => {
+            const btn = document.getElementById('copyBtn');
+            btn.innerText = "Copied! ✓";
+            btn.style.background = "#10b981";
+            setTimeout(() => {
+                btn.innerText = "Copy Invite Link";
+                btn.style.background = "#4361ee";
+            }, 2000);
         });
     }
-
-    window.copyLink = () => {
-        navigator.clipboard.writeText(document.getElementById('refLink').innerText);
-        alert("Refer Link Copied!");
-    };
 </script>
 </body>
 </html>
