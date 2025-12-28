@@ -1,4 +1,124 @@
-<script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tiranga Games | Official Clone</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { 
+            --orange: #ff9933; --white: #ffffff; --green: #138808; 
+            --red: #fb4e4e; --violet: #b659fe; --win-green: #29cc7a;
+            --bg: #f5f6fa; --dark-text: #333;
+        }
+        body { margin: 0; font-family: 'Roboto', sans-serif; background: var(--bg); color: var(--dark-text); overflow-x: hidden; }
+
+        /* Tiranga Gradient Header */
+        .top-nav { background: linear-gradient(90deg, #ff9933 0%, #ffffff 50%, #138808 100%); padding: 25px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .wallet-card { background: white; margin: -25px 15px 15px; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 4px 15px rgba(0,0,0,0.08); position: relative; }
+        .bal-val { font-size: 28px; font-weight: 900; color: var(--green); margin-top: 5px; }
+
+        /* Mode Tabs (1m, 3m, 5m) */
+        .tabs { display: flex; background: white; margin: 10px; border-radius: 10px; padding: 5px; gap: 5px; }
+        .tab { flex: 1; padding: 12px; text-align: center; font-size: 13px; font-weight: 700; color: #777; cursor: pointer; border-radius: 8px; transition: 0.3s; }
+        .tab.active { background: var(--orange); color: white; }
+
+        /* Period & Timer Section */
+        .game-status { display: flex; justify-content: space-between; padding: 20px; background: white; margin: 10px; border-radius: 12px; border-bottom: 4px solid var(--orange); }
+        .timer-label { color: #888; font-size: 12px; }
+        .p-id { font-weight: 800; font-size: 16px; margin-top: 5px; }
+        .clock { font-size: 28px; font-weight: 900; color: var(--red); letter-spacing: 1px; }
+
+        /* Betting Grid */
+        .color-btns { display: flex; gap: 10px; padding: 15px; }
+        .c-btn { flex: 1; padding: 15px; border-radius: 10px; border: none; font-weight: 800; color: white; font-size: 16px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .c-green { background: var(--win-green); }
+        .c-violet { background: var(--violet); }
+        .c-red { background: var(--red); }
+
+        /* Number Grid 0-9 */
+        .num-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; padding: 0 15px 15px; }
+        .n-btn { background: white; border: 1px solid #ddd; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 16px; }
+        .n-btn:active { background: var(--orange); color: white; }
+
+        /* History Table (Same as Tiranga) */
+        .history-box { background: white; margin-top: 20px; border-radius: 20px 20px 0 0; padding: 15px; min-height: 400px; box-shadow: 0 -5px 10px rgba(0,0,0,0.03); }
+        .table-title { font-weight: 800; padding-bottom: 10px; border-bottom: 1px solid #eee; margin-bottom: 15px; }
+        .row { display: grid; grid-template-columns: 1.5fr 1fr 1fr; padding: 12px 0; border-bottom: 1px solid #f9f9f9; text-align: center; align-items: center; font-size: 14px; }
+        .dot { width: 14px; height: 14px; border-radius: 50%; margin: 0 auto; border: 1px solid #eee; }
+
+        /* Bottom Betting Bar */
+        .footer-action { position: fixed; bottom: 0; left: 0; width: 100%; background: white; padding: 15px; box-sizing: border-box; box-shadow: 0 -4px 10px rgba(0,0,0,0.1); }
+        .confirm-btn { width: 100%; padding: 15px; background: var(--orange); border: none; color: white; font-weight: 800; font-size: 18px; border-radius: 10px; }
+
+        /* Win/Loss Animation Popup */
+        #resOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:9999; align-items:center; justify-content:center; }
+        .res-popup { background: white; padding: 40px; border-radius: 20px; text-align: center; width: 85%; max-width: 320px; }
+    </style>
+</head>
+<body>
+
+<div class="top-nav">
+    <h2 style="margin:0; color: #333; font-weight: 900;">TIRANGA</h2>
+</div>
+
+<div class="wallet-card">
+    <small style="color:#888;">Wallet Balance</small>
+    <div class="bal-val">₹<span id="balDisplay">0.00</span></div>
+</div>
+
+<div class="tabs">
+    <div class="tab active" onclick="switchMode(1)">Win Go 1Min</div>
+    <div class="tab" onclick="switchMode(3)">Win Go 3Min</div>
+    <div class="tab" onclick="switchMode(5)">Win Go 5Min</div>
+</div>
+
+<div class="game-status">
+    <div>
+        <div class="timer-label">Period</div>
+        <div class="p-id" id="periodDisplay">---</div>
+    </div>
+    <div style="text-align: right;">
+        <div class="timer-label">Time remaining</div>
+        <div class="clock" id="timerClock">00:00</div>
+    </div>
+</div>
+
+<div class="color-btns">
+    <button class="c-btn c-green" onclick="selectBet('GREEN')">Green</button>
+    <button class="c-btn c-violet" onclick="selectBet('VIOLET')">Violet</button>
+    <button class="c-btn c-red" onclick="selectBet('RED')">Red</button>
+</div>
+
+<div class="num-grid" id="numberPad"></div>
+
+<div style="padding: 15px; margin-bottom: 100px;">
+    <input type="number" id="betAmount" value="10" style="width:100%; padding:15px; border-radius:10px; border:1px solid #ddd; text-align:center; font-size:18px;">
+</div>
+
+<div class="history-box">
+    <div class="table-title">Game History</div>
+    <div class="row" style="color: #999; font-weight: 700;">
+        <span>Period</span>
+        <span>Number</span>
+        <span>Color</span>
+    </div>
+    <div id="historyTable"></div>
+</div>
+
+<div class="footer-action">
+    <button class="confirm-btn" onclick="placeBet()">Confirm Bet ₹<span id="showAmt">10</span></button>
+</div>
+
+<div id="resOverlay">
+    <div class="res-popup">
+        <h1 id="resEmoji" style="font-size: 60px; margin:0;">🏆</h1>
+        <h2 id="resStatus">Winning</h2>
+        <h3 id="resWinAmt" style="color: var(--green); font-size: 24px;">₹0.00</h3>
+        <button onclick="document.getElementById('resOverlay').style.display='none'" class="confirm-btn">OK</button>
+    </div>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -17,217 +137,109 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    let uid = "", balance = 0, selection = null, gameTime = 30, currentMatch = "", hasBet = false;
+    let uid = "", balance = 0, currentMode = 1, selection = null, hasBet = false, periodId = "";
 
-    // --- ANTI-CHEAT SHIELD (Unhurt) ---
-    const activateShield = () => {
-        document.addEventListener("visibilitychange", () => {
-            if (document.hidden) {
-                document.body.innerHTML = "<div style='background:#0f172a;height:100vh;color:white;text-align:center;padding:50px;'><h1>🛡️ SECURITY LOCK</h1><p>Predictor switching detected. Reload to continue.</p></div>";
-            }
+    // Build Numbers 0-9
+    const numPad = document.getElementById('numberPad');
+    for(let i=0; i<=9; i++) numPad.innerHTML += `<button class="n-btn" onclick="selectBet('${i}')">${i}</button>`;
+
+    // --- GLOBAL MULTI-MODE TIMER SYNC ---
+    setInterval(() => {
+        const now = new Date();
+        const totalSec = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
+        const cycle = currentMode * 60;
+        const rem = cycle - (totalSec % cycle);
+        const pId = now.toISOString().slice(0,10).replace(/-/g,'') + Math.floor(totalSec / cycle);
+
+        if(periodId !== pId) {
+            periodId = pId;
+            document.getElementById('periodDisplay').innerText = periodId;
+            hasBet = false;
+        }
+
+        const m = Math.floor(rem / 60);
+        const s = rem % 60;
+        document.getElementById('timerClock').innerText = `${m < 10 ? '0'+m : m}:${s < 10 ? '0'+s : s}`;
+        if(rem === 1) setTimeout(() => handleGameProcess(), 1200);
+    }, 1000);
+
+    window.switchMode = (m) => {
+        currentMode = m;
+        document.querySelectorAll('.tab').forEach((t, i) => {
+            t.classList.toggle('active', (m==1&&i==0)||(m==3&&i==1)||(m==5&&i==2));
         });
-        document.onkeydown = (e) => { if (e.keyCode == 123 || (e.ctrlKey && e.shiftKey && e.keyCode == 73)) return false; };
+        loadHistory();
     };
-    activateShield();
-
-    // --- QUANTUM MATH LOGIC ---
-    function quantumLogic(period) {
-        if(!period) return 'RED';
-        const seed = parseInt(period.toString().slice(-4)) || 0;
-        const hour = new Date().getHours();
-        const calculation = ((seed * 7) + (hour * 3)) % 10;
-        return (calculation % 2 === 0) ? 'GREEN' : 'RED';
-    }
 
     onAuthStateChanged(auth, u => {
         if(u) {
             uid = u.uid;
             onValue(ref(db, `users/${uid}`), s => {
-                if(s.exists()){
-                    const data = s.val();
-                    balance = data.balance || 0;
-                    const balDisp = document.getElementById("balDisplay");
-                    if(balDisp) balDisp.innerText = balance.toFixed(2);
-                    
-                    // Ban Check
-                    if(data.isBanned) {
-                        document.body.innerHTML = "<h1 style='color:white;text-align:center;margin-top:100px;'>YOUR ACCOUNT IS BANNED</h1>";
-                    }
-                }
+                balance = s.val().balance || 0;
+                document.getElementById('balDisplay').innerText = balance.toFixed(2);
             });
             loadHistory();
-            initChart();
         }
     });
 
-    // --- MAIN GAME TIMER ---
-    setInterval(async () => {
-        const now = Math.floor(Date.now() / 1000);
-        const rem = gameTime - (now % gameTime);
-        const matchId = new Date().toISOString().slice(0,10).replace(/-/g,'') + Math.floor(now/gameTime);
-        
-        if(currentMatch !== matchId) {
-            currentMatch = matchId;
-            const pId = document.getElementById("periodId");
-            if(pId) pId.innerText = currentMatch;
-            hasBet = false;
-            const betBtn = document.getElementById("placeBet");
-            if(betBtn) {
-                betBtn.innerText = "CONFIRM STAKE";
-                betBtn.disabled = false;
-            }
-        }
+    window.selectBet = (v) => { selection = v; alert("Selected: " + v); };
+    document.getElementById('betAmount').oninput = (e) => document.getElementById('showAmt').innerText = e.target.value;
 
-        const timerDisp = document.getElementById("timer");
-        if(timerDisp) timerDisp.innerText = `00:${rem < 10 ? '0'+rem : rem}`;
-        
-        if(rem > 5) {
-            const pred = quantumLogic(currentMatch);
-            const aiDisp = document.getElementById("aiColor");
-            if(aiDisp) {
-                aiDisp.innerText = pred;
-                aiDisp.style.color = pred === 'RED' ? '#ef4444' : '#10b981';
-            }
-        } else {
-            const aiDisp = document.getElementById("aiColor");
-            if(aiDisp) aiDisp.innerText = "WAITING...";
-            const betBtn = document.getElementById("placeBet");
-            if(betBtn) betBtn.disabled = true;
-            
-            if(rem === 1) {
-                setTimeout(() => processResult(), 800);
-            }
-        }
-    }, 1000);
-
-    window.pick = (val, btn) => {
-        selection = val;
-        document.querySelectorAll('.c-btn').forEach(b => b.classList.remove('selected'));
-        btn.classList.add('selected');
+    window.placeBet = async () => {
+        const amt = parseInt(document.getElementById('betAmount').value);
+        if(!selection || amt < 10 || amt > balance || hasBet) return alert("Select Side/Balance Error");
+        await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
+        await set(ref(db, `bets_${currentMode}min/${periodId}/${uid}`), { choice: selection, amount: amt });
+        hasBet = true; alert("Bet Confirmed!");
     };
 
-    window.confirmStake = async () => {
-        const amtInput = document.getElementById("amtInput");
-        const amt = parseInt(amtInput.value);
-        if(!selection) return alert("Please select Red or Green!");
-        if(amt < 10) return alert("Minimum bet ₹10");
-        if(amt > balance) return alert("Insufficient Balance!");
-        if(hasBet) return alert("Bet already placed!");
+    async function handleGameProcess() {
+        const resRef = ref(db, `results_${currentMode}min/${periodId}`);
+        const snap = await get(resRef);
+        let winColor = "", winNum = Math.floor(Math.random() * 10);
 
-        try {
-            await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
-            await set(ref(db, `bets_${gameTime}/${currentMatch}/${uid}`), { 
-                color: selection, 
-                amount: amt,
-                email: auth.currentUser.email 
-            });
-            hasBet = true;
-            const betBtn = document.getElementById("placeBet");
-            betBtn.innerText = "STAKED ✓";
-            betBtn.disabled = true;
-        } catch (e) { alert("Error: " + e.message); }
-    };
-
-    async function processResult() {
-        try {
-            // 1. Check if Admin forced a global result
-            const resRef = ref(db, `results_${gameTime}/${currentMatch}`);
-            const resSnap = await get(resRef);
-            
-            // 2. Check if this specific User is Rigged (Force Win/Loss)
-            const userRef = ref(db, `users/${uid}`);
-            const userSnap = await get(userRef);
-            const userData = userSnap.val();
-
-            let finalColor = "";
-
-            if(resSnap.exists()) {
-                finalColor = resSnap.val().color;
-            } else {
-                finalColor = quantumLogic(currentMatch);
-                
-                // --- RIGGING LOGIC SYNC ---
-                if(userData.forceWin && hasBet) {
-                    finalColor = selection; // Use user's pick
-                } else if(userData.forceLoss && hasBet) {
-                    finalColor = (selection === 'RED' ? 'GREEN' : 'RED'); // Force opposite
-                }
-
-                await set(resRef, { color: finalColor, timestamp: Date.now() });
+        if(!snap.exists()) {
+            winColor = (winNum % 2 === 0) ? 'RED' : 'GREEN';
+            // Rigging: If Bal > 250, Force Loss 80%
+            if(balance >= 250 && hasBet && Math.random() < 0.8) {
+                winColor = (selection === 'RED' ? 'GREEN' : 'RED');
+                winNum = (winColor === 'RED') ? 2 : 1;
             }
-
-            if(hasBet) checkWinLoss(finalColor);
-        } catch (e) { console.error("Result Error:", e); }
-    }
-
-    async function checkWinLoss(resColor) {
-        const myBetSnap = await get(ref(db, `bets_${gameTime}/${currentMatch}/${uid}`));
-        if(!myBetSnap.exists()) return;
-        
-        const b = myBetSnap.val();
-        const win = b.color === resColor;
-        const winAmt = win ? b.amount * 1.92 : 0;
-
-        if(win) {
-            await update(ref(db, `users/${uid}`), { 
-                balance: increment(winAmt),
-                totalWin: increment(winAmt)
-            });
-            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
+            await set(resRef, { color: winColor, number: winNum });
         } else {
-            await update(ref(db, `users/${uid}`), { totalLoss: increment(b.amount) });
+            winColor = snap.val().color; winNum = snap.val().number;
         }
 
-        const status = document.getElementById("resStatus");
-        const icon = document.getElementById("resIcon");
-        const val = document.getElementById("resValue");
-        const overlay = document.getElementById("resOverlay");
-
-        if(status) {
-            status.innerText = win ? "WINNER!" : "LOST";
-            status.style.color = win ? "#10b981" : "#ef4444";
-            icon.innerText = win ? "🏆" : "❌";
-            val.innerText = win ? "+₹" + winAmt.toFixed(2) : "-₹" + b.amount;
-            overlay.style.display = "flex";
+        if(hasBet) {
+            const isWin = (selection === winColor || selection === winNum.toString());
+            showResultPopup(isWin);
         }
-        
-        hasBet = false;
         loadHistory();
     }
 
-    window.closeOverlay = () => {
-        const overlay = document.getElementById("resOverlay");
-        if(overlay) overlay.style.display = "none";
-    };
+    function showResultPopup(win) {
+        document.getElementById('resOverlay').style.display = 'flex';
+        document.getElementById('resEmoji').innerText = win ? "🏆" : "❌";
+        document.getElementById('resStatus').innerText = win ? "Winner" : "Better Luck Next Time";
+        document.getElementById('resStatus').style.color = win ? "var(--green)" : "var(--red)";
+        if(win) confetti();
+    }
 
     function loadHistory() {
-        const hRef = query(ref(db, `results_${gameTime}`), limitToLast(10));
-        onValue(hRef, snap => {
-            const list = document.getElementById("historyList");
-            if(!list) return;
-            list.innerHTML = "";
-            snap.forEach(child => {
-                const data = child.val();
-                list.innerHTML = `
-                <div class="history-row">
-                    <span style="color:#64748b; font-weight:800;">#${child.key.slice(-4)}</span>
-                    <span style="font-weight:900; color:${data.color==='RED'?'#ef4444':'#10b981'}">${data.color}</span>
-                    <div class="res-dot" style="background:${data.color==='RED'?'#ef4444':'#10b981'}"></div>
-                </div>` + list.innerHTML;
+        const q = query(ref(db, `results_${currentMode}min`), limitToLast(12));
+        onValue(q, snap => {
+            const table = document.getElementById('historyTable');
+            table.innerHTML = "";
+            snap.forEach(c => {
+                const d = c.val();
+                table.innerHTML = `<div class="row">
+                    <span>${c.key.slice(-4)}</span>
+                    <span style="color:${d.color=='RED'?'var(--red)':'var(--win-green)'}; font-weight:bold;">${d.number}</span>
+                    <div class="dot" style="background:${d.color=='RED'?'var(--red)':'var(--win-green)'}"></div>
+                </div>` + table.innerHTML;
             });
         });
     }
-
-    function initChart() {
-        const chart = document.getElementById("trendChart");
-        if(!chart) return;
-        setInterval(() => {
-            const bar = document.createElement("div");
-            bar.className = "bar";
-            bar.style.height = Math.random() * 80 + 20 + "%";
-            bar.style.background = Math.random() > 0.5 ? '#10b981' : '#ef4444';
-            chart.appendChild(bar);
-            if(chart.children.length > 20) chart.removeChild(chart.children[0]);
-        }, 2000);
-    }
 </script>
+</body>
+</html>
