@@ -11,44 +11,38 @@
         body { background: var(--dark); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; color: white; overflow-x: hidden; }
 
         .header { background: rgba(255,255,255,0.03); backdrop-filter: blur(15px); padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); position: sticky; top: 0; z-index: 100; }
-        .balance-chip { background: #1e293b; padding: 8px 15px; border-radius: 50px; border: 1px solid var(--gold); font-weight: 800; color: var(--gold); }
-
-        .mode-selector { display: flex; background: #161b2c; margin: 15px; border-radius: 12px; padding: 5px; }
-        .mode-btn { flex: 1; padding: 10px; border: none; background: none; color: #64748b; font-weight: 800; cursor: pointer; transition: 0.3s; }
-        .mode-btn.active { background: var(--primary); color: white; border-radius: 8px; }
+        .balance-chip { background: #1e293b; padding: 8px 15px; border-radius: 50px; border: 1.5px solid var(--gold); font-weight: 800; color: var(--gold); }
 
         .container { max-width: 450px; margin: auto; padding: 15px; }
 
-        /* Real Trading Chart */
+        /* Trend Chart Fix */
         .trend-box { background: #161b2c; border-radius: 20px; padding: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
-        .chart-container { display: flex; align-items: flex-end; gap: 6px; height: 120px; position: relative; border-bottom: 2px solid #334155; padding-bottom: 5px; }
-        .bar { flex: 1; border-radius: 4px 4px 0 0; min-width: 14px; transition: height 0.8s cubic-bezier(0.4, 0, 0.2, 1); position: relative; }
-        .bar::after { content: ''; position: absolute; top: -5px; left: 50%; width: 2px; height: 5px; background: inherit; transform: translateX(-50%); }
+        .chart-container { display: flex; align-items: flex-end; gap: 6px; height: 100px; border-bottom: 2px solid #334155; padding-bottom: 5px; overflow: hidden; }
+        .bar { flex: 1; border-radius: 4px 4px 0 0; min-width: 15px; transition: height 0.5s ease; }
 
-        .predict-card { background: linear-gradient(135deg, #1e1b4b, #312e81); border-radius: 24px; padding: 25px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.1); text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        #aiColor { font-size: 28px; font-weight: 900; margin: 10px 0; text-transform: uppercase; letter-spacing: 2px; }
+        .predict-card { background: linear-gradient(135deg, #1e1b4b, #312e81); border-radius: 24px; padding: 25px; margin-bottom: 20px; text-align: center; border: 1px solid rgba(255,255,255,0.1); }
+        #aiColor { font-size: 32px; font-weight: 900; margin: 10px 0; text-shadow: 0 0 20px rgba(99, 102, 241, 0.5); }
 
-        .timer-wrap { width: 110px; height: 110px; margin: 15px auto; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.3); border-radius: 50%; border: 4px solid #1e293b; position: relative; }
-        #timer { font-size: 26px; font-weight: 900; color: var(--gold); font-variant-numeric: tabular-nums; }
+        .timer-wrap { width: 100px; height: 100px; margin: 15px auto; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.4); border-radius: 50%; border: 3px solid var(--gold); }
+        #timer { font-size: 24px; font-weight: 900; color: var(--gold); }
 
-        .bet-box { background: rgba(255,255,255,0.05); border-radius: 30px; padding: 20px; border: 1px solid rgba(255,255,255,0.1); }
-        .color-btns { display: flex; gap: 15px; margin-bottom: 20px; }
-        .c-btn { flex: 1; padding: 18px; border: none; border-radius: 15px; font-weight: 800; color: white; cursor: pointer; transition: 0.2s; font-size: 16px; }
-        .c-btn.green { background: var(--success); box-shadow: 0 4px 0 #059669; }
-        .c-btn.red { background: var(--danger); box-shadow: 0 4px 0 #dc2626; }
-        .c-btn.selected { transform: translateY(4px); box-shadow: none; outline: 3px solid white; }
+        /* Betting Controls */
+        .color-btns { display: flex; gap: 12px; margin-bottom: 15px; }
+        .c-btn { flex: 1; padding: 18px; border: none; border-radius: 12px; font-weight: 800; color: white; cursor: pointer; transition: 0.2s; font-size: 16px; }
+        .c-btn.green { background: var(--success); }
+        .c-btn.red { background: var(--danger); }
+        .c-btn.selected { transform: scale(0.95); outline: 4px solid white; box-shadow: 0 0 20px rgba(255,255,255,0.3); }
 
-        input#amtInput { width: 100%; background: #1e293b; border: 1px solid #334155; padding: 15px; border-radius: 12px; color: white; text-align: center; margin-bottom: 15px; font-weight: 800; font-size: 20px; box-sizing: border-box; outline: none; }
-        #placeBet { width: 100%; padding: 18px; background: var(--gold); color: #000; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 18px; transition: 0.3s; }
-        #placeBet:active { transform: scale(0.98); }
+        input#amtInput { width: 100%; background: #1e293b; border: 1px solid #334155; padding: 15px; border-radius: 12px; color: white; text-align: center; margin-bottom: 15px; font-weight: 900; font-size: 20px; box-sizing: border-box; }
+        #placeBet { width: 100%; padding: 18px; background: var(--gold); color: #000; border: none; border-radius: 12px; font-weight: 900; cursor: pointer; font-size: 18px; }
 
-        .history-card { background: #161b2c; border-radius: 20px; padding: 20px; margin-top: 20px; border: 1px solid rgba(255,255,255,0.05); }
-        .history-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid rgba(255,255,255,0.05); font-size: 14px; align-items: center; }
-        .res-dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 10px rgba(0,0,0,0.5); }
+        /* History */
+        .history-row { display: flex; justify-content: space-between; padding: 12px; background: rgba(255,255,255,0.02); border-radius: 10px; margin-bottom: 8px; align-items: center; }
+        .res-dot { width: 15px; height: 15px; border-radius: 50%; }
 
-        /* Overlay Fix */
-        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.9); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; text-align: center; backdrop-filter: blur(10px); }
-        .overlay-card { background: #1e293b; padding: 40px; border-radius: 30px; border: 2px solid var(--gold); width: 80%; max-width: 320px; }
+        /* Overlay */
+        .overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 2000; display: none; flex-direction: column; align-items: center; justify-content: center; backdrop-filter: blur(10px); }
+        .overlay-card { background: #1e293b; padding: 40px; border-radius: 30px; border: 2px solid var(--gold); text-align: center; width: 80%; max-width: 320px; }
     </style>
 </head>
 <body>
@@ -58,53 +52,41 @@
         <div class="balance-chip">₹<span id="balDisplay">0.00</span></div>
     </div>
 
-    <div class="mode-selector">
-        <button class="mode-btn active" onclick="switchMode(30, this)">30 SEC</button>
-        <button class="mode-btn" onclick="switchMode(60, this)">1 MIN</button>
-    </div>
-
     <div class="container">
         <div class="trend-box">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px;">
-                <div style="font-size: 10px; font-weight: 800; color: #64748b;">QUANTUM MARKET FEED</div>
-                <div style="font-size: 10px; color: var(--success);" id="liveStatus">● LIVE</div>
-            </div>
+            <div style="font-size: 10px; font-weight: 800; color: #64748b; margin-bottom: 10px;">MARKET ANALYSIS</div>
             <div class="chart-container" id="trendChart"></div>
         </div>
 
         <div class="predict-card">
-            <div style="font-size: 11px; letter-spacing: 2px; opacity: 0.7; font-weight: 800;">PERIOD: <span id="periodId" style="color:white">---</span></div>
+            <div style="font-size: 11px; font-weight: 800; opacity: 0.6;">PERIOD: <span id="periodId" style="color:white">---</span></div>
             <div id="aiColor">ANALYZING...</div>
             <div class="timer-wrap">
                 <div id="timer">00:00</div>
             </div>
         </div>
 
-        <div class="bet-box">
+        <div style="background: rgba(255,255,255,0.05); padding: 20px; border-radius: 20px;">
             <div class="color-btns">
                 <button class="c-btn green" id="btnGREEN" onclick="pick('GREEN', this)">GREEN</button>
                 <button class="c-btn red" id="btnRED" onclick="pick('RED', this)">RED</button>
             </div>
-            <div style="font-size: 11px; color: var(--gold); margin-bottom: 8px; text-align: center; font-weight: 800;">MINIMUM STAKE ₹10</div>
             <input type="number" id="amtInput" value="10" min="10">
-            <button id="placeBet" onclick="placeBet()">CONFIRM STAKE</button>
+            <button id="placeBet" onclick="confirmStake()">CONFIRM STAKE</button>
         </div>
 
-        <div class="history-card">
-            <div style="font-weight: 800; color: var(--gold); margin-bottom: 15px; display: flex; justify-content: space-between;">
-                <span>PERIOD HISTORY</span>
-                <span style="font-size: 10px; color: #64748b;">REFRESHES AUTO</span>
-            </div>
+        <div class="history-card" style="margin-top:20px;">
+            <div style="font-weight: 800; color: var(--gold); margin-bottom: 15px;">PERIOD HISTORY</div>
             <div id="historyList"></div>
         </div>
     </div>
 
     <div id="resOverlay" class="overlay">
         <div class="overlay-card">
-            <div style="font-size: 80px; margin-bottom: 10px;" id="resIcon">🏆</div>
-            <h1 id="resStatus" style="font-size: 36px; margin: 0;">WINNER!</h1>
-            <h2 id="resValue" style="color:var(--gold); font-size: 28px; margin: 15px 0;">+₹0.00</h2>
-            <button onclick="closeOverlay()" style="background:var(--primary); color:white; border:none; width:100%; padding:15px; border-radius:12px; font-weight:800; font-size:16px;">CONTINUE</button>
+            <div id="resIcon" style="font-size: 70px; margin-bottom: 10px;">🏆</div>
+            <h1 id="resStatus" style="font-size: 32px; margin: 0;">WINNER!</h1>
+            <h2 id="resValue" style="color:var(--gold); margin: 15px 0;">+₹0.00</h2>
+            <button onclick="closeOverlay()" style="background:var(--primary); color:white; border:none; width:100%; padding:15px; border-radius:12px; font-weight:800; cursor:pointer;">CONTINUE</button>
         </div>
     </div>
 
@@ -118,14 +100,9 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    let uid = "", balance = 0, selection = null, gameTime = 30, currentMatch = "";
+    let uid = "", balance = 0, selection = null, gameTime = 30, currentMatch = "", hasBet = false;
 
-    // Mathematical Seed Logic
-    function mathLogic(period) {
-        const seed = parseInt(period.slice(-4));
-        return (Math.sin(seed) * 1000) % 10 > 5 ? 'RED' : 'GREEN';
-    }
-
+    // Core Sync
     onAuthStateChanged(auth, u => {
         if(u) {
             uid = u.uid;
@@ -140,42 +117,32 @@
         }
     });
 
-    // Game Timer Loop
-    setInterval(() => {
+    // Timer & Game Loop
+    setInterval(async () => {
         const now = Math.floor(Date.now() / 1000);
         const rem = gameTime - (now % gameTime);
-        const matchId = `${new Date().getHours()}${new Date().getMinutes()}${Math.floor(now/gameTime)}`;
+        const matchId = new Date().toISOString().slice(0,10).replace(/-/g,'') + Math.floor(now/gameTime);
         
         if(currentMatch !== matchId) {
             currentMatch = matchId;
             document.getElementById("periodId").innerText = currentMatch;
+            hasBet = false; // Reset for new round
         }
 
         document.getElementById("timer").innerText = `00:${rem < 10 ? '0'+rem : rem}`;
         
         // Prediction Display
         if(rem > 5) {
-            const pred = mathLogic(currentMatch);
+            const pred = (parseInt(currentMatch.slice(-3)) * 7) % 10 > 5 ? 'RED' : 'GREEN';
             document.getElementById("aiColor").innerText = pred;
             document.getElementById("aiColor").style.color = pred === 'RED' ? 'var(--danger)' : 'var(--success)';
             document.getElementById("placeBet").disabled = false;
-            document.getElementById("placeBet").style.opacity = "1";
         } else {
             document.getElementById("aiColor").innerText = "WAITING...";
-            document.getElementById("aiColor").style.color = "white";
             document.getElementById("placeBet").disabled = true;
-            document.getElementById("placeBet").style.opacity = "0.5";
+            if(rem === 1) processResult();
         }
-
-        if(rem === 1) calculateResult();
     }, 1000);
-
-    window.switchMode = (time, btn) => {
-        gameTime = time;
-        document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        loadHistory();
-    };
 
     window.pick = (val, btn) => {
         selection = val;
@@ -183,55 +150,35 @@
         btn.classList.add('selected');
     };
 
-    window.placeBet = async () => {
+    window.confirmStake = async () => {
         const amt = parseInt(document.getElementById("amtInput").value);
-        if(!selection) return alert("Select GREEN or RED first!");
-        if(amt < 10) return alert("Minimum Bet is ₹10!");
-        if(amt > balance) return alert("Insufficient Balance!");
+        if(!selection) return alert("Pick Color!");
+        if(amt < 10 || amt > balance) return alert("Check Amount/Balance");
 
         await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
         await set(ref(db, `bets_${gameTime}/${currentMatch}/${uid}`), { color: selection, amount: amt });
-        
-        // Visual Feedback
-        document.getElementById("placeBet").innerText = "BET PLACED ✓";
-        setTimeout(() => { document.getElementById("placeBet").innerText = "CONFIRM STAKE"; }, 2000);
+        hasBet = true;
+        document.getElementById("placeBet").innerText = "STAKED ✓";
     };
 
-    // --- FORCE WIN / LOSS LOGIC ---
-    async function calculateResult() {
+    async function processResult() {
+        // Fetch result from global pool (Server or Math)
         const resRef = ref(db, `results_${gameTime}/${currentMatch}`);
         const snap = await get(resRef);
-        if(snap.exists()) return; // Already calculated by another instance
+        let finalColor = "";
 
-        let finalRes = mathLogic(currentMatch);
-        const uSnap = await get(ref(db, `users/${uid}`));
-        const u = uSnap.val();
-
-        // Admin Override
-        const adminSnap = await get(ref(db, `admin_control/${gameTime}`));
-        if(adminSnap.exists() && adminSnap.val().active) {
-            finalRes = adminSnap.val().color;
+        if(snap.exists()) {
+            finalColor = snap.val().color;
         } else {
-            // User Specific Rigging
-            const betSnap = await get(ref(db, `bets_${gameTime}/${currentMatch}/${uid}`));
-            if(betSnap.exists()) {
-                const b = betSnap.val();
-                // If Force Loss is ON or Balance is High
-                if(u.forceLoss === true || (u.balance > 250)) { 
-                    finalRes = b.color === 'RED' ? 'GREEN' : 'RED'; 
-                }
-                // If Force Win is ON (Highest Priority)
-                if(u.forceWin === true) {
-                    finalRes = b.color;
-                }
-            }
+            // Default Fallback
+            finalColor = (parseInt(currentMatch.slice(-3)) * 7) % 10 > 5 ? 'RED' : 'GREEN';
+            await set(resRef, { color: finalColor });
         }
 
-        await set(resRef, { color: finalRes, timestamp: Date.now() });
-        setTimeout(() => showResultUI(finalRes), 1500); // Small delay for server sync
+        if(hasBet) checkWinLoss(finalColor);
     }
 
-    async function showResultUI(resColor) {
+    async function checkWinLoss(resColor) {
         const myBetSnap = await get(ref(db, `bets_${gameTime}/${currentMatch}/${uid}`));
         if(!myBetSnap.exists()) return;
 
@@ -241,58 +188,53 @@
 
         if(win) {
             await update(ref(db, `users/${uid}`), { balance: increment(winAmt) });
-            confetti({ particleCount: 200, spread: 70, origin: { y: 0.6 }, colors: ['#6366f1', '#f59e0b', '#10b981'] });
+            confetti({ particleCount: 150, spread: 60, origin: { y: 0.7 } });
         }
 
-        document.getElementById("resStatus").innerText = win ? "WINNER!" : "BET LOST";
+        document.getElementById("resStatus").innerText = win ? "WINNER!" : "LOST";
         document.getElementById("resStatus").style.color = win ? "var(--success)" : "var(--danger)";
         document.getElementById("resIcon").innerText = win ? "🏆" : "❌";
-        document.getElementById("resValue").innerText = win ? "+₹" + winAmt.toFixed(2) : "-₹" + b.amount.toFixed(2);
+        document.getElementById("resValue").innerText = win ? "+₹" + winAmt.toFixed(2) : "-₹" + b.amount;
         document.getElementById("resOverlay").style.display = "flex";
         
+        hasBet = false;
         loadHistory();
     }
 
     window.closeOverlay = () => {
         document.getElementById("resOverlay").style.display = "none";
+        document.getElementById("placeBet").innerText = "CONFIRM STAKE";
         selection = null;
         document.querySelectorAll('.c-btn').forEach(b => b.classList.remove('selected'));
     };
 
     function loadHistory() {
-        const hRef = query(ref(db, `results_${gameTime}`), limitToLast(12));
+        const hRef = query(ref(db, `results_${gameTime}`), limitToLast(10));
         onValue(hRef, snap => {
-            let h = "";
-            snap.forEach(c => {
-                const data = c.val();
-                h = `<div class="history-row">
-                    <span style="color:#64748b">#${c.key}</span>
-                    <span style="color:${data.color==='RED'?'var(--danger)':'var(--success)'}; font-weight:800;">${data.color}</span>
+            const list = document.getElementById("historyList");
+            list.innerHTML = "";
+            snap.forEach(child => {
+                const data = child.val();
+                list.innerHTML = `
+                <div class="history-row">
+                    <span style="color:#64748b; font-weight:800;">#${child.key.slice(-4)}</span>
+                    <span style="font-weight:900; color:${data.color==='RED'?'var(--danger)':'var(--success)'}">${data.color}</span>
                     <div class="res-dot" style="background:${data.color==='RED'?'var(--danger)':'var(--success)'}"></div>
-                </div>` + h;
+                </div>` + list.innerHTML;
             });
-            document.getElementById("historyList").innerHTML = h || "Waiting for market data...";
         });
     }
 
-    // --- REAL CHART ANIMATION ---
     function initChart() {
         const chart = document.getElementById("trendChart");
-        chart.innerHTML = "";
-        for(let i=0; i<15; i++) {
-            addBar(chart);
-        }
-        setInterval(() => addBar(chart), 2500);
-    }
-
-    function addBar(chart) {
-        const h = Math.floor(Math.random() * 70) + 15;
-        const bar = document.createElement("div");
-        bar.className = "bar";
-        bar.style.height = h + "%";
-        bar.style.background = Math.random() > 0.4 ? 'var(--success)' : 'var(--danger)';
-        chart.appendChild(bar);
-        if(chart.children.length > 18) chart.removeChild(chart.children[0]);
+        setInterval(() => {
+            const bar = document.createElement("div");
+            bar.className = "bar";
+            bar.style.height = Math.random() * 80 + 20 + "%";
+            bar.style.background = Math.random() > 0.5 ? 'var(--success)' : 'var(--danger)';
+            chart.appendChild(bar);
+            if(chart.children.length > 20) chart.removeChild(chart.children[0]);
+        }, 2000);
     }
 </script>
 </body>
