@@ -123,7 +123,7 @@
         e.currentTarget.classList.add('active');
     };
 
-    // --- USER LIST WITH BALANCE EDIT ---
+    // USER LIST SYNC
     onValue(ref(db, "users"), snap => {
         let h = "";
         snap.forEach(child => {
@@ -150,7 +150,6 @@
         document.getElementById("userList").innerHTML = h;
     });
 
-    // Edit Balance Function
     window.editBalance = async (uid, type) => {
         const amt = parseFloat(document.getElementById(`amt_${uid}`).value);
         if(!amt || amt <= 0) return alert("Enter valid amount");
@@ -159,7 +158,6 @@
         alert("Balance Updated!");
     };
 
-    // Toggle Win/Loss/Ban
     window.toggleUser = (uid, type, current) => {
         let updateData = {};
         if(type==='win') { updateData.forceWin = !current; updateData.forceLoss = false; }
@@ -168,7 +166,7 @@
         update(ref(db, `users/${uid}`), updateData);
     };
 
-    // --- DEPOSITS ---
+    // DEPOSITS SYNC
     onValue(ref(db, "deposit_requests"), snap => {
         let h = "";
         snap.forEach(child => {
@@ -184,7 +182,7 @@
         document.getElementById("depositList").innerHTML = h || "No pending deposits";
     });
 
-    // --- WITHDRAWALS ---
+    // WITHDRAWALS SYNC
     onValue(ref(db, "withdraw_requests"), snap => {
         let h = "";
         snap.forEach(child => {
@@ -200,32 +198,38 @@
         document.getElementById("withdrawList").innerHTML = h || "No pending withdrawals";
     });
 
-    // --- RECHARGES ---
-    onValue(ref(db, "recharge_requests"), snap => {
-        let h = "";
-        snap.forEach(child => {
-            const r = child.val();
-            if(r.status === "Pending") {
-                h += `<tr><td>${r.mobile}</td><td>${r.operator}</td><td>₹${r.amount}</td>
-                <td>
-                    <button class="btn-approve" onclick="updateRecharge('${child.key}','Success')">Success</button>
-                    <button class="btn-reject" onclick="updateRecharge('${child.key}','Rejected','${r.uid}',${r.amount})">Refund</button>
-                </td></tr>`;
-            }
-        });
-        document.getElementById("rechargeList").innerHTML = h || "No recharges";
-    });
-
-    // Common Payment Manager
+    // FIXED PAYMENT MANAGER WITH REFERRAL LOGIC
     window.managePayment = async (type, rid, status, uid, amt) => {
         const path = type === 'deposit' ? 'deposit_requests' : 'withdraw_requests';
-        await update(ref(db, `${path}/${rid}`), { status: status });
+        
         if(status === 'Approved' && type === 'deposit') {
+            // 1. Get user data to check for referral
+            const userSnap = await get(ref(db, `users/${uid}`));
+            const userData = userSnap.val();
+
+            // 2. Add Balance
             await update(ref(db, `users/${uid}`), { balance: increment(amt) });
+
+            // 3. REFERRAL LOGIC: Check if first deposit and has referrer
+            if(userData && !userData.hasDeposited && userData.referredBy && userData.referredBy !== "none") {
+                const referrerId = userData.referredBy;
+                
+                // Update Referrer's Active Count
+                await update(ref(db, `users/${referrerId}`), {
+                    activeReferrals: increment(1)
+                });
+                
+                // Mark current user as 'hasDeposited' so refer count doesn't increase twice
+                await update(ref(db, `users/${uid}`), { hasDeposited: true });
+            }
         }
+
         if(status === 'Rejected' && type === 'withdraw') {
             await update(ref(db, `users/${uid}`), { balance: increment(amt) });
         }
+
+        // Update Request Status
+        await update(ref(db, `${path}/${rid}`), { status: status });
         alert(type.toUpperCase() + " " + status);
     };
 
