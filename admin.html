@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H4X Master Admin v7.9 | Request Fixed</title>
+    <title>H4X Master Admin v8.1 | Full Control</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #6366f1; --success: #10b981; --danger: #ef4444; --dark: #0f172a; --warning: #f59e0b; }
@@ -22,7 +22,8 @@
         .stats-box { font-size: 10px; color: #64748b; margin-top: 5px; background: #f8fafc; padding: 8px; border-radius: 8px; line-height: 1.5; }
         .win-txt { color: var(--success); font-weight: 800; } 
         .loss-txt { color: var(--danger); font-weight: 800; }
-        button { border: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 10px; transition: 0.2s; }
+        .vault-txt { color: var(--warning); font-weight: 800; font-size: 11px; }
+        button { border: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 10px; transition: 0.2s; margin-right: 4px; }
         .btn-success { background: #dcfce7; color: #166534; } 
         .btn-danger { background: #fee2e2; color: #991b1b; } 
         .btn-primary { background: var(--primary); color: white; }
@@ -41,7 +42,7 @@
 </div>
 
 <div class="sidebar">
-    <div style="padding: 25px; font-weight: 800; font-size: 18px; color: var(--primary);">H4X CORE v7.9</div>
+    <div style="padding: 25px; font-weight: 800; font-size: 18px; color: var(--primary);">H4X CORE v8.1</div>
     <div class="nav-item active" onclick="showTab(event, 'users')">👥 Users & Rigging</div>
     <div class="nav-item" onclick="showTab(event, 'games')">🎮 Games Control</div>
     <div class="nav-item" onclick="showTab(event, 'deposits')">💰 Deposits</div>
@@ -51,7 +52,7 @@
 </div>
 
 <div class="main" id="adminMain">
-    <div id="users" class="tab-content active"><div class="card"><h3>User List</h3><table><thead><tr><th>Details</th><th>Balance</th><th>Edit</th><th>Rigging</th></tr></thead><tbody id="userList"></tbody></table></div></div>
+    <div id="users" class="tab-content active"><div class="card"><h3>User List</h3><table><thead><tr><th>Details</th><th>Balance & Vault</th><th>Edit</th><th>Rigging</th></tr></thead><tbody id="userList"></tbody></table></div></div>
     <div id="recharges" class="tab-content"><div class="card"><h3>📱 Pending Recharges</h3><table><thead><tr><th>Email</th><th>Mobile/Plan</th><th>Action</th></tr></thead><tbody id="rechargeList"></tbody></table></div></div>
     <div id="deposits" class="tab-content"><div class="card"><h3>💰 Deposit Requests</h3><table><thead><tr><th>Email</th><th>Amount</th><th>Action</th></tr></thead><tbody id="depositList"></tbody></table></div></div>
     <div id="withdrawals" class="tab-content"><div class="card"><h3>🏧 Withdrawal Requests</h3><table><thead><tr><th>User</th><th>Amount</th><th>UPI/Bank</th><th>Action</th></tr></thead><tbody id="withdrawList"></tbody></table></div></div>
@@ -61,75 +62,102 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, increment, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, signInWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
- const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
-};
+    const firebaseConfig = {
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const auth = getAuth(app);
+
     window.adminLogin = async () => {
         try {
             await signInWithEmailAndPassword(auth, document.getElementById('adminEmail').value, document.getElementById('adminPass').value);
             document.getElementById('adminAuth').style.display = 'none';
             document.getElementById('adminMain').style.display = 'block';
-        } catch(e) { alert("Wrong Password!"); }
+            loadData();
+        } catch(e) { alert("Login Failed!"); }
     };
 
     window.showTab = (e, id) => {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-        document.getElementById(id).classList.add('active'); e.currentTarget.classList.add('active');
+        document.getElementById(id).classList.add('active'); 
+        e.currentTarget.classList.add('active');
     };
 
-    onValue(ref(db, "/"), snap => {
-        const d = snap.val(); if(!d) return;
+    function loadData() {
+        onValue(ref(db, "/"), snap => {
+            const d = snap.val() || {};
 
-        // USER LIST
-        let uH = "";
-        for(let id in d.users) {
-            const u = d.users[id];
-            uH += `<tr><td><b>${u.email}</b><div class="stats-box">W: ₹${u.totalWin||0} | L: ₹${u.totalLoss||0}<br>D: ₹${u.totalDeposit||0} | W: ₹${u.totalWithdraw||0}</div></td><td>₹${(u.balance||0).toFixed(2)}</td><td><input type="number" id="bal_${id}" style="width:50px"><button onclick="addBal('${id}')">Add</button></td><td><button class="${u.forceWin?'btn-success':''}" onclick="toggleRig('${id}','w')">W</button><button class="${u.forceLoss?'btn-danger':''}" onclick="toggleRig('${id}','l')">L</button><button onclick="toggleRig('${id}','r')">R</button></td></tr>`;
-        }
-        document.getElementById("userList").innerHTML = uH;
-
-        // RECHARGE FIX (Using specific path check)
-        let recH = "";
-        const recharges = d.recharges || {};
-        Object.keys(recharges).forEach(k => {
-            if(recharges[k].status === "pending") {
-                recH += `<tr><td>${recharges[k].email}</td><td><b>${recharges[k].mobile}</b><br>Plan: ₹${recharges[k].plan}</td><td><button class="btn-success" onclick="appRec('${k}')">Complete</button></td></tr>`;
+            // 1. User List logic
+            let uH = "";
+            for(let id in (d.users || {})) {
+                const u = d.users[id];
+                uH += `<tr>
+                    <td><b>${u.email}</b><div class="stats-box">W: ₹${u.totalWin||0} | L: ₹${u.totalLoss||0}<br>D: ₹${u.totalDeposit||0}</div></td>
+                    <td>
+                        <div style="font-weight:bold">Main: ₹${(u.balance||0).toFixed(2)}</div>
+                        <div class="vault-txt">Vault: ₹${(u.vault_balance||0).toFixed(2)}</div>
+                    </td>
+                    <td><input type="number" id="bal_${id}" style="width:50px"><button onclick="addBal('${id}')">Add</button></td>
+                    <td>
+                        <button class="${u.forceWin?'btn-success':''}" onclick="toggleRig('${id}','w')">W</button>
+                        <button class="${u.forceLoss?'btn-danger':''}" onclick="toggleRig('${id}','l')">L</button>
+                    </td>
+                </tr>`;
             }
-        });
-        document.getElementById("rechargeList").innerHTML = recH || "<tr><td colspan='3'>No Pending Recharges</td></tr>";
+            document.getElementById("userList").innerHTML = uH;
 
-        // DEPOSIT FIX
-        let depH = "";
-        const deposits = d.deposit_requests || {};
-        Object.keys(deposits).forEach(k => {
-            if(deposits[k].status === "pending") {
-                depH += `<tr><td>${deposits[k].email}</td><td>₹${deposits[k].amount}</td><td><button class="btn-success" onclick="appDep('${k}','${deposits[k].uid}',${deposits[k].amount})">Approve</button></td></tr>`;
-            }
-        });
-        document.getElementById("depositList").innerHTML = depH || "<tr><td colspan='3'>No Pending Deposits</td></tr>";
+            // 2. Recharges logic (Approve / Reject)
+            let recH = "";
+            const recharges = d.recharges || {};
+            Object.keys(recharges).forEach(k => {
+                if(recharges[k].status === "pending") {
+                    recH += `<tr><td>${recharges[k].email}</td><td><b>${recharges[k].mobile}</b><br>₹${recharges[k].plan}</td><td>
+                        <button class="btn-success" onclick="appRec('${k}')">✔ Approve</button>
+                        <button class="btn-danger" onclick="rejReq('recharges','${k}')">✖ Reject</button>
+                    </td></tr>`;
+                }
+            });
+            document.getElementById("rechargeList").innerHTML = recH || "<tr><td colspan='3'>No Pending Recharges</td></tr>";
 
-        // WITHDRAW FIX
-        let withH = "";
-        const withdraws = d.withdraw_requests || {};
-        Object.keys(withdraws).forEach(k => {
-            if(withdraws[k].status === "pending") {
-                withH += `<tr><td>${withdraws[k].email}</td><td>₹${withdraws[k].amount}</td><td>${withdraws[k].upi || 'Bank'}</td><td><button class="btn-success" onclick="appWith('${k}')">Pay Now</button></td></tr>`;
-            }
-        });
-        document.getElementById("withdrawList").innerHTML = withH || "<tr><td colspan='4'>No Pending Withdrawals</td></tr>";
-    });
+            // 3. Deposits logic (Approve / Reject)
+            let depH = "";
+            const deposits = d.deposit_requests || {};
+            Object.keys(deposits).forEach(k => {
+                if(deposits[k].status === "pending") {
+                    depH += `<tr><td>${deposits[k].email}</td><td>₹${deposits[k].amount}</td><td>
+                        <button class="btn-success" onclick="appDep('${k}','${deposits[k].uid}',${deposits[k].amount})">✔ Approve</button>
+                        <button class="btn-danger" onclick="rejReq('deposit_requests','${k}')">✖ Reject</button>
+                    </td></tr>`;
+                }
+            });
+            document.getElementById("depositList").innerHTML = depH || "<tr><td colspan='3'>No Pending Deposits</td></tr>";
 
+            // 4. Withdrawals logic (Approve / Reject)
+            let withH = "";
+            const withdraws = d.withdraw_requests || {};
+            Object.keys(withdraws).forEach(k => {
+                if(withdraws[k].status === "pending") {
+                    withH += `<tr><td>${withdraws[k].email}</td><td>₹${withdraws[k].amount}</td><td>${withdraws[k].upi || 'Bank'}</td><td>
+                        <button class="btn-success" onclick="appWith('${k}')">✔ Paid</button>
+                        <button class="btn-danger" onclick="rejReq('withdraw_requests','${k}')">✖ Reject</button>
+                    </td></tr>`;
+                }
+            });
+            document.getElementById("withdrawList").innerHTML = withH || "<tr><td colspan='4'>No Pending Withdrawals</td></tr>";
+        });
+    }
+
+    // ACTIONS
     window.addBal = (id) => {
         const v = parseFloat(document.getElementById(`bal_${id}`).value);
         if(v) update(ref(db, `users/${id}`), { balance: increment(v) });
@@ -148,6 +176,14 @@
 
     window.appWith = (k) => update(ref(db, `withdraw_requests/${k}`), { status: "paid" });
     window.appRec = (k) => update(ref(db, `recharges/${k}`), { status: "completed" });
+    
+    // NEW REJECT FUNCTION (Saves data but marks as rejected/removes)
+    window.rejReq = (path, k) => {
+        if(confirm("Are you sure you want to REJECT this request?")) {
+            remove(ref(db, `${path}/${k}`)); // Turant delete kar dega table se
+        }
+    };
+
     window.fixWingo = (c) => update(ref(db, "admin_control/wingo"), { active: c!=='RESET', color: c });
 </script>
 </body>
