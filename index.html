@@ -3,128 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login | H4XTEAM Global</title>
+    <title>Sign In | H4XTEAM</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --primary: #4361ee;
-            --danger: #ff4d4d;
-            --bg: #f4f7fe;
-            --white: #ffffff;
-            --text-dark: #1e293b;
-            --text-muted: #64748b;
-        }
-
-        body {
-            background-color: var(--bg);
-            color: var(--text-dark);
-            font-family: 'Plus Jakarta Sans', sans-serif;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-        }
-
-        .login-card {
-            background: var(--white);
-            padding: 40px 30px;
-            border-radius: 35px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.04);
-            text-align: center;
-            width: 100%;
-            max-width: 400px;
-            position: relative;
-        }
-
-        .brand-logo {
-            width: 60px; height: 60px;
-            background: linear-gradient(135deg, #4361ee, #3f37c9);
-            color: white; border-radius: 20px;
-            display: flex; align-items: center; justify-content: center;
-            font-size: 28px; font-weight: 800; margin: 0 auto 20px;
-        }
-
+        :root { --primary: #4361ee; --bg: #f4f7fe; --white: #ffffff; --text-dark: #1e293b; --text-muted: #64748b; }
+        body { background: var(--bg); color: var(--text-dark); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
+        .auth-container { width: 100%; max-width: 400px; padding: 20px; box-sizing: border-box; }
+        .auth-card { background: var(--white); padding: 40px 30px; border-radius: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); text-align: center; }
+        .logo-area { width: 64px; height: 64px; background: #eef2ff; color: var(--primary); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; margin: 0 auto 25px; }
         h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
-        .input-box { text-align: left; margin-bottom: 15px; }
-        label { font-size: 11px; font-weight: 800; color: var(--text-muted); text-transform: uppercase; margin-bottom: 5px; display: block; }
+        p { font-size: 14px; color: var(--text-muted); margin-bottom: 30px; }
+        .input-group { text-align: left; margin-bottom: 20px; }
+        label { font-size: 11px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px; display: block; text-transform: uppercase; }
+        input { width: 100%; padding: 15px; background: #f8fafc; border: 2px solid #f1f5f9; border-radius: 16px; font-size: 15px; font-weight: 600; box-sizing: border-box; outline: none; }
+        input:focus { border-color: var(--primary); background: #fff; }
+        .btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        .btn:disabled { background: #cbd5e1; }
+        .footer-link { margin-top: 25px; display: block; font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; }
         
-        input { 
-            width: 100%; padding: 15px; background: #f8fafc; border: 2px solid #f1f5f9; 
-            border-radius: 15px; font-size: 15px; font-weight: 600; outline: none; box-sizing: border-box;
-        }
-
-        .login-btn {
-            width: 100%; padding: 16px; background: var(--primary); color: white;
-            border: none; border-radius: 15px; font-size: 16px; font-weight: 700;
-            cursor: pointer; transition: 0.3s; margin-top: 10px;
-        }
-
-        .secondary-btn {
-            width: 100%; padding: 14px; background: transparent; color: var(--text-muted);
-            border: none; border-radius: 15px; font-size: 13px; font-weight: 600;
-            cursor: pointer; margin-top: 10px;
-        }
-
-        .del-btn {
-            color: var(--danger);
-            font-size: 12px;
-            font-weight: 700;
-            text-decoration: underline;
-            background: none;
-            border: none;
-            cursor: pointer;
-            margin-top: 25px;
-            opacity: 0.7;
-        }
-
-        .del-btn:hover { opacity: 1; }
-
-        /* Ban Overlay */
-        #banOverlay {
-            display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(255,255,255,0.98); border-radius: 35px; z-index: 10;
-            flex-direction: column; align-items: center; justify-content: center;
-        }
+        /* Alert Box for Unverified Users */
+        #verifyAlert { display:none; margin-top: 20px; padding: 15px; background: #fff1f2; border: 1px solid #fecdd3; border-radius: 16px; color: #be123c; font-size: 13px; font-weight: 600; }
+        #resendBtnInLogin { color: #4361ee; cursor: pointer; text-decoration: underline; margin-top: 5px; display: inline-block; }
     </style>
 </head>
 <body>
 
-<div class="login-card">
-    <div id="banOverlay">
-        <div style="font-size: 40px;">🚫</div>
-        <h2 style="color: var(--danger);">BANNED</h2>
-        <p style="font-size: 13px; color: var(--text-muted); padding: 0 20px;">Access denied by administration.</p>
-        <button onclick="location.reload()" style="color: var(--primary); border:none; background:none; font-weight:800; cursor:pointer;">TRY AGAIN</button>
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="logo-area">H</div>
+        <h1>Welcome Back</h1>
+        <p>Login to access your premium dashboard.</p>
+        
+        <div class="input-group">
+            <label>Email Address</label>
+            <input id="email" type="email" placeholder="name@example.com">
+        </div>
+        <div class="input-group">
+            <label>Password</label>
+            <input id="pass" type="password" placeholder="••••••••">
+        </div>
+
+        <button id="loginBtn" class="btn" onclick="handleLogin()">Sign In</button>
+        
+        <div id="verifyAlert">
+            Email not verified! <br>
+            <span id="resendBtnInLogin" onclick="resendFromLogin()">Resend verification link</span>
+        </div>
+
+        <a href="register.html" class="footer-link">Don't have an account? Sign Up</a>
     </div>
-
-    <div class="brand-logo">H</div>
-    <h1>Welcome Back</h1>
-    <p style="color: var(--text-muted); font-size: 14px; margin-bottom: 25px;">Login to access your H4X dashboard</p>
-
-    <div class="input-box">
-        <label>Email Address</label>
-        <input id="email" type="email" placeholder="Enter your email">
-    </div>
-
-    <div class="input-box">
-        <label>Password</label>
-        <input id="pass" type="password" placeholder="••••••••">
-    </div>
-
-    <button id="loginBtn" class="login-btn" onclick="handleLogin()">Sign In</button>
-    
-    <button class="secondary-btn" onclick="window.location.href='register.html'">Don't have an account? <b>Sign Up</b></button>
-
-    <hr style="border: 0; border-top: 1px solid #f1f5f9; margin: 20px 0;">
-
-    <button class="del-btn" onclick="deleteMyData()">Delete My Data & Account</button>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-    import { getAuth, signInWithEmailAndPassword, signOut, deleteUser } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-    import { getDatabase, ref, get, remove } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
+    import { getAuth, signInWithEmailAndPassword, sendEmailVerification, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -136,76 +68,50 @@
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
-    const db = getDatabase(app);
 
-    // LOGIN LOGIC
     window.handleLogin = async function() {
         const email = document.getElementById("email").value;
         const pass = document.getElementById("pass").value;
         const btn = document.getElementById("loginBtn");
+        const alertBox = document.getElementById("verifyAlert");
 
         if(!email || !pass) return alert("Please fill all fields");
-        btn.innerText = "Signing in...";
+        
+        btn.disabled = true;
+        btn.innerText = "Authenticating...";
+        alertBox.style.display = "none";
 
         try {
-            const cred = await signInWithEmailAndPassword(auth, email, pass);
-            const user = cred.user;
+            const res = await signInWithEmailAndPassword(auth, email, pass);
+            const user = res.user;
 
-            if (!user.emailVerified) {
-                await signOut(auth);
-                alert("Please verify your email first!");
+            // CHECK IF EMAIL IS VERIFIED
+            if(user.emailVerified) {
+                window.location.href = "dashboard.html";
+            } else {
+                alertBox.style.display = "block";
+                btn.disabled = false;
                 btn.innerText = "Sign In";
-                return;
+                // Don't sign out yet so resend can work, but don't redirect
             }
-
-            const userSnap = await get(ref(db, 'users/' + user.uid));
-            if (userSnap.exists() && userSnap.val().status === "banned") {
-                await signOut(auth);
-                document.getElementById("banOverlay").style.display = "flex";
-                return;
-            }
-
-            window.location.href = "dashboard.html";
         } catch (e) {
+            alert("Login Failed: " + e.message);
+            btn.disabled = false;
             btn.innerText = "Sign In";
-            alert("Error: " + e.message);
         }
     };
 
-    // DELETE DATA LOGIC
-    window.deleteMyData = async function() {
-        const email = document.getElementById("email").value;
-        const pass = document.getElementById("pass").value;
-
-        if(!email || !pass) {
-            alert("Please enter your Email and Password first to confirm deletion.");
-            return;
-        }
-
-        const confirmText = "⚠️ WARNING: Deleting your account will:\n1. Permanent delete your wallet balance.\n2. Remove all your referral history.\n3. Delete your login access forever.\n\nThis action CANNOT be undone. Type 'DELETE' to confirm:";
-        const userInput = prompt(confirmText);
-
-        if(userInput === "DELETE") {
+    window.resendFromLogin = async function() {
+        const user = auth.currentUser;
+        if(user) {
             try {
-                // 1. User must be logged in to delete their own account
-                const cred = await signInWithEmailAndPassword(auth, email, pass);
-                const user = cred.user;
-                const uid = user.uid;
-
-                // 2. Delete from Realtime Database
-                await remove(ref(db, 'users/' + uid));
-
-                // 3. Delete from Firebase Auth
-                await deleteUser(user);
-
-                alert("Your data and account have been successfully wiped from H4XTEAM.");
-                location.reload();
-
+                await sendEmailVerification(user);
+                alert("Verification link sent to your email!");
             } catch (e) {
-                alert("Deletion Failed: " + e.message + "\n(Note: You might need to login again recently to perform this action)");
+                alert("Error: " + e.message);
             }
         } else {
-            alert("Deletion cancelled.");
+            alert("Please enter password again to resend link.");
         }
     };
 </script>
