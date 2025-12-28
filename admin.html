@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>H4X Master Admin v9.0 | Ultimate Control</title>
+    <title>H4X Master Admin v9.3 | Final Synchronized</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #6366f1; --success: #10b981; --danger: #ef4444; --dark: #0f172a; --warning: #f59e0b; }
@@ -12,7 +12,6 @@
         .auth-card { background: white; padding: 40px; border-radius: 24px; width: 340px; text-align: center; }
         .sidebar { width: 260px; height: 100vh; background: var(--dark); color: white; position: fixed; overflow-y: auto; z-index: 100; }
         .nav-item { padding: 14px 25px; cursor: pointer; transition: 0.3s; font-weight: 600; color: #94a3b8; display: flex; align-items: center; gap: 12px; font-size: 13px; }
-        .nav-item:hover { background: rgba(255,255,255,0.05); color: white; }
         .nav-item.active { background: var(--primary); color: white; }
         .main { margin-left: 260px; width: calc(100% - 260px); padding: 30px; box-sizing: border-box; display: none; }
         .card { background: white; border-radius: 20px; padding: 20px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 25px; border: 1px solid #e2e8f0; }
@@ -21,12 +20,11 @@
         td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 12px; vertical-align: middle; }
         .stats-box { font-size: 10px; color: #64748b; margin-top: 5px; background: #f8fafc; padding: 8px; border-radius: 8px; }
         .vault-txt { color: var(--warning); font-weight: 800; font-size: 11px; }
-        button { border: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 10px; margin-right: 2px; transition: 0.2s; }
+        button { border: none; padding: 8px 12px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 10px; margin-right: 2px; }
         .btn-success { background: #dcfce7; color: #166534; } 
         .btn-danger { background: #fee2e2; color: #991b1b; } 
         .btn-primary { background: var(--primary); color: white; }
         .tab-content { display: none; } .tab-content.active { display: block; }
-        .status-badge { font-weight: 800; font-size: 10px; text-transform: uppercase; }
     </style>
 </head>
 <body>
@@ -41,7 +39,7 @@
 </div>
 
 <div class="sidebar">
-    <div style="padding: 25px; font-weight: 800; font-size: 18px; color: var(--primary);">H4X CORE v9.0</div>
+    <div style="padding: 25px; font-weight: 800; font-size: 18px; color: var(--primary);">H4X CORE v9.3</div>
     <div class="nav-item active" onclick="showTab(event, 'users')">👥 Users & Rigging</div>
     <div class="nav-item" onclick="showTab(event, 'deposits')">💰 Deposits</div>
     <div class="nav-item" onclick="showTab(event, 'withdrawals')">🏧 Withdrawals</div>
@@ -51,9 +49,9 @@
 <div class="main" id="adminMain">
     <div id="users" class="tab-content active">
         <div class="card">
-            <h3>User Management (Rigging & Ban)</h3>
+            <h3>User Control Panel</h3>
             <table>
-                <thead><tr><th>User Details</th><th>Balances</th><th>Rigging Control</th><th>Account Action</th></tr></thead>
+                <thead><tr><th>User Details</th><th>Balances</th><th>Rigging</th><th>Status</th></tr></thead>
                 <tbody id="userList"></tbody>
             </table>
         </div>
@@ -62,30 +60,21 @@
     <div id="deposits" class="tab-content">
         <div class="card">
             <h3>💰 Deposit History</h3>
-            <table>
-                <thead><tr><th>Email</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead>
-                <tbody id="depositList"></tbody>
-            </table>
+            <table><thead><tr><th>Email</th><th>Amount</th><th>Status</th><th>Action</th></tr></thead><tbody id="depositList"></tbody></table>
         </div>
     </div>
 
     <div id="withdrawals" class="tab-content">
         <div class="card">
-            <h3>🏧 Withdrawals (UPI/Bank Info)</h3>
-            <table>
-                <thead><tr><th>User</th><th>Amount</th><th>UPI/Bank Details</th><th>Status</th><th>Action</th></tr></thead>
-                <tbody id="withdrawList"></tbody>
-            </table>
+            <h3>🏧 Withdrawal Requests (Sync)</h3>
+            <table><thead><tr><th>Email</th><th>Amount</th><th>UPI Details</th><th>Status</th><th>Action</th></tr></thead><tbody id="withdrawList"></tbody></table>
         </div>
     </div>
 
     <div id="recharges" class="tab-content">
         <div class="card">
-            <h3>📱 Recharge History</h3>
-            <table>
-                <thead><tr><th>Email</th><th>Plan Info</th><th>Status</th><th>Action</th></tr></thead>
-                <tbody id="rechargeList"></tbody>
-            </table>
+            <h3>📱 Recharge Requests (Sync)</h3>
+            <table><thead><tr><th>Email</th><th>Mobile/Plan</th><th>Status</th><th>Action</th></tr></thead><tbody id="rechargeList"></tbody></table>
         </div>
     </div>
 </div>
@@ -118,75 +107,67 @@
 
     function loadData() {
         onValue(ref(db, "/"), snap => {
-            const data = snap.val() || {};
+            const d = snap.val() || {};
 
-            // 1. Users Loading
+            // 1. Users Render
             let uH = "";
-            for(let id in (data.users || {})) {
-                const u = data.users[id];
+            for(let id in (d.users || {})) {
+                const u = d.users[id];
                 uH += `<tr>
-                    <td><b>${u.email}</b><div class="stats-box">W: ₹${u.totalWin||0} | L: ₹${u.totalLoss||0}</div></td>
-                    <td>Main: ₹${(u.balance||0).toFixed(2)}<br><span class="vault-txt">Vault: ₹${(u.vault_balance||0).toFixed(2)}</span></td>
+                    <td><b>${u.email}</b><div class="stats-box">W:₹${u.totalWin||0} | L:₹${u.totalLoss||0}</div></td>
+                    <td>Main:₹${(u.balance||0).toFixed(2)}<br><span class="vault-txt">Vault:₹${(u.vault_balance||0).toFixed(2)}</span></td>
                     <td>
                         <button class="${u.forceWin?'btn-success':''}" onclick="toggleRig('${id}','w')">W</button>
                         <button class="${u.forceLoss?'btn-danger':''}" onclick="toggleRig('${id}','l')">L</button>
-                        <button style="background:#ddd" onclick="toggleRig('${id}','reset')">Reset</button>
+                        <button onclick="toggleRig('${id}','reset')">R</button>
                     </td>
-                    <td><button class="${u.isBanned?'btn-danger':''}" onclick="toggleBan('${id}',${u.isBanned||false})">${u.isBanned?'Unban':'Ban'}</button></td>
+                    <td><button onclick="toggleBan('${id}',${u.isBanned||false})">${u.isBanned?'Unban':'Ban'}</button></td>
                 </tr>`;
             }
             document.getElementById("userList").innerHTML = uH;
 
-            // 2. Deposits History
-            let depH = "";
-            Object.entries(data.deposit_requests || {}).forEach(([k, r]) => {
-                let sCol = r.status === 'pending' ? '#f59e0b' : (r.status === 'rejected' ? 'red' : 'green');
-                depH += `<tr>
-                    <td>${r.email}</td><td>₹${r.amount}</td>
-                    <td><b style="color:${sCol}">${r.status}</b></td>
-                    <td>${r.status==='pending'?`<button class="btn-success" onclick="appDep('${k}','${r.uid}',${r.amount})">✔</button><button class="btn-danger" onclick="rejReq('deposit_requests','${k}')">✖</button>`:'-'}</td>
-                </tr>`;
-            });
-            document.getElementById("depositList").innerHTML = depH || "<tr><td colspan='4'>No History</td></tr>";
-
-            // 3. Withdrawals with UPI
+            // 2. Withdrawals Sync
             let withH = "";
-            Object.entries(data.withdraw_requests || {}).forEach(([k, r]) => {
-                let details = r.upi ? `UPI: ${r.upi}` : `Bank: ${r.account_number}`;
-                let sCol = r.status === 'pending' ? '#f59e0b' : (r.status === 'rejected' ? 'red' : 'green');
-                withH += `<tr>
-                    <td>${r.email}</td><td>₹${r.amount}</td><td><small>${details}</small></td>
-                    <td><b style="color:${sCol}">${r.status}</b></td>
-                    <td>${r.status==='pending'?`<button class="btn-success" onclick="appWith('${k}')">Paid</button><button class="btn-danger" onclick="rejReq('withdraw_requests','${k}')">✖</button>`:'-'}</td>
-                </tr>`;
+            Object.entries(d.withdrawals || {}).forEach(([k, r]) => {
+                let statusColor = r.status === 'Pending' ? '#f59e0b' : (r.status === 'Rejected' ? 'red' : 'green');
+                withH += `<tr><td>${r.email}</td><td>₹${r.amount}</td><td><small>${r.upi || 'N/A'}</small></td>
+                <td><b style="color:${statusColor}">${r.status}</b></td>
+                <td>${r.status==='Pending'?`<button class="btn-success" onclick="appWith('${k}')">Paid</button><button class="btn-danger" onclick="rejReq('withdrawals','${k}')">✖</button>`:'-'}</td></tr>`;
             });
-            document.getElementById("withdrawList").innerHTML = withH || "<tr><td colspan='5'>No History</td></tr>";
+            document.getElementById("withdrawList").innerHTML = withH || "<tr><td colspan='5'>No Requests</td></tr>";
 
-            // 4. Recharges History
+            // 3. Recharges Sync
             let recH = "";
-            Object.entries(data.recharges || {}).forEach(([k, r]) => {
-                let sCol = r.status === 'pending' ? '#f59e0b' : (r.status === 'rejected' ? 'red' : 'green');
-                recH += `<tr>
-                    <td>${r.email}</td><td>Plan: ₹${r.plan}<br>Mob: ${r.mobile}</td>
-                    <td><b style="color:${sCol}">${r.status}</b></td>
-                    <td>${r.status==='pending'?`<button class="btn-success" onclick="appRec('${k}')">✔</button><button class="btn-danger" onclick="rejReq('recharges','${k}')">✖</button>`:'-'}</td>
-                </tr>`;
+            Object.entries(d.recharge_requests || {}).forEach(([k, r]) => {
+                let statusColor = r.status === 'Pending' ? '#f59e0b' : (r.status === 'Rejected' ? 'red' : 'green');
+                recH += `<tr><td>${r.email}</td><td>${r.mobile}<br>₹${r.amount}</td><td><b style="color:${statusColor}">${r.status}</b></td>
+                <td>${r.status==='Pending'?`<button class="btn-success" onclick="appRec('${k}')">✔</button><button class="btn-danger" onclick="rejReq('recharge_requests','${k}')">✖</button>`:'-'}</td></tr>`;
             });
-            document.getElementById("rechargeList").innerHTML = recH || "<tr><td colspan='4'>No History</td></tr>";
+            document.getElementById("rechargeList").innerHTML = recH || "<tr><td colspan='4'>No Requests</td></tr>";
+
+            // 4. Deposits
+            let depH = "";
+            Object.entries(d.deposit_requests || {}).forEach(([k, r]) => {
+                let color = r.status === 'pending' ? '#f59e0b' : (r.status === 'rejected' ? 'red' : 'green');
+                depH += `<tr><td>${r.email}</td><td>₹${r.amount}</td><td><b style="color:${color}">${r.status}</b></td>
+                <td>${r.status==='pending'?`<button class="btn-success" onclick="appDep('${k}','${r.uid}',${r.amount})">✔</button><button class="btn-danger" onclick="rejReq('deposit_requests','${k}')">✖</button>`:'-'}</td></tr>`;
+            });
+            document.getElementById("depositList").innerHTML = depH;
         });
     }
 
-    // --- SHARED ACTIONS ---
     window.toggleRig = (id, m) => update(ref(db, `users/${id}`), { forceWin: m==='w', forceLoss: m==='l' });
     window.toggleBan = (id, s) => update(ref(db, `users/${id}`), { isBanned: !s });
     window.appDep = (k, uid, a) => {
         update(ref(db, `users/${uid}`), { balance: increment(a), totalDeposit: increment(a) });
         update(ref(db, `deposit_requests/${k}`), { status: "approved" });
     };
-    window.appWith = (k) => update(ref(db, `withdraw_requests/${k}`), { status: "paid" });
-    window.appRec = (k) => update(ref(db, `recharges/${k}`), { status: "completed" });
-    window.rejReq = (path, k) => update(ref(db, `${path}/${k}`), { status: "rejected" });
-    
+    window.appWith = (k) => update(ref(db, `withdrawals/${k}`), { status: "Approved" });
+    window.appRec = (k) => update(ref(db, `recharge_requests/${k}`), { status: "Success" });
+    window.rejReq = (path, k) => {
+        let statusTxt = (path === 'recharge_requests' || path === 'withdrawals') ? 'Rejected' : 'rejected';
+        update(ref(db, `${path}/${k}`), { status: statusTxt });
+    };
     window.showTab = (e, id) => {
         document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
         document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
