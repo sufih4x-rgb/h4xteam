@@ -3,48 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Join H4XTEAM | Premium Access</title>
+    <title>Join DOT GAMES | Premium Access</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary: #4361ee; --bg: #f4f7fe; --white: #ffffff; --text-dark: #1e293b; --text-muted: #64748b; --success: #10b981; }
         body { background: var(--bg); color: var(--text-dark); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; }
-        .auth-container { width: 100%; max-width: 400px; padding: 20px; box-sizing: border-box; }
-        .auth-card { background: var(--white); padding: 40px 30px; border-radius: 32px; box-shadow: 0 20px 40px rgba(0,0,0,0.05); text-align: center; }
-        .logo-area { width: 64px; height: 64px; background: #eef2ff; color: var(--primary); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; margin: 0 auto 25px; }
-        h1 { font-size: 24px; font-weight: 800; margin-bottom: 8px; }
-        p { font-size: 14px; color: var(--text-muted); margin-bottom: 30px; }
-        .input-group { text-align: left; margin-bottom: 20px; }
-        label { font-size: 11px; font-weight: 800; color: var(--text-dark); margin-bottom: 8px; display: block; text-transform: uppercase; }
-        input { width: 100%; padding: 15px; background: #f8fafc; border: 2px solid #f1f5f9; border-radius: 16px; font-size: 15px; font-weight: 600; box-sizing: border-box; outline: none; }
+        .auth-container { width: 100%; max-width: 420px; padding: 20px; box-sizing: border-box; }
+        .auth-card { background: var(--white); padding: 30px 25px; border-radius: 32px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05); text-align: center; }
+        .logo-area { width: 60px; height: 60px; background: #eef2ff; color: var(--primary); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; margin: 0 auto 20px; }
+        h1 { font-size: 22px; font-weight: 800; margin-bottom: 5px; }
+        p { font-size: 13px; color: var(--text-muted); margin-bottom: 25px; }
+        .input-group { text-align: left; margin-bottom: 15px; position: relative; }
+        label { font-size: 11px; font-weight: 800; color: var(--text-dark); margin-bottom: 6px; display: block; text-transform: uppercase; }
+        input { width: 100%; padding: 14px; background: #f8fafc; border: 2px solid #f1f5f9; border-radius: 14px; font-size: 14px; font-weight: 600; box-sizing: border-box; outline: none; transition: 0.2s; }
         input:focus { border-color: var(--primary); background: #fff; }
-        .btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; }
+        
+        /* Password Toggle Styling */
+        .pass-wrapper { position: relative; }
+        .toggle-pass { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; font-size: 16px; }
+
+        .btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         .btn:disabled { background: #cbd5e1; cursor: not-allowed; }
-        .ref-tag { display: inline-block; padding: 5px 15px; background: #dcfce7; color: #166534; border-radius: 20px; font-size: 12px; font-weight: 700; margin-bottom: 15px; }
+        .ref-tag { display: inline-block; padding: 5px 15px; background: #dcfce7; color: #166534; border-radius: 20px; font-size: 11px; font-weight: 700; margin-bottom: 15px; }
         #resendSection { display: none; }
         .timer-box { margin-top: 15px; font-size: 13px; font-weight: 700; color: #64748b; }
-        .footer-link { margin-top: 25px; display: block; font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; }
+        .footer-link { margin-top: 20px; display: block; font-size: 14px; font-weight: 600; color: var(--primary); text-decoration: none; }
     </style>
 </head>
 <body>
 
 <div class="auth-container">
     <div id="registerForm" class="auth-card">
-        <div class="logo-area">H</div>
+        <div class="logo-area">D</div>
         <div id="refBadge"></div>
-        <h1>Create Account</h1>
-        <p>Verification link will be sent to your email.</p>
-        <div class="input-group"><label>Email Address</label><input id="email" type="email" placeholder="name@example.com"></div>
-        <div class="input-group"><label>Password</label><input id="pass" type="password" placeholder="Min. 6 characters"></div>
+        <h1>Join the Arena</h1>
+        <p>Complete your profile to start earning.</p>
+
+        <div class="input-group">
+            <label>Username</label>
+            <input id="userName" type="text" placeholder="e.g. gamer_77">
+        </div>
+
+        <div class="input-group">
+            <label>Email Address</label>
+            <input id="email" type="email" placeholder="name@example.com">
+        </div>
+
+        <div class="input-group">
+            <label>Mobile Number</label>
+            <input id="mobile" type="tel" placeholder="Enter 10 digit number">
+        </div>
+
+        <div class="input-group">
+            <label>Create Password</label>
+            <div class="pass-wrapper">
+                <input id="pass" type="password" placeholder="••••••••">
+                <i class="fa-solid fa-eye-slash toggle-pass" onclick="togglePassword('pass', this)"></i>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <label>Confirm Password</label>
+            <div class="pass-wrapper">
+                <input id="passConfirm" type="password" placeholder="••••••••">
+                <i class="fa-solid fa-eye-slash toggle-pass" onclick="togglePassword('passConfirm', this)"></i>
+            </div>
+        </div>
+
         <button id="regBtn" class="btn" onclick="handleRegister()">Verify & Register</button>
-        <a href="index.html" class="footer-link">Already have an account? Sign In</a>
+        <a href="index.html" class="footer-link">Have an account? Sign In</a>
     </div>
 
     <div id="resendSection" class="auth-card">
         <div class="logo-area" style="background:#dcfce7; color:var(--success);">✓</div>
-        <h1>Check Email</h1>
-        <p>A verification link has been sent. Please check your inbox or <b>Spam folder</b>.</p>
+        <h1>Verify Email</h1>
+        <p>A link has been sent. Check your <b>Spam folder</b> if not found.</p>
         <button id="resendBtn" class="btn" onclick="resendEmail()" style="background:var(--success);">Resend Email</button>
-        <div id="timerContainer" class="timer-box">Wait <span id="seconds">30</span>s to resend</div>
+        <div id="timerContainer" class="timer-box">Resend in <span id="seconds">30</span>s</div>
         <a href="index.html" class="footer-link" onclick="handleExit()">Return to Login</a>
     </div>
 </div>
@@ -67,65 +103,106 @@
     const auth = getAuth(app);
 
     const refID = new URLSearchParams(window.location.search).get('ref') || "none";
-    if(refID !== "none") document.getElementById('refBadge').innerHTML = `<span class="ref-tag">Referral Applied</span>`;
+    if (refID !== "none") document.getElementById('refBadge').innerHTML = `<span class="ref-tag">Referral Applied</span>`;
 
     let activeUser = null;
     let timer;
 
-    // Monitor Auth State to keep session for resending
-    onAuthStateChanged(auth, (user) => { if(user) activeUser = user; });
+    // Password Toggle Function
+    window.togglePassword = (id, icon) => {
+        const input = document.getElementById(id);
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.replace("fa-eye-slash", "fa-eye");
+        } else {
+            input.type = "password";
+            icon.classList.replace("fa-eye", "fa-eye-slash");
+        }
+    };
 
     window.handleRegister = async function() {
-        const email = document.getElementById("email").value;
+        const name = document.getElementById("userName").value.trim();
+        const email = document.getElementById("email").value.trim();
+        const mobile = document.getElementById("mobile").value.trim();
         const pass = document.getElementById("pass").value;
+        const passConfirm = document.getElementById("passConfirm").value;
         const btn = document.getElementById("regBtn");
 
-        if(!email || pass.length < 6) return alert("Valid email & 6-char password required!");
-        btn.disabled = true; btn.innerText = "Processing...";
+        // Basic Validations
+        if (!name || !email || mobile.length < 10) return alert("Fill all details correctly!");
+        if (pass.length < 6) return alert("Password must be 6+ characters!");
+        if (pass !== passConfirm) return alert("Passwords do not match!");
+
+        btn.disabled = true;
+        btn.innerText = "Registering...";
 
         try {
             const res = await createUserWithEmailAndPassword(auth, email, pass);
             activeUser = res.user;
-
             await sendEmailVerification(activeUser);
 
+            // Save detailed user data to Database
             await set(ref(db, "users/" + activeUser.uid), {
-                email: email, balance: 0, activeReferrals: 0, referredBy: refID,
-                hasDeposited: false, teamTurnover: 0, claimedRewards: { m5: false, m10: false }, createdAt: Date.now()
+                username: name,
+                email: email,
+                mobile: mobile,
+                balance: 0,
+                activeReferrals: 0,
+                referredBy: refID,
+                hasDeposited: false,
+                teamTurnover: 0,
+                claimedRewards: { m5: false, m10: false },
+                createdAt: Date.now()
             });
 
             document.getElementById('registerForm').style.display = 'none';
             document.getElementById('resendSection').style.display = 'block';
             startResendTimer();
-        } catch (e) { alert(e.message); btn.disabled = false; btn.innerText = "Verify & Register"; }
+        } catch (e) {
+            alert(e.message);
+            btn.disabled = false;
+            btn.innerText = "Verify & Register";
+        }
     };
 
+    // Resend & Timer Logic (Same as your original)
     window.resendEmail = async function() {
-        if(!activeUser) return alert("Session expired. Please try logging in.");
+        if (!activeUser) return alert("Session expired.");
         const btn = document.getElementById('resendBtn');
         btn.disabled = true;
         try {
             await sendEmailVerification(activeUser);
             alert("New link sent!");
             startResendTimer();
-        } catch (e) { alert(e.message); btn.disabled = false; }
+        } catch (e) {
+            alert(e.message);
+            btn.disabled = false;
+        }
     };
-
-    window.handleExit = async function() { await signOut(auth); window.location.href = "index.html"; };
 
     function startResendTimer() {
         let timeLeft = 30;
         const btn = document.getElementById('resendBtn');
         const timerCont = document.getElementById('timerContainer');
         const secondsSpan = document.getElementById('seconds');
-
-        btn.disabled = true; timerCont.style.display = 'block';
+        btn.disabled = true;
+        timerCont.style.display = 'block';
         clearInterval(timer);
         timer = setInterval(() => {
-            timeLeft--; secondsSpan.innerText = timeLeft;
-            if(timeLeft <= 0) { clearInterval(timer); btn.disabled = false; timerCont.style.display = 'none'; }
+            timeLeft--;
+            secondsSpan.innerText = timeLeft;
+            if (timeLeft <= 0) {
+                clearInterval(timer);
+                btn.disabled = false;
+                timerCont.style.display = 'none';
+            }
         }, 1000);
     }
+
+    window.handleExit = async function() {
+        await signOut(auth);
+        window.location.href = "index.html";
+    };
 </script>
 </body>
 </html>
