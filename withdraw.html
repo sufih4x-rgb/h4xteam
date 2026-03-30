@@ -3,82 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Safe Withdraw | H4XTEAM</title>
+    <title>Safe Withdraw | Tiranga Official</title>
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #4361ee; --bg: #f4f7fe; --white: #ffffff; --success: #06d6a0; --danger: #ff4d4d; }
-        body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; justify-content: center; }
-        .withdraw-container { width: 100%; max-width: 480px; background: var(--white); padding: 20px; min-height: 100vh; box-sizing: border-box; }
+        body { background: var(--bg); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; padding: 15px; display: flex; justify-content: center; }
+        .withdraw-container { width: 100%; max-width: 480px; background: var(--white); padding: 25px; min-height: 90vh; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
         
-        .balance-card { background: linear-gradient(135deg, #1e293b, #4361ee); color: white; padding: 25px; border-radius: 25px; text-align: center; margin-bottom: 25px; }
-        .balance-card h1 { font-size: 32px; margin: 10px 0 0; }
+        .balance-card { background: linear-gradient(135deg, #1e293b, #4361ee); color: white; padding: 30px; border-radius: 25px; text-align: center; margin-bottom: 25px; position: relative; overflow: hidden; }
+        .balance-card h1 { font-size: 36px; margin: 10px 0 0; font-weight: 800; }
 
-        .input-group { margin-bottom: 15px; }
-        label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px; display: block; }
+        .input-group { margin-bottom: 20px; }
+        label { font-size: 12px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 8px; display: block; }
         
-        input { width: 100%; padding: 15px; border: 2px solid #f1f5f9; background: #f8fafc; border-radius: 15px; font-size: 15px; font-weight: 700; outline: none; box-sizing: border-box; }
-        input:focus { border-color: var(--primary); }
+        input { width: 100%; padding: 16px; border: 2px solid #f1f5f9; background: #f8fafc; border-radius: 15px; font-size: 16px; font-weight: 700; outline: none; box-sizing: border-box; transition: 0.3s; }
+        input:focus { border-color: var(--primary); background: #fff; }
 
-        .status-msg { font-size: 12px; margin-top: 5px; font-weight: 700; display: none; }
-        .msg-success { color: var(--success); }
-        .msg-error { color: var(--danger); }
+        .btn-withdraw { width: 100%; padding: 20px; background: var(--primary); color: white; border: none; border-radius: 18px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 10px; box-shadow: 0 4px 15px rgba(67, 97, 238, 0.3); }
+        .btn-withdraw:disabled { background: #cbd5e1; box-shadow: none; cursor: not-allowed; }
 
-        .btn-withdraw { width: 100%; padding: 18px; background: var(--primary); color: white; border: none; border-radius: 15px; font-size: 16px; font-weight: 800; cursor: pointer; margin-top: 20px; }
-        .btn-withdraw:disabled { background: #cbd5e1; opacity: 0.7; }
-        
-        .safe-badge { background: #f0f3ff; color: var(--primary); padding: 10px; border-radius: 12px; font-size: 12px; font-weight: 700; margin-bottom: 20px; display: flex; align-items: center; gap: 8px; }
-
-        /* Naya History Style */
-        .history-section { margin-top: 30px; }
-        .history-row { background: #f8fafc; padding: 15px; border-radius: 15px; margin-bottom: 10px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
-        .hist-info b { display: block; font-size: 14px; }
-        .hist-info small { color: #64748b; font-size: 11px; }
-        .status-pill { padding: 4px 10px; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
+        /* History */
+        .history-section { margin-top: 35px; border-top: 1px solid #eee; pt: 20px; }
+        .history-row { background: #f8fafc; padding: 15px; border-radius: 18px; margin-bottom: 12px; border: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; }
+        .status-pill { padding: 6px 12px; border-radius: 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
         .pill-pending { background: #fef3c7; color: #92400e; }
         .pill-approved { background: #d1fae5; color: #065f46; }
         .pill-rejected { background: #fee2e2; color: #991b1b; }
+
+        /* Real-time Notify Popup */
+        #notifyOverlay { display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.8); z-index:10000; align-items:center; justify-content:center; padding:20px; box-sizing: border-box; }
+        .notify-card { background: white; padding: 40px 20px; border-radius: 30px; text-align: center; width: 100%; max-width: 350px; }
     </style>
 </head>
 <body>
 
 <div class="withdraw-container">
     <div class="balance-card">
-        <label style="color: rgba(255,255,255,0.7)">Available Balance</label>
+        <small style="opacity: 0.8; font-weight: 600;">Available for Withdrawal</small>
         <h1>₹<span id="balanceText">0.00</span></h1>
     </div>
 
-    <div class="safe-badge">
-        <span>🛡️</span> Security Check: UPI typing errors are blocked.
+    <div class="input-group">
+        <label>Withdraw Amount (Min ₹100)</label>
+        <input id="amount" type="number" placeholder="Enter Amount" oninput="checkInputs()">
     </div>
 
     <div class="input-group">
-        <label>Withdraw Amount</label>
-        <input id="amount" type="number" placeholder="Min ₹100">
-    </div>
-
-    <div class="input-group">
-        <label>Enter UPI ID</label>
-        <input id="upi1" type="text" placeholder="example@ybl" oninput="validateUPI()">
+        <label>Your UPI ID</label>
+        <input id="upi1" type="text" placeholder="e.g. name@upi" oninput="checkInputs()">
     </div>
 
     <div class="input-group">
         <label>Confirm UPI ID</label>
-        <input id="upi2" type="text" placeholder="Re-enter UPI ID" oninput="validateUPI()">
-        <div id="matchMsg" class="status-msg"></div>
+        <input id="upi2" type="text" placeholder="Re-enter for safety" oninput="checkInputs()">
     </div>
 
-    <button id="withdrawBtn" class="btn-withdraw" onclick="processWithdraw()" disabled>SUBMIT REQUEST</button>
-    
+    <button id="withdrawBtn" class="btn-withdraw" onclick="processWithdraw()" disabled>SUBMIT WITHDRAWAL</button>
+
     <div class="history-section">
-        <label>Recent Withdrawals</label>
-        <div id="historyList">
-            <p style="text-align:center; font-size:12px; color:#94a3b8;">No transactions found.</p>
-        </div>
+        <label style="margin-top: 20px;">Withdrawal Records</label>
+        <div id="historyList"></div>
     </div>
+</div>
 
-    <p style="text-align: center; font-size: 12px; color: #64748b; margin-top: 20px;">
-        Money will be sent to the verified UPI handle only.
-    </p>
+<div id="notifyOverlay">
+    <div class="notify-card">
+        <h1 id="notifIcon" style="font-size: 60px; margin: 0;">🎉</h1>
+        <h2 id="notifTitle" style="margin: 10px 0; color: #1e293b;">Success!</h2>
+        <p id="notifMsg" style="color: #64748b; font-weight: 500;"></p>
+        <button onclick="closeNotif()" class="btn-withdraw" style="padding: 15px; margin-top: 20px;">GREAT!</button>
+    </div>
 </div>
 
 <script type="module">
@@ -98,14 +93,12 @@
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let uid = "", userBal = 0, uEmail = "", uName = "";
+    let uid = "", userBal = 0, uName = "";
 
-    onAuthStateChanged(auth, (user) => {
-        if (!user) return window.location = "index.html";
+    onAuthStateChanged(auth, user => {
+        if (!user) return window.location = "login.html";
         uid = user.uid;
-        uEmail = user.email;
         
-        // Load Balance
         onValue(ref(db, "users/" + uid), snap => {
             if(snap.exists()){
                 userBal = snap.val().balance || 0;
@@ -114,100 +107,87 @@
             }
         });
 
-        // LOAD HISTORY AND SHOW POPUPS
-        loadHistoryAndNotify();
+        loadHistoryAndListen();
     });
 
-    function loadHistoryAndNotify() {
+    // LISTEN FOR ADMIN CHANGES (REAL-TIME)
+    function loadHistoryAndListen() {
         const histRef = query(ref(db, "withdrawals"), orderByChild("uid"), equalTo(uid));
         onValue(histRef, snap => {
             let html = "";
-            if(snap.exists()){
-                snap.forEach(child => {
-                    const data = child.val();
-                    const status = data.status || "Pending";
-                    const statusClass = status.toLowerCase();
-                    const reason = data.reason ? `<br><span style="color:red; font-size:10px;">Reason: ${data.reason}</span>` : "";
+            snap.forEach(child => {
+                const data = child.val();
+                const key = child.key;
 
-                    // POPUP LOGIC: Sirf tab dikhayega jab status change ho aur 'seen' na ho
-                    // (Note: Iske liye admin panel mein status change hone par ek 'notified' flag system dal sakte hain, 
-                    // lekin yahan simple logic rakhte hain ki jab tak page pe hai tab alert dikhe)
-                    if(data.status === "Approved" && !data.userNotified) {
-                        alert("🎉 Success! Your withdrawal of ₹" + data.amount + " has been approved!");
-                        update(ref(db, `withdrawals/${child.key}`), { userNotified: true });
-                    } 
-                    else if(data.status === "Rejected" && !data.userNotified) {
-                        alert("❌ Withdrawal Rejected!\nAmount: ₹" + data.amount + "\nReason: " + (data.reason || "Policy violation"));
-                        update(ref(db, `withdrawals/${child.key}`), { userNotified: true });
-                    }
+                // POPUP ALERT LOGIC
+                if(!data.userNotified && data.status !== "Pending") {
+                    showBigNotify(data.status, data.amount, data.reason || "", key);
+                }
 
-                    html = `
-                    <div class="history-row">
-                        <div class="hist-info">
-                            <b>₹${data.amount}</b>
-                            <small>${new Date(data.timestamp).toLocaleDateString()}</small>
-                            ${reason}
-                        </div>
-                        <span class="status-pill pill-${statusClass}">${status}</span>
-                    </div>` + html;
-                });
-                document.getElementById("historyList").innerHTML = html;
-            }
+                html = `
+                <div class="history-row">
+                    <div class="hist-info">
+                        <b style="font-size: 15px;">₹${data.amount}</b>
+                        <small style="display:block; color:#94a3b8; font-size:11px;">${new Date(data.timestamp).toLocaleDateString()}</small>
+                        ${data.reason ? `<span style="color:red; font-size:10px; font-weight:700;">Note: ${data.reason}</span>` : ""}
+                    </div>
+                    <span class="status-pill pill-${data.status.toLowerCase()}">${data.status}</span>
+                </div>` + html;
+            });
+            document.getElementById("historyList").innerHTML = html || "<p style='text-align:center; color:#94a3b8; font-size:12px; margin-top:20px;'>No records found.</p>";
         });
     }
 
-    window.validateUPI = () => {
-        const u1 = document.getElementById("upi1").value.trim().toLowerCase();
-        const u2 = document.getElementById("upi2").value.trim().toLowerCase();
-        const msg = document.getElementById("matchMsg");
-        const btn = document.getElementById("withdrawBtn");
-        const upiPattern = /^[a-zA-Z0-9.\-_]{2,256}@[a-zA-Z]{2,64}$/;
-
-        msg.style.display = "block";
-        if (!upiPattern.test(u1)) {
-            msg.innerText = "❌ Invalid UPI Format";
-            msg.className = "status-msg msg-error";
-            btn.disabled = true;
-        } else if (u1 !== u2) {
-            msg.innerText = "❌ UPI IDs do not match";
-            msg.className = "status-msg msg-error";
-            btn.disabled = true;
+    function showBigNotify(status, amt, reason, key) {
+        const overlay = document.getElementById("notifyOverlay");
+        if(status === "Approved") {
+            document.getElementById("notifIcon").innerText = "🏆";
+            document.getElementById("notifTitle").innerText = "Withdrawal Success!";
+            document.getElementById("notifMsg").innerText = `Your request for ₹${amt} has been processed to your UPI. Check your bank!`;
+            confetti({ particleCount: 150, spread: 70, origin: { y: 0.6 } });
         } else {
-            msg.innerText = "✅ UPI Matched & Validated";
-            msg.className = "status-msg msg-success";
-            btn.disabled = false;
+            document.getElementById("notifIcon").innerText = "❌";
+            document.getElementById("notifTitle").innerText = "Request Rejected";
+            document.getElementById("notifMsg").innerText = `Reason: ${reason || "Policy Violation"}`;
         }
+        overlay.style.display = "flex";
+        // Mark as seen so popup doesn't repeat
+        update(ref(db, `withdrawals/${key}`), { userNotified: true });
+    }
+
+    window.closeNotif = () => document.getElementById("notifyOverlay").style.display = "none";
+
+    window.checkInputs = () => {
+        const a = document.getElementById("amount").value;
+        const u1 = document.getElementById("upi1").value;
+        const u2 = document.getElementById("upi2").value;
+        document.getElementById("withdrawBtn").disabled = !(a >= 100 && u1 && u1 === u2);
     };
 
     window.processWithdraw = async () => {
         const amt = Number(document.getElementById("amount").value);
-        const upi = document.getElementById("upi1").value.trim().toLowerCase();
-
-        if (amt < 100) return alert("Min withdraw is ₹100");
-        if (amt > userBal) return alert("Insufficient balance!");
+        const upi = document.getElementById("upi1").value;
+        
+        if(amt > userBal) return alert("Insufficient Balance!");
+        
+        document.getElementById("withdrawBtn").disabled = true;
+        document.getElementById("withdrawBtn").innerText = "Processing...";
 
         try {
-            document.getElementById("withdrawBtn").disabled = true;
-            document.getElementById("withdrawBtn").innerText = "Submitting...";
-
             await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
-
             await push(ref(db, "withdrawals"), {
                 uid: uid,
-                email: uEmail,
                 displayName: uName,
                 amount: amt,
                 upiId: upi,
                 status: "Pending",
                 timestamp: Date.now(),
-                userNotified: false // Important for the popup logic
+                userNotified: false
             });
-
-            alert("Request sent successfully!");
-            location.reload();
-        } catch (e) {
-            alert("Error: " + e.message);
-        }
+            alert("Withdrawal request submitted!");
+            document.getElementById("amount").value = "";
+            document.getElementById("withdrawBtn").innerText = "SUBMIT WITHDRAWAL";
+        } catch(e) { alert(e.message); }
     };
 </script>
 </body>
