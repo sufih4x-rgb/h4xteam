@@ -2,93 +2,101 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Casino Admin | Control Panel</title>
+    <title>Dragon Tiger | Master Admin</title>
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; text-align: center; }
-        .dashboard { display: flex; justify-content: center; gap: 20px; margin-top: 30px; }
-        .stat-card { background: #1e293b; padding: 20px; border-radius: 15px; width: 150px; border-bottom: 4px solid #334155; }
-        .btn-win { padding: 15px 30px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin: 10px; }
+        body { background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        .stats { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
+        .box { background: #1e293b; padding: 20px; border-radius: 10px; width: 140px; border-bottom: 4px solid #334155; }
+        .btn { padding: 15px 30px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin: 10px; }
+        #timer { font-size: 40px; color: #fbbf24; }
     </style>
 </head>
 <body>
-    <h1>DRAGON TIGER ADMIN</h1>
-    <h2 id="timer">00s</h2>
+    <h1>DT LIVE CONTROL</h1>
+    <div id="timer">00s</div>
+    <div id="state-txt">INITIALIZING...</div>
 
-    <div class="dashboard">
-        <div class="stat-card" style="border-color:#1e40af">Dragon<br><h2 id="adm-D">0</h2></div>
-        <div class="stat-card" style="border-color:#059669">Tie<br><h2 id="adm-Tie">0</h2></div>
-        <div class="stat-card" style="border-color:#b45309">Tiger<br><h2 id="adm-T">0</h2></div>
+    <div class="stats">
+        <div class="box" style="border-color:#1e40af">Dragon<br><h2 id="aD">0</h2></div>
+        <div class="box" style="border-color:#059669">Tie<br><h2 id="aTie">0</h2></div>
+        <div class="box" style="border-color:#b45309">Tiger<br><h2 id="aT">0</h2></div>
     </div>
 
-    <div style="margin-top: 50px;">
-        <h3>FORCE NEXT WINNER:</h3>
-        <button class="btn-win" style="background:#1e40af" onclick="setForce('dragon')">Dragon Wins</button>
-        <button class="btn-win" style="background:#059669" onclick="setForce('tie')">Tie Wins</button>
-        <button class="btn-win" style="background:#b45309" onclick="setForce('tiger')">Tiger Wins</button>
-        <p id="force-status" style="color:var(--gold)">Next Result: AUTO</p>
+    <div style="margin-top:40px;">
+        <h3>FORCE RESULT:</h3>
+        <button class="btn" style="background:#1e40af" onclick="force('dragon')">DRAGON WIN</button>
+        <button class="btn" style="background:#059669" onclick="force('tie')">TIE WIN</button>
+        <button class="btn" style="background:#b45309" onclick="force('tiger')">TIGER WIN</button>
+        <p id="f-msg">Current Mode: AUTO (Low Bet Wins)</p>
     </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getDatabase, ref, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = { /* SAME CONFIG */ };
+    const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let timer = 60, state = "BETTING", forceWin = null;
+    let timer = 60, state = "BETTING", forcedSide = null;
+    let bD = 0, bT = 0, bTie = 0;
 
-    // Admin Engine Loop
+    // Initialization: Pehli baar setup karne ke liye
+    set(ref(db, "dt_live"), { time: 60, state: "BETTING", totalDragon: 0, totalTiger: 0, totalTie: 0 });
+
     setInterval(() => {
         timer--;
         if(timer <= 0) {
             if(state === "BETTING") {
-                state = "RESULT"; timer = 10;
-                calculateWinner();
+                state = "RESULT"; timer = 8;
+                processMatch();
             } else {
                 state = "BETTING"; timer = 60;
                 resetBets();
             }
         }
         update(ref(db, "dt_live"), { time: timer, state: state });
-        document.getElementById("timer").innerText = timer + "s (" + state + ")";
+        document.getElementById("timer").innerText = timer + "s";
+        document.getElementById("state-txt").innerText = state;
     }, 1000);
 
-    function calculateWinner() {
-        let dCard, tCard, winner;
-        
-        if(forceWin) {
-            winner = forceWin;
+    function processMatch() {
+        let winSide = "";
+        if(forcedSide) {
+            winSide = forcedSide;
         } else {
-            // Auto-Rigging: Kam paise wale side ko jitana
-            // Logic: Dragon vs Tiger vs Tie bets comparison
+            // Auto-Rigging: Jaha kam paisa hai usko jitao
+            if(bD <= bT && bD <= bTie) winSide = 'dragon';
+            else if(bT <= bD && bT <= bTie) winSide = 'tiger';
+            else winSide = 'tie';
         }
 
-        // Generate card values based on winner
-        if(winner === 'dragon') { dCard = 12; tCard = 2; }
-        else if(winner === 'tiger') { dCard = 2; tCard = 12; }
-        else { dCard = 7; tCard = 7; }
+        let dc, tc;
+        if(winSide === 'dragon') { dc = 12; tc = 2; }
+        else if(winSide === 'tiger') { dc = 2; tc = 12; }
+        else { dc = 7; tc = 7; }
 
-        update(ref(db, "dt_live"), { dCard, tCard, winner, state: "RESULT" });
-        forceWin = null; // reset force
-        document.getElementById("force-status").innerText = "Next Result: AUTO";
+        update(ref(db, "dt_live"), { dCard: dc, tCard: tc, winner: winSide, state: "RESULT" });
+        forcedSide = null;
+        document.getElementById("f-msg").innerText = "Current Mode: AUTO (Low Bet Wins)";
     }
-
-    window.setForce = (side) => {
-        forceWin = side;
-        document.getElementById("force-status").innerText = "Next Result: FORCE " + side.toUpperCase();
-    };
 
     function resetBets() {
         update(ref(db, "dt_live"), { totalDragon: 0, totalTiger: 0, totalTie: 0 });
     }
 
-    // Sync Stats
-    onValue(ref(db, "dt_live"), s => {
-        const d = s.val();
-        document.getElementById("adm-D").innerText = d.totalDragon || 0;
-        document.getElementById("adm-T").innerText = d.totalTiger || 0;
-        document.getElementById("adm-Tie").innerText = d.totalTie || 0;
+    window.force = (s) => {
+        forcedSide = s;
+        document.getElementById("f-msg").innerText = "FORCE WIN SET: " + s.toUpperCase();
+    }
+
+    onValue(ref(db, "dt_live"), snap => {
+        const d = snap.val();
+        if(!d) return;
+        bD = d.totalDragon || 0; bT = d.totalTiger || 0; bTie = d.totalTie || 0;
+        document.getElementById("aD").innerText = bD;
+        document.getElementById("aT").innerText = bT;
+        document.getElementById("aTie").innerText = bTie;
     });
 </script>
 </body>
