@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>H4X Admin | Direct Upload</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
+        .upload-card { background: white; max-width: 400px; margin: auto; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
+        .btn { background: #4361ee; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
+        #progress { width: 0%; height: 5px; background: #4361ee; transition: 0.3s; margin-top: 10px; border-radius: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="upload-card">
+    <h2 style="text-align:center; color:#4361ee;">🚀 Upload Game</h2>
+    
+    <label>Game Name</label>
+    <input type="text" id="name" placeholder="e.g. Aviator Pro">
+    
+    <label>Select Game Image</label>
+    <input type="file" id="imageFile" accept="image/*">
+    <div id="progress"></div>
+
+    <label>Game HTML File Name</label>
+    <input type="text" id="link" placeholder="e.g. aviator.html">
+
+    <label>Badge (Optional)</label>
+    <input type="text" id="badge" placeholder="e.g. HOT or NEW">
+
+    <label>Game Tag</label>
+    <input type="text" id="tag" placeholder="e.g. MULTIPLY 10x">
+
+    <button class="btn" id="upBtn" onclick="handleUpload()">UPLOAD & PUBLISH</button>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref as dbRef, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getStorage, ref as sRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", storageBucket: "test-eb5e7.appspot.com", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+    const storage = getStorage(app);
+
+    window.handleUpload = async () => {
+        const file = document.getElementById('imageFile').files[0];
+        const name = document.getElementById('name').value;
+        const link = document.getElementById('link').value;
+        const tag = document.getElementById('tag').value;
+        const badge = document.getElementById('badge').value;
+        const btn = document.getElementById('upBtn');
+
+        if(!file || !name || !link) return alert("Please fill Name, Link and Select Image!");
+
+        btn.disabled = true;
+        btn.innerText = "Uploading Image...";
+
+        // 1. Upload Image to Storage
+        const storageRef = sRef(storage, 'game_images/' + Date.now() + "_" + file.name);
+        const uploadTask = uploadBytesResumable(storageRef, file);
+
+        uploadTask.on('state_changed', 
+            (snap) => {
+                const prog = (snap.bytesTransferred / snap.totalBytes) * 100;
+                document.getElementById('progress').style.width = prog + "%";
+            }, 
+            (err) => { alert("Upload Failed!"); btn.disabled = false; }, 
+            async () => {
+                // 2. Get Download URL
+                const url = await getDownloadURL(uploadTask.snapshot.ref);
+                
+                // 3. Save to Database
+                await push(dbRef(db, "lobby_games"), {
+                    name, image: url, link, tag, badge
+                });
+
+                alert("Game Live in Lobby!");
+                location.reload();
+            }
+        );
+    };
+</script>
+</body>
+</html>
