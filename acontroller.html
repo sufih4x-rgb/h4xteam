@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Aviator Admin | Live Control</title>
+    <style>
+        body { background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
+        .box { background: #1e293b; padding: 30px; border-radius: 20px; max-width: 500px; margin: auto; border: 1px solid #334155; }
+        .crash-btn { background: #ef4444; color: white; padding: 20px; width: 100%; border: none; border-radius: 10px; font-size: 24px; font-weight: 900; cursor: pointer; margin-top: 20px; }
+        .x-display { font-size: 50px; color: #f1c40f; margin: 20px 0; font-weight: 900; }
+    </style>
+</head>
+<body>
+    <div class="box">
+        <h2>ENGINE CONTROL</h2>
+        <div id="state" style="color:#2ecc71">PHASE: BETTING</div>
+        <div class="x-display" id="showX">1.00x</div>
+        <button class="crash-btn" onclick="forceCrash()">CRASH PLANE NOW 💥</button>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let state = "BETTING", timer = 15, x = 1.0, manualCrash = false;
+
+    setInterval(() => {
+        if(state === "BETTING") {
+            timer--;
+            if(timer <= 0) { state = "FLYING"; x = 1.0; }
+        } 
+        else if(state === "FLYING") {
+            x += 0.04;
+            if(x >= 30.0 || manualCrash) { state = "CRASHED"; timer = 5; manualCrash = false; }
+        } 
+        else if(state === "CRASHED") {
+            timer--;
+            if(timer <= 0) { state = "BETTING"; timer = 15; }
+        }
+
+        update(ref(db, `aviator_sync`), { state, time: timer, x });
+        document.getElementById("showX").innerText = x.toFixed(2) + "x";
+        document.getElementById("state").innerText = "PHASE: " + state;
+    }, 1000);
+
+    window.forceCrash = () => { manualCrash = true; };
+</script>
+</body>
+</html>
