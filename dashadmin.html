@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard | 50+ Buttons</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #ff9933;
+            --secondary: #138808;
+            --bg: #f4f7f6;
+        }
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        h2 { color: #333; margin-bottom: 20px; }
+
+        /* Admin Controls */
+        .admin-bar {
+            background: white;
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
+        }
+        .btn-edit {
+            padding: 10px 20px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .btn-edit.active { background: #e74c3c; }
+
+        /* Button Grid */
+        .grid-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 15px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .nav-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: 0.3s;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            border: 2px solid transparent;
+        }
+        .nav-card:hover { transform: translateY(-5px); box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
+        
+        .nav-link {
+            text-decoration: none;
+            color: var(--secondary);
+            font-weight: 600;
+            font-size: 14px;
+            word-break: break-all;
+        }
+
+        /* Editing Inputs */
+        .edit-input {
+            display: none;
+            width: 100%;
+            padding: 5px;
+            margin-top: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        .editing .edit-input { display: block; }
+        .editing .nav-link { display: none; }
+        .editing { border-color: var(--primary); }
+
+    </style>
+</head>
+<body>
+
+    <div class="admin-bar">
+        <h2>Control Panel</h2>
+        <button class="btn-edit" id="toggleEdit" onclick="toggleEditMode()">Enable Edit Mode</button>
+        <p id="status" style="font-size: 12px; color: #666; margin-top: 10px;">Click 'Enable Edit Mode' to change button names and links.</p>
+    </div>
+
+    <div class="grid-container" id="buttonGrid">
+        </div>
+
+<script>
+    const grid = document.getElementById('buttonGrid');
+    let isEditMode = false;
+    let buttonData = JSON.parse(localStorage.getItem('dashboardData')) || [];
+
+    // 1. Initialize Data if empty (Create 60 Default Buttons)
+    if (buttonData.length === 0) {
+        for (let i = 1; i <= 60; i++) {
+            buttonData.push({
+                name: "Game " + i,
+                url: "page" + i + ".html"
+            });
+        }
+        saveData();
+    }
+
+    // 2. Render Buttons
+    function renderButtons() {
+        grid.innerHTML = '';
+        buttonData.forEach((btn, index) => {
+            const card = document.createElement('div');
+            card.className = `nav-card ${isEditMode ? 'editing' : ''}`;
+            card.innerHTML = `
+                <a href="${btn.url}" class="nav-link" id="link-${index}">${btn.name}</a>
+                <input type="text" class="edit-input" value="${btn.name}" oninput="updateData(${index}, 'name', this.value)" placeholder="Button Name">
+                <input type="text" class="edit-input" value="${btn.url}" oninput="updateData(${index}, 'url', this.value)" placeholder="File Link (e.g. index.html)">
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    // 3. Toggle Edit Mode
+    function toggleEditMode() {
+        isEditMode = !isEditMode;
+        const btn = document.getElementById('toggleEdit');
+        const status = document.getElementById('status');
+        
+        if (isEditMode) {
+            btn.innerText = "Save & Exit Edit Mode";
+            btn.classList.add('active');
+            status.innerText = "Changes are auto-saved to your browser storage.";
+        } else {
+            btn.innerText = "Enable Edit Mode";
+            btn.classList.remove('active');
+            status.innerText = "Click 'Enable Edit Mode' to change button names and links.";
+            saveData();
+        }
+        renderButtons();
+    }
+
+    // 4. Update Data
+    window.updateData = (index, field, value) => {
+        buttonData[index][field] = value;
+    };
+
+    // 5. Save to LocalStorage
+    function saveData() {
+        localStorage.setItem('dashboardData', JSON.stringify(buttonData));
+    }
+
+    // Initial Load
+    renderButtons();
+</script>
+
+</body>
+</html>
