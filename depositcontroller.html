@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel | DOT GAMES</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #4361ee; --bg: #0f172a; --card: #1e293b; --success: #10b981; --danger: #ef4444; }
+        body { background: var(--bg); color: white; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        
+        /* UPI Settings Box */
+        .settings-box { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid #334155; margin-bottom: 30px; display: flex; gap: 15px; align-items: flex-end; }
+        .input-group { flex: 1; }
+        label { font-size: 12px; color: #94a3b8; font-weight: 700; text-transform: uppercase; display: block; margin-bottom: 8px; }
+        input { width: 100%; background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 10px; color: white; font-weight: 700; outline: none; }
+        .btn-update { background: var(--primary); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: 800; cursor: pointer; }
+
+        /* Request Cards */
+        .req-card { background: var(--card); padding: 20px; border-radius: 20px; border: 1px solid #334155; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+        .user-info b { font-size: 18px; color: var(--success); }
+        .user-info p { margin: 5px 0; font-size: 13px; color: #94a3b8; }
+        .utr-tag { background: #0f172a; padding: 4px 10px; border-radius: 6px; font-family: monospace; color: #f1c40f; }
+
+        .action-btns { display: flex; gap: 10px; }
+        .btn { border: none; padding: 10px 20px; border-radius: 10px; font-weight: 800; cursor: pointer; text-transform: uppercase; font-size: 12px; }
+        .btn-approve { background: var(--success); color: white; }
+        .btn-reject { background: var(--danger); color: white; }
+        
+        .badge { padding: 4px 10px; border-radius: 5px; font-size: 10px; font-weight: 900; }
+        .badge-pending { background: #f59e0b; color: black; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1 style="font-weight: 900; letter-spacing: -1px;">DEPOSIT <span style="color:var(--primary)">ADMIN</span></h1>
+
+    <div class="settings-box">
+        <div class="input-group">
+            <label>Master UPI ID (QR ke liye)</label>
+            <input type="text" id="upiIdInp" placeholder="Enter UPI ID">
+        </div>
+        <button class="btn-update" onclick="updateUPI()">UPDATE UPI</button>
+    </div>
+
+    <div id="stats" style="margin-bottom: 20px; color: #94a3b8; font-weight: 700;">Loading requests...</div>
+
+    <div id="requestList">
+        </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, update, increment, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // 1. UPI Load & Update
+    onValue(ref(db, "admin_settings/upi"), snap => {
+        if(snap.exists()) document.getElementById('upiIdInp').value = snap.val().id;
+    });
+
+    window.updateUPI = () => {
+        const newUpi = document.getElementById('upiIdInp').value;
+        update(ref(db, "admin_settings/upi"), { id: newUpi }).then(() => alert("UPI Updated Successfully!"));
+    };
+
+    // 2. Load Requests
+    onValue(ref(db, "deposit_requests"), snap => {
+        const list = document.getElementById("requestList");
+        let html = "";
+        let count = 0;
+
+        if(snap.exists()) {
+            snap.forEach(child => {
+                const data = child.val();
+                if(data.status === "pending") {
+                    count++;
+                    html += `
+                    <div class="req-card">
+                        <div class="user-info">
+                            <b>₹${data.amount}</b>
+                            <p>User: ${data.email || 'Unknown'}</p>
+                            <div class="utr-tag">UTR: ${data.utr}</div>
+                        </div>
+                        <div class="action-btns">
+                            <button class="btn btn-reject" onclick="process('${child.key}', '${data.uid}', ${data.amount}, 'Rejected')">Reject</button>
+                            <button class="btn btn-approve" onclick="process('${child.key}', '${data.uid}', ${data.amount}, 'Approved')">Approve</button>
+                        </div>
+                    </div>`;
+                }
+            });
+        }
+        list.innerHTML = html || "<p style='color:#64748b'>No pending requests.</p>";
+        document.getElementById("stats").innerText = `PENDING REQUESTS: ${count}`;
+    });
+
+    // 3. Process Approve/Reject
+    window.process = async (reqId, userId, amount, newStatus) => {
+        if(!confirm(`Are you sure to ${newStatus}?`)) return;
+
+        if(newStatus === "Approved") {
+            // User ke wallet mein paisa add karo
+            await update(ref(db, `users/${userId}`), {
+                balance: increment(amount)
+            });
+        }
+
+        // Request status update karo
+        await update(ref(db, `deposit_requests/${reqId}`), {
+            status: newStatus
+        });
+
+        alert("Request " + newStatus);
+    };
+</script>
+</body>
+</html>
