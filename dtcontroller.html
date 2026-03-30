@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Casino Admin | Control Panel</title>
+    <style>
+        body { background: #0f172a; color: white; font-family: sans-serif; text-align: center; }
+        .dashboard { display: flex; justify-content: center; gap: 20px; margin-top: 30px; }
+        .stat-card { background: #1e293b; padding: 20px; border-radius: 15px; width: 150px; border-bottom: 4px solid #334155; }
+        .btn-win { padding: 15px 30px; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; margin: 10px; }
+    </style>
+</head>
+<body>
+    <h1>DRAGON TIGER ADMIN</h1>
+    <h2 id="timer">00s</h2>
+
+    <div class="dashboard">
+        <div class="stat-card" style="border-color:#1e40af">Dragon<br><h2 id="adm-D">0</h2></div>
+        <div class="stat-card" style="border-color:#059669">Tie<br><h2 id="adm-Tie">0</h2></div>
+        <div class="stat-card" style="border-color:#b45309">Tiger<br><h2 id="adm-T">0</h2></div>
+    </div>
+
+    <div style="margin-top: 50px;">
+        <h3>FORCE NEXT WINNER:</h3>
+        <button class="btn-win" style="background:#1e40af" onclick="setForce('dragon')">Dragon Wins</button>
+        <button class="btn-win" style="background:#059669" onclick="setForce('tie')">Tie Wins</button>
+        <button class="btn-win" style="background:#b45309" onclick="setForce('tiger')">Tiger Wins</button>
+        <p id="force-status" style="color:var(--gold)">Next Result: AUTO</p>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { /* SAME CONFIG */ };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let timer = 60, state = "BETTING", forceWin = null;
+
+    // Admin Engine Loop
+    setInterval(() => {
+        timer--;
+        if(timer <= 0) {
+            if(state === "BETTING") {
+                state = "RESULT"; timer = 10;
+                calculateWinner();
+            } else {
+                state = "BETTING"; timer = 60;
+                resetBets();
+            }
+        }
+        update(ref(db, "dt_live"), { time: timer, state: state });
+        document.getElementById("timer").innerText = timer + "s (" + state + ")";
+    }, 1000);
+
+    function calculateWinner() {
+        let dCard, tCard, winner;
+        
+        if(forceWin) {
+            winner = forceWin;
+        } else {
+            // Auto-Rigging: Kam paise wale side ko jitana
+            // Logic: Dragon vs Tiger vs Tie bets comparison
+        }
+
+        // Generate card values based on winner
+        if(winner === 'dragon') { dCard = 12; tCard = 2; }
+        else if(winner === 'tiger') { dCard = 2; tCard = 12; }
+        else { dCard = 7; tCard = 7; }
+
+        update(ref(db, "dt_live"), { dCard, tCard, winner, state: "RESULT" });
+        forceWin = null; // reset force
+        document.getElementById("force-status").innerText = "Next Result: AUTO";
+    }
+
+    window.setForce = (side) => {
+        forceWin = side;
+        document.getElementById("force-status").innerText = "Next Result: FORCE " + side.toUpperCase();
+    };
+
+    function resetBets() {
+        update(ref(db, "dt_live"), { totalDragon: 0, totalTiger: 0, totalTie: 0 });
+    }
+
+    // Sync Stats
+    onValue(ref(db, "dt_live"), s => {
+        const d = s.val();
+        document.getElementById("adm-D").innerText = d.totalDragon || 0;
+        document.getElementById("adm-T").innerText = d.totalTiger || 0;
+        document.getElementById("adm-Tie").innerText = d.totalTie || 0;
+    });
+</script>
+</body>
+</html>
