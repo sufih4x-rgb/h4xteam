@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tiranga Admin Panel</title>
+    <style>
+        body { font-family: sans-serif; text-align: center; background: #1a1a1a; color: white; padding-top: 50px; }
+        .btn { padding: 20px 40px; margin: 10px; font-size: 20px; border: none; border-radius: 10px; cursor: pointer; color: white; }
+        .red { background: #fb4e4e; }
+        .green { background: #29cc7a; }
+        .auto { background: #555; }
+    </style>
+</head>
+<body>
+    <h1>ADMIN CONTROL</h1>
+    <p>Force the next winning color:</p>
+    <button class="btn red" onclick="setControl('RED')">FORCE RED</button>
+    <button class="btn green" onclick="setControl('GREEN')">FORCE GREEN</button>
+    <button class="btn auto" onclick="setControl('AUTO')">RESET TO AUTO</button>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+            authDomain: "test-eb5e7.firebaseapp.com",
+            databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+            projectId: "test-eb5e7",
+            appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+        };
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        window.setControl = (val) => {
+            set(ref(db, 'admin_control'), val).then(() => alert("Setting Updated: " + val));
+        };
+    </script>
+</body>
+</html>
