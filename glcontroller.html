@@ -2,86 +2,161 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>H4X Admin | Direct Upload</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H4X | Admin Game Manager</title>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
-        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
-        .upload-card { background: white; max-width: 400px; margin: auto; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ddd; border-radius: 8px; box-sizing: border-box; }
-        .btn { background: #4361ee; color: white; border: none; padding: 15px; width: 100%; border-radius: 8px; font-weight: bold; cursor: pointer; }
-        #progress { width: 0%; height: 5px; background: #4361ee; transition: 0.3s; margin-top: 10px; border-radius: 5px; }
+        :root { --primary: #4361ee; --bg: #f4f7ff; --danger: #ff4757; }
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #1e293b; }
+        .container { max-width: 500px; margin: auto; }
+        
+        /* Form Styling */
+        .card { background: #fff; padding: 25px; border-radius: 20px; box-shadow: 0 10px 30px rgba(67, 97, 238, 0.1); margin-bottom: 20px; }
+        h2 { margin: 0 0 20px 0; font-size: 22px; color: var(--primary); text-align: center; }
+        
+        .field { margin-bottom: 15px; }
+        label { display: block; font-size: 12px; font-weight: 800; color: #64748b; margin-bottom: 5px; text-transform: uppercase; }
+        input { width: 100%; padding: 12px; border-radius: 12px; border: 2px solid #edf2f7; box-sizing: border-box; font-family: inherit; transition: 0.3s; }
+        input:focus { border-color: var(--primary); outline: none; background: #fdfdff; }
+        
+        /* Upload Button */
+        .btn-up { background: var(--primary); color: white; border: none; padding: 15px; width: 100%; border-radius: 12px; font-weight: 800; cursor: pointer; font-size: 16px; box-shadow: 0 5px 15px rgba(67, 97, 238, 0.3); transition: 0.3s; }
+        .btn-up:disabled { background: #cbd5e1; cursor: not-allowed; }
+        
+        /* Progress Bar */
+        .prog-container { width: 100%; background: #edf2f7; height: 8px; border-radius: 10px; margin: 10px 0; display: none; overflow: hidden; }
+        #progBar { width: 0%; height: 100%; background: var(--primary); transition: 0.1s; }
+
+        /* Game List */
+        .game-item { display: flex; align-items: center; background: #fff; padding: 12px; border-radius: 15px; margin-bottom: 10px; border: 1px solid #edf2f7; }
+        .game-item img { width: 50px; height: 50px; border-radius: 10px; object-fit: cover; margin-right: 15px; }
+        .game-info { flex: 1; }
+        .game-info b { display: block; font-size: 14px; }
+        .btn-del { background: #fff5f5; color: var(--danger); border: none; padding: 8px 12px; border-radius: 8px; font-weight: 800; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div class="upload-card">
-    <h2 style="text-align:center; color:#4361ee;">🚀 Upload Game</h2>
-    
-    <label>Game Name</label>
-    <input type="text" id="name" placeholder="e.g. Aviator Pro">
-    
-    <label>Select Game Image</label>
-    <input type="file" id="imageFile" accept="image/*">
-    <div id="progress"></div>
+<div class="container">
+    <div class="card">
+        <h2>🚀 Post New Game</h2>
+        
+        <div class="field">
+            <label>Game Poster (Image)</label>
+            <input type="file" id="gImg" accept="image/*">
+        </div>
 
-    <label>Game HTML File Name</label>
-    <input type="text" id="link" placeholder="e.g. aviator.html">
+        <div class="prog-container" id="progBox"><div id="progBar"></div></div>
 
-    <label>Badge (Optional)</label>
-    <input type="text" id="badge" placeholder="e.g. HOT or NEW">
+        <div class="field">
+            <label>Game Name</label>
+            <input type="text" id="gName" placeholder="e.g. Aviator Premium">
+        </div>
 
-    <label>Game Tag</label>
-    <input type="text" id="tag" placeholder="e.g. MULTIPLY 10x">
+        <div class="field">
+            <label>Page Link (.html)</label>
+            <input type="text" id="gLink" placeholder="e.g. aviator.html">
+        </div>
 
-    <button class="btn" id="upBtn" onclick="handleUpload()">UPLOAD & PUBLISH</button>
+        <div style="display: flex; gap: 10px;">
+            <div class="field" style="flex: 1;">
+                <label>Badge (Top)</label>
+                <input type="text" id="gBadge" placeholder="HOT">
+            </div>
+            <div class="field" style="flex: 1;">
+                <label>Tag (Bottom)</label>
+                <input type="text" id="gTag" placeholder="MULTIPLY 2x">
+            </div>
+        </div>
+
+        <button class="btn-up" id="upBtn" onclick="uploadGame()">PUBLISH TO LOBBY</button>
+    </div>
+
+    <div style="font-weight: 800; margin-bottom: 10px; color: #64748b;">ACTIVE GAMES IN LOBBY</div>
+    <div id="adminList"></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref as dbRef, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    import { getStorage, ref as sRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
+    import { getDatabase, ref as dbRef, push, onValue, remove } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getStorage, ref as stRef, uploadBytesResumable, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-storage.js";
 
-    const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", storageBucket: "test-eb5e7.appspot.com", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        storageBucket: "test-eb5e7.appspot.com", // Make sure this is correct
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+    };
+
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const storage = getStorage(app);
 
-    window.handleUpload = async () => {
-        const file = document.getElementById('imageFile').files[0];
-        const name = document.getElementById('name').value;
-        const link = document.getElementById('link').value;
-        const tag = document.getElementById('tag').value;
-        const badge = document.getElementById('badge').value;
+    window.uploadGame = async () => {
+        const file = document.getElementById('gImg').files[0];
+        const name = document.getElementById('gName').value;
+        const link = document.getElementById('gLink').value;
+        const tag = document.getElementById('gTag').value;
+        const badge = document.getElementById('gBadge').value;
         const btn = document.getElementById('upBtn');
 
-        if(!file || !name || !link) return alert("Please fill Name, Link and Select Image!");
+        if(!file || !name || !link) return alert("Bhai, Image, Name aur Link bharna zaroori hai!");
 
         btn.disabled = true;
         btn.innerText = "Uploading Image...";
+        document.getElementById('progBox').style.display = 'block';
 
-        // 1. Upload Image to Storage
-        const storageRef = sRef(storage, 'game_images/' + Date.now() + "_" + file.name);
+        // 1. Image Upload to Firebase Storage
+        const storageRef = stRef(storage, 'lobby/' + Date.now() + "_" + file.name);
         const uploadTask = uploadBytesResumable(storageRef, file);
 
         uploadTask.on('state_changed', 
             (snap) => {
-                const prog = (snap.bytesTransferred / snap.totalBytes) * 100;
-                document.getElementById('progress').style.width = prog + "%";
+                const p = (snap.bytesTransferred / snap.totalBytes) * 100;
+                document.getElementById('progBar').style.width = p + "%";
             }, 
-            (err) => { alert("Upload Failed!"); btn.disabled = false; }, 
+            (err) => { alert("Upload Failed! Check Firebase Storage Rules."); btn.disabled = false; }, 
             async () => {
-                // 2. Get Download URL
-                const url = await getDownloadURL(uploadTask.snapshot.ref);
+                // 2. Get the Live URL
+                const imgURL = await getDownloadURL(uploadTask.snapshot.ref);
                 
-                // 3. Save to Database
+                // 3. Save Data to Realtime Database
                 await push(dbRef(db, "lobby_games"), {
-                    name, image: url, link, tag, badge
+                    name, image: imgURL, link, tag: tag || "LIVE", badge: badge || ""
                 });
 
-                alert("Game Live in Lobby!");
+                alert("Game Uploaded Successfully!");
                 location.reload();
             }
         );
     };
+
+    // Show List & Delete Logic
+    onValue(dbRef(db, "lobby_games"), snap => {
+        const list = document.getElementById('adminList');
+        list.innerHTML = "";
+        const data = snap.val();
+        if(data) {
+            Object.keys(data).forEach(key => {
+                const g = data[key];
+                list.innerHTML += `
+                    <div class="game-item">
+                        <img src="${g.image}">
+                        <div class="game-info">
+                            <b>${g.name}</b>
+                            <small>${g.link}</small>
+                        </div>
+                        <button class="btn-del" onclick="deleteGame('${key}')">DEL</button>
+                    </div>`;
+            });
+        }
+    });
+
+    window.deleteGame = (k) => {
+        if(confirm("Game hata dein?")) remove(dbRef(db, `lobby_games/${k}`));
+    }
 </script>
 </body>
 </html>
