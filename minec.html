@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Mines Admin | Live Tracker</title>
+    <style>
+        body { font-family: sans-serif; background: #f0f2f5; padding: 20px; }
+        .container { max-width: 800px; margin: auto; }
+        .user-card { background: white; padding: 15px; border-radius: 12px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center; border-left: 5px solid #ccc; }
+        .user-card.online { border-left-color: #10b981; box-shadow: 0 4px 12px rgba(16,185,129,0.1); }
+        .status-dot { width: 10px; height: 10px; border-radius: 50%; display: inline-block; margin-right: 5px; }
+        .online-dot { background: #10b981; }
+        .offline-dot { background: #94a3b8; }
+        .controls button { padding: 8px; cursor: pointer; font-weight: bold; border-radius: 5px; border: none; margin-left: 5px; }
+        .btn-win { background: #10b981; color: white; }
+        .btn-loss { background: #ef4444; color: white; }
+        .trap-box { background: white; padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <div class="trap-box">
+        <h3>Global Trap (First Slot Bomb)</h3>
+        <button id="trapBtn" style="padding:15px 30px; font-weight:bold; cursor:pointer;" onclick="toggleTrap()">OFF</button>
+    </div>
+
+    <h2>Live Players</h2>
+    <div id="userList"></div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Global Trap
+    window.toggleTrap = () => {
+        const btn = document.getElementById('trapBtn');
+        const isOff = btn.innerText === "OFF";
+        update(ref(db, 'settings/mines'), { globalTrap: isOff });
+    };
+
+    onValue(ref(db, 'settings/mines/globalTrap'), s => {
+        const btn = document.getElementById('trapBtn');
+        btn.innerText = s.val() ? "ON (ACTIVE)" : "OFF";
+        btn.style.background = s.val() ? "#ef4444" : "#ccc";
+    });
+
+    // Listen for all users
+    onValue(ref(db, 'users'), snap => {
+        const container = document.getElementById('userList');
+        container.innerHTML = "";
+        snap.forEach(child => {
+            const u = child.val();
+            const uid = child.key;
+            const isOnline = u.isOnline === true;
+
+            const card = document.createElement('div');
+            card.className = `user-card ${isOnline ? 'online' : ''}`;
+            card.innerHTML = `
+                <div>
+                    <b>${u.name || 'User_'+uid.slice(0,4)}</b> <br>
+                    <span class="status-dot ${isOnline ? 'online-dot' : 'offline-dot'}"></span>
+                    <small>${isOnline ? 'PLAYING NOW' : 'OFFLINE'}</small> | 
+                    <small>Bal: ₹${u.balance.toFixed(2)}</small>
+                </div>
+                <div class="controls">
+                    <button class="btn-win" onclick="setMode('${uid}', 'win')">WIN</button>
+                    <button class="btn-loss" onclick="setMode('${uid}', 'loss')">LOSS</button>
+                    <button style="background:#64748b; color:white;" onclick="setMode('${uid}', 'norm')">RESET</button>
+                </div>
+            `;
+            container.appendChild(card);
+        });
+    });
+
+    window.setMode = (uid, mode) => {
+        update(ref(db, `users/${uid}`), { 
+            forceWin: (mode === 'win'), 
+            forceLoss: (mode === 'loss') 
+        });
+    };
+</script>
+</body>
+</html>
