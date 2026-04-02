@@ -3,222 +3,141 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mines Master Pro | Smart Rigged</title>
+    <title>Mines Pro | Live Session</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #6366f1; --surface: #1e293b; --bg: #0f172a; --success: #10b981; --danger: #ef4444; --accent: #fbbf24; }
-        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; color: white; overflow-x: hidden; }
-        .game-shell { width: 100%; max-width: 450px; min-height: 100vh; background: #111827; padding: 15px; box-sizing: border-box; }
-        .header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px; border-radius: 18px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
-        .balance-chip { font-weight: 800; color: var(--accent); font-size: 18px; }
-        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; min-height: 300px; }
-        .slot { aspect-ratio: 1; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 22px; cursor: pointer; border: 2px solid transparent; transition: all 0.2s; box-shadow: inset 0 0 10px rgba(0,0,0,0.3); }
-        .slot.diamond { background: radial-gradient(circle, #06b6d4, #083344); border-color: #22d3ee; transform: scale(0.95); }
-        .slot.bomb { background: radial-gradient(circle, #ef4444, #7f1d1d); border-color: #f87171; animation: shake 0.2s; }
-        @keyframes shake { 0% { transform: translateX(0); } 25% { transform: translateX(3px); } 50% { transform: translateX(-3px); } 100% { transform: translateX(0); } }
-        .lvl-box { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 15px; }
-        .lvl-btn { padding: 12px; border: 1px solid #334155; border-radius: 12px; background: #1e293b; color: #94a3b8; font-weight: 700; cursor: pointer; font-size: 11px; }
-        .lvl-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        .bet-area { background: #1e293b; padding: 18px; border-radius: 20px; margin-bottom: 15px; }
-        input { width: 100%; background: #0f172a; border: 1px solid #334155; padding: 14px; border-radius: 12px; color: white; margin: 10px 0; text-align: center; font-weight: bold; font-size: 18px; outline: none; }
-        .main-btn { width: 100%; padding: 16px; border-radius: 14px; border: none; font-weight: 900; cursor: pointer; text-transform: uppercase; font-size: 14px; }
-        .btn-start { background: var(--primary); color: white; box-shadow: 0 4px 0 #4338ca; }
-        .btn-cashout { background: var(--success); color: white; display: none; box-shadow: 0 4px 0 #059669; }
-        .overlay { display: none; position: fixed; inset:0; background:rgba(0,0,0,0.9); z-index:2000; justify-content:center; align-items:center; }
-        .modal { background:#1e293b; padding:30px; border-radius:24px; text-align:center; width:85%; }
-        .list-container { height: 180px; overflow-y: auto; padding: 10px; background: #0a0a0a; border-radius: 15px; margin-top: 10px; border: 1px solid #222; }
-        .tx-row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #1a1a1a; font-size: 11px; color: #888; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); margin: 0; display: flex; justify-content: center; color: white; }
+        .game-shell { width: 100%; max-width: 400px; min-height: 100vh; background: #111827; padding: 15px; box-sizing: border-box; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--surface); padding: 15px; border-radius: 15px; margin-bottom: 15px; border: 1px solid rgba(255,255,255,0.1); }
+        .grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-bottom: 15px; }
+        .slot { aspect-ratio: 1; background: #1e293b; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; cursor: pointer; transition: 0.2s; box-shadow: inset 0 0 8px rgba(0,0,0,0.5); border: 2px solid transparent; }
+        .slot.diamond { background: radial-gradient(circle, #06b6d4, #083344); border-color: #22d3ee; }
+        .slot.bomb { background: radial-gradient(circle, #ef4444, #7f1d1d); border-color: #f87171; }
+        .bet-area { background: #1e293b; padding: 15px; border-radius: 15px; }
+        input { width: 100%; background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 10px; color: white; margin: 10px 0; text-align: center; font-weight: bold; }
+        .btn { width: 100%; padding: 15px; border-radius: 10px; border: none; font-weight: 900; cursor: pointer; text-transform: uppercase; }
+        .btn-start { background: var(--primary); color: white; }
+        .btn-cash { background: var(--success); color: white; display: none; }
     </style>
 </head>
 <body>
 
 <div class="game-shell">
     <div class="header">
-        <span style="font-weight:900; letter-spacing:1px;">MINES <span style="color:var(--primary)">PRO</span></span>
-        <div class="balance-chip">₹<span id="balanceDisplay">0.00</span></div>
+        <span style="font-weight:900;">MINES <span style="color:var(--primary)">PRO</span></span>
+        <div style="color:var(--accent); font-weight:800;">₹<span id="bal">0.00</span></div>
     </div>
-    <div class="lvl-box">
-        <button class="lvl-btn active" id="btn-easy" onclick="changeLvl('easy')">3 MINES</button>
-        <button class="lvl-btn" id="btn-medium" onclick="changeLvl('medium')">10 MINES</button>
-        <button class="lvl-btn" id="btn-hard" onclick="changeLvl('hard')">24 MINES</button>
-    </div>
-    <div class="grid" id="gameGrid"></div>
-    <div class="bet-area">
-        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:10px; font-weight:bold;">
-            <span>MULT: <span id="multText" style="color:var(--accent)">1.00x</span></span>
-            <span>PROFIT: <span id="profitText" style="color:var(--success)">₹0.00</span></span>
-        </div>
-        <input type="number" id="betInput" value="10" min="10">
-        <button id="startBtn" class="main-btn btn-start" onclick="startGame()">START GAME</button>
-        <button id="cashBtn" class="main-btn btn-cashout" onclick="cashout()">CASHOUT</button>
-    </div>
-    <div style="font-size:11px; font-weight:700; color:#475569; margin-left:5px;">RECENT TRANSACTIONS</div>
-    <div class="list-container" id="listContent"></div>
-</div>
 
-<div id="alertOverlay" class="overlay">
-    <div class="modal">
-        <div id="modalIcon" style="font-size:60px; margin-bottom:15px;"></div>
-        <h2 id="modalTitle" style="margin:0;"></h2>
-        <p id="modalDesc" style="color:#94a3b8; margin: 20px 0;"></p>
-        <button class="main-btn btn-start" onclick="closeModal()">OKAY</button>
+    <div class="grid" id="gameGrid"></div>
+
+    <div class="bet-area">
+        <div style="display:flex; justify-content:space-between; font-size:12px; margin-bottom:10px;">
+            <span>MULT: <span id="mText" style="color:var(--accent)">1.00x</span></span>
+            <span>PROFIT: <span id="pText" style="color:var(--success)">₹0.00</span></span>
+        </div>
+        <input type="number" id="betInp" value="10">
+        <button id="sBtn" class="btn btn-start" onclick="startGame()">START GAME</button>
+        <button id="cBtn" class="btn btn-cash" onclick="cashout()">CASHOUT</button>
     </div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, update, increment, get, push, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, increment, get, onDisconnect, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let balance = 0, currentLvl = 'easy', isPlaying = false, mines = [], diamondsFound = 0, currentMult = 1.0, activeBet = 0;
-    
-    // Updated Multipliers for better progression
-    const mTable = {
-        easy: [1.20, 1.88, 2.11, 3.00, 4.20, 6.00, 8.00, 12.00],
-        medium: [2.50, 5.00, 12.00, 25.00, 50.00, 100.00],
-        hard: [24.00, 100.00] 
-    };
+    let balance = 0, isPlaying = false, mines = [], diamonds = 0, activeBet = 0;
+    const mTable = [1.10, 1.40, 1.90, 3.50, 5.20, 7.00, 8.50, 10.00];
 
-    const grid = document.getElementById("gameGrid");
-    function createGrid() {
-        grid.innerHTML = '';
-        for(let i=0; i<25; i++) {
-            const div = document.createElement("div"); 
-            div.className = "slot";
-            div.onclick = () => handleMove(i, div); 
-            grid.appendChild(div);
-        }
-    }
-    createGrid();
-
+    // --- LIVE PRESENCE SYSTEM ---
     onAuthStateChanged(auth, user => {
         if(!user) return;
+        
+        // Presence Logic
+        const statusRef = ref(db, `users/${user.uid}/isOnline`);
+        const connectedRef = ref(db, ".info/connected");
+        onValue(connectedRef, (snap) => {
+            if (snap.val() === true) {
+                set(statusRef, true);
+                onDisconnect(statusRef).set(false);
+            }
+        });
+
         onValue(ref(db, `users/${user.uid}`), s => {
             balance = s.val()?.balance || 0;
-            document.getElementById("balanceDisplay").innerText = balance.toFixed(2);
+            document.getElementById("bal").innerText = balance.toFixed(2);
         });
-        loadTxs(user.uid);
     });
 
-    window.changeLvl = (l) => { if(!isPlaying) { currentLvl = l; document.querySelectorAll('.lvl-btn').forEach(b => b.classList.remove('active')); document.getElementById(`btn-${l}`).classList.add('active'); } }
+    const grid = document.getElementById("gameGrid");
+    for(let i=0; i<25; i++) {
+        const d = document.createElement("div"); d.className="slot";
+        d.onclick = () => handleMove(i, d); grid.appendChild(d);
+    }
 
     window.startGame = async () => {
-        activeBet = parseFloat(document.getElementById("betInput").value);
-        if(!activeBet || activeBet < 10) return alert("Minimum Bet is ₹10");
-        if(activeBet > balance) return alert("Low Balance!");
-
-        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(-activeBet) });
-        isPlaying = true; diamondsFound = 0; currentMult = 1.0; mines = [];
+        activeBet = parseFloat(document.getElementById("betInp").value);
+        if(activeBet > balance || activeBet < 10) return alert("Invalid Bet");
         
-        let mCount = (currentLvl === 'easy') ? 3 : (currentLvl === 'medium' ? 10 : 24);
-        while(mines.length < mCount) { let r = Math.floor(Math.random()*25); if(!mines.includes(r)) mines.push(r); }
-
-        document.getElementById("startBtn").style.display = "none";
-        document.getElementById("cashBtn").style.display = "block";
-        document.querySelectorAll(".slot").forEach(s => { s.className = "slot"; s.innerText = ""; });
+        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(-activeBet) });
+        isPlaying = true; diamonds = 0; mines = [];
+        while(mines.length < 3) { let r = Math.floor(Math.random()*25); if(!mines.includes(r)) mines.push(r); }
+        
+        document.getElementById("sBtn").style.display="none";
+        document.getElementById("cBtn").style.display="block";
+        document.querySelectorAll(".slot").forEach(s=>{s.className="slot"; s.innerText="";});
     };
 
     window.handleMove = async (idx, el) => {
         if(!isPlaying || el.classList.contains('diamond')) return;
-
         const uSnap = await get(ref(db, `users/${auth.currentUser.uid}`));
-        const uData = uSnap.val() || {};
+        const sSnap = await get(ref(db, `settings/mines/globalTrap`));
+        const uData = uSnap.val();
         
-        // --- RIGGING ENGINE v8.6 ---
-        let risk = 0.10; 
-
-        if (uData.forceLoss) {
-            risk = 1.0;
-        } else if (uData.forceWin) {
-            risk = 0.0;
-        } else {
-            if (currentLvl === 'easy') {
-                // Easy Mode: 60% loss chance between 3-6 diamonds, then high risk
-                if (diamondsFound < 3) risk = 0.30;
-                else if (diamondsFound < 6) risk = 0.60;
-                else risk = 0.90;
-            } else {
-                // Medium & Hard Mode: 90% chance to lose every time
-                risk = 0.90;
-            }
-
-            // Balance Protection (₹350+ equals instant kill)
-            if (balance >= 350) risk = 0.98;
+        let risk = 0;
+        if(sSnap.val() && idx === 0) risk = 1.0; // Global Trap
+        else if(uData.forceLoss) risk = 1.0;
+        else if(uData.forceWin) risk = 0.0;
+        else {
+            if(diamonds < 3) risk = 0.0; // 3-Box Safety
+            else risk = (diamonds < 5) ? 0.4 : 0.8;
         }
 
-        // Apply Rigging (Shift bomb if needed)
-        if (Math.random() < risk && !uData.forceWin) {
-            if (!mines.includes(idx)) { mines.pop(); mines.push(idx); }
-        }
+        if(Math.random() < risk && !uData.forceWin) { if(!mines.includes(idx)){mines.pop(); mines.push(idx);} }
 
         if(mines.includes(idx)) {
-            gameOver(false);
+            isPlaying = false;
+            mines.forEach(m => { grid.children[m].classList.add("bomb"); grid.children[m].innerText="💣"; });
+            setTimeout(()=> { alert("Lost ₹"+activeBet); resetUI(); }, 500);
         } else {
-            diamondsFound++;
-            el.innerText = "💎"; el.classList.add("diamond");
-            updateStats();
+            diamonds++; el.innerText="💎"; el.classList.add("diamond");
+            let m = mTable[diamonds-1] || 10;
+            document.getElementById("mText").innerText = m.toFixed(2)+"x";
+            document.getElementById("pText").innerText = "₹"+(activeBet*m).toFixed(2);
+            document.getElementById("cBtn").innerText = `CASHOUT ₹${(activeBet*m).toFixed(2)}`;
         }
     };
 
-    function updateStats() {
-        let table = mTable[currentLvl];
-        currentMult = table[diamondsFound-1] || table[table.length-1];
-        document.getElementById("multText").innerText = currentMult.toFixed(2) + "x";
-        document.getElementById("profitText").innerText = "₹" + (activeBet * currentMult).toFixed(2);
-        document.getElementById("cashBtn").innerText = `CASHOUT ₹${(activeBet * currentMult).toFixed(2)}`;
-    }
-
     window.cashout = async () => {
-        if(!isPlaying || diamondsFound === 0) return;
-        let win = activeBet * currentMult;
-        isPlaying = false;
-        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(win), totalWin: increment(win) });
-        saveTx('WIN', win);
-        showModal("CASHOUT!", "Won ₹"+win.toFixed(2), "🏆");
+        let m = mTable[diamonds-1] || 10;
+        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(activeBet*m) });
+        alert("Won ₹"+(activeBet*m).toFixed(2));
         resetUI();
-    }
+    };
 
-    function gameOver(won) {
+    function resetUI() {
         isPlaying = false;
-        mines.forEach(m => { grid.children[m].classList.add("bomb"); grid.children[m].innerText = "💣"; });
-        saveTx('LOSE', activeBet);
-        setTimeout(() => { showModal("BOOM!", "Lost ₹"+activeBet, "💥"); resetUI(); }, 600);
+        document.getElementById("sBtn").style.display="block";
+        document.getElementById("cBtn").style.display="none";
+        document.getElementById("mText").innerText="1.00x";
+        document.getElementById("pText").innerText="₹0.00";
     }
-
-    function resetUI() { 
-        document.getElementById("startBtn").style.display = "block"; 
-        document.getElementById("cashBtn").style.display = "none"; 
-        document.getElementById("multText").innerText = "1.00x";
-        document.getElementById("profitText").innerText = "₹0.00";
-        document.getElementById("cashBtn").innerText = "CASHOUT";
-    }
-
-    async function saveTx(type, amt) {
-        await push(ref(db, `transactions/${auth.currentUser.uid}`), { type, amount: amt, time: Date.now() });
-    }
-
-    function loadTxs(uid) {
-        onValue(query(ref(db, `transactions/${uid}`), limitToLast(10)), s => {
-            const list = document.getElementById("listContent"); list.innerHTML = "";
-            s.forEach(c => {
-                const d = c.val();
-                list.innerHTML = `<div class="tx-row"><span>${new Date(d.time).toLocaleTimeString()}</span><span style="color:${d.type=='WIN'?'#10b981':'#ef4444'}">${d.type} ₹${d.amount.toFixed(2)}</span></div>` + list.innerHTML;
-            });
-        });
-    }
-
-    function showModal(t, d, i) { 
-        document.getElementById("modalTitle").innerText = t; 
-        document.getElementById("modalDesc").innerText = d; 
-        document.getElementById("modalIcon").innerHTML = i; 
-        document.getElementById("alertOverlay").style.display = "flex"; 
-    }
-    window.closeModal = () => document.getElementById("alertOverlay").style.display = "none";
 </script>
 </body>
 </html>
