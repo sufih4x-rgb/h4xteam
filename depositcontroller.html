@@ -2,85 +2,88 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Admin Dashboard | DOT GAMES</title>
+    <title>Admin Dashboard</title>
     <style>
         :root { --gold: #d4af37; --sky: #00d2ff; }
-        body { background: #f4f7f9; font-family: sans-serif; padding: 20px; }
-        .card { background: white; padding: 25px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 20px; box-shadow: 0 10px 20px rgba(0,0,0,0.02); }
-        .stk-box { font-size: 32px; font-weight: 900; color: var(--gold); }
-        input { padding: 12px; width: 280px; border: 2px solid #f0f0f0; border-radius: 10px; outline: none; }
-        .btn-sky { background: var(--sky); color: white; border: none; padding: 12px 25px; border-radius: 10px; font-weight: bold; cursor: pointer; }
-        .req-card { display: flex; justify-content: space-between; align-items: center; padding: 15px; border-bottom: 1px solid #eee; }
-        #sqr img { border: 3px solid var(--sky); margin: 10px; border-radius: 10px; }
+        body { background: #f8f9fa; font-family: sans-serif; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .stk-txt { font-size: 35px; font-weight: 900; color: var(--gold); }
+        input { padding: 12px; width: 250px; border-radius: 10px; border: 1px solid #ddd; outline: none; }
+        .btn-sky { background: var(--sky); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .req-box { border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="margin:0">ADMIN STOCK</h2>
-    <div class="stk-box" id="stkDisplay">₹0.00</div>
-    <div style="margin-top:15px;">
-        <input type="text" id="myUpi" placeholder="Update Your UPI for Users">
-        <button class="btn-sky" onclick="updateUpi()">SAVE UPI</button>
-    </div>
+    <h2>MY STOCK: <span id="stkVal" class="stk-txt">₹0</span></h2>
+    <input type="text" id="newUpi" placeholder="example@ybl">
+    <button class="btn-sky" onclick="saveAdminUpi()">UPDATE ADMIN UPI</button>
 </div>
 
 <div class="card">
     <h3>Buy Stock (Super Admin QR)</h3>
-    <input type="number" id="bAmt" placeholder="Amount to Refill" oninput="genQR()">
-    <div id="sqr"></div>
-    <input type="text" id="sUtr" placeholder="Enter 12-Digit UTR">
-    <button class="btn-sky" style="background:var(--gold)" onclick="buyStk()">SEND REFILL REQUEST</button>
+    <input type="number" id="buyAmt" placeholder="Amount" oninput="genSuperQR()">
+    <div id="sqrContainer" style="margin:10px;"></div>
+    <input type="text" id="adminUtr" placeholder="Enter UTR">
+    <button class="btn-sky" style="background:var(--gold)" onclick="reqStock()">REQUEST REFILL</button>
 </div>
 
 <div class="card">
     <h3>User Requests</h3>
-    <div id="uList"></div>
+    <div id="uReqList"></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, increment, get, push, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-    const firebaseConfig = { /* SAME CONFIG */ };
+    import { getDatabase, ref, onValue, update, increment, push, serverTimestamp, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
+        authDomain: "test-eb5e7.firebaseapp.com", 
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
+        projectId: "test-eb5e7", 
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
+    };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
-    const AID = "admin_01";
     let SUPER_UPI = "";
+    const AID = "admin_01";
 
-    onValue(ref(db, "super_settings/upi"), s => { SUPER_UPI = s.val(); });
-    onValue(ref(db, `admins/${AID}/stock`), s => { document.getElementById('stkDisplay').innerText = "₹" + (s.val() || 0); });
-    window.updateUpi = () => { update(ref(db, "admin_settings/upi"), { id: document.getElementById('myUpi').value }); alert("User UPI Updated!"); };
+    onValue(ref(db, "settings/super_upi"), s => { SUPER_UPI = s.val(); });
+    onValue(ref(db, `admins/${AID}/stock`), s => { document.getElementById('stkVal').innerText = "₹" + (s.val() || 0); });
 
-    window.genQR = () => {
-        const a = document.getElementById('bAmt').value;
-        if(a > 0 && SUPER_UPI) document.getElementById('sqr').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent('upi://pay?pa='+SUPER_UPI+'&am='+a)}">`;
+    window.saveAdminUpi = () => {
+        update(ref(db, "settings"), { admin_upi: document.getElementById('newUpi').value });
+        alert("Admin UPI Live!");
     };
 
-    onValue(ref(db, "deposit_requests"), s => {
+    window.genSuperQR = () => {
+        const a = document.getElementById('buyAmt').value;
+        if(a > 0 && SUPER_UPI) document.getElementById('sqrContainer').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent('upi://pay?pa='+SUPER_UPI+'&am='+a)}" width="150">`;
+    };
+
+    window.reqStock = () => {
+        push(ref(db, "stock_requests"), { adminId: AID, amount: parseFloat(document.getElementById('buyAmt').value), utr: document.getElementById('adminUtr').value, status: "pending", time: serverTimestamp() });
+        alert("Request Sent!");
+    };
+
+    onValue(ref(db, "user_requests"), s => {
         let h = "";
         s.forEach(c => {
             const d = c.val();
-            if(d.status === "pending") h += `<div class="req-card"><span><b>₹${d.amount}</b> (${d.utr})</span> 
-            <div><button class="btn-sky" style="background:#2ecc71" onclick="action('${c.key}','${d.uid}',${d.amount},'approved')">Approve</button>
-            <button class="btn-sky" style="background:#e74c3c" onclick="action('${c.key}','${d.uid}',${d.amount},'rejected')">Reject</button></div></div>`;
+            if(d.status === "pending") h += `<div class="req-box"><span>₹${d.amount}</span> <button class="btn-sky" style="background:green" onclick="approveUser('${c.key}','${d.uid}',${d.amount})">Approve</button></div>`;
         });
-        document.getElementById('uList').innerHTML = h || "No pending requests";
+        document.getElementById('uReqList').innerHTML = h || "No requests";
     });
 
-    window.action = async (rid, uid, amt, stat) => {
-        if(stat === 'approved') {
-            const s = await get(ref(db, `admins/${AID}/stock`));
-            if((s.val() || 0) < amt) return alert("Low Stock Balance!");
-            await update(ref(db, `admins/${AID}`), { stock: increment(-amt) });
-            await update(ref(db, `users/${uid}`), { balance: increment(amt) });
-        } else {
-            const res = prompt("Rejection Reason?");
-            await update(ref(db, `deposit_requests/${rid}`), { reason: res });
-        }
-        update(ref(db, `deposit_requests/${rid}`), { status: stat });
+    window.approveUser = async (rid, uid, amt) => {
+        const s = await get(ref(db, `admins/${AID}/stock`));
+        if((s.val() || 0) < amt) return alert("Low Stock!");
+        await update(ref(db, `admins/${AID}`), { stock: increment(-amt) });
+        await update(ref(db, `user_wallet/${uid}`), { balance: increment(amt) });
+        update(ref(db, `user_requests/${rid}`), { status: "approved" });
     };
-
-    window.buyStk = () => { push(ref(db, "super_requests"), { adminId: AID, amount: parseFloat(document.getElementById('bAmt').value), utr: document.getElementById('sUtr').value, status: "pending", time: serverTimestamp() }); alert("Refill request sent!"); };
 </script>
 </body>
 </html>
