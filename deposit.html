@@ -8,83 +8,32 @@
     <style>
         :root { --primary: #4361ee; --bg: #f8f9fc; --success: #06d6a0; --text: #1e293b; }
         body { background: var(--bg); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; color: var(--text); }
-        .app { width: 100%; max-width: 480px; min-height: 100vh; background: #fff; padding: 20px; box-sizing: border-box; position: relative; }
-        
-        /* Header */
+        .app { width: 100%; max-width: 480px; min-height: 100vh; background: #fff; padding: 20px; box-sizing: border-box; }
         .header { display: flex; align-items: center; gap: 15px; margin-bottom: 25px; }
-        .back-btn { border:none; background:#f1f5f9; width:40px; height:40px; border-radius:12px; cursor:pointer; font-size: 18px; font-weight: bold; }
-        
-        /* QR Section */
-        .qr-card { background: #fff; border: 2px solid #f1f5f9; border-radius: 24px; padding: 25px; text-align: center; margin-bottom: 20px; transition: 0.3s; }
-        #qrBox img { width: 200px; height: 200px; border-radius: 15px; border: 1px solid #eee; padding: 8px; background: white; }
-        .qr-placeholder { height: 200px; display: flex; align-items: center; justify-content: center; color: #94a3b8; font-size: 14px; background: #f8fafc; border-radius: 15px; line-height: 1.6; }
-        
-        /* Input Styles */
-        .input-group { margin-top: 15px; }
-        label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-left: 5px; letter-spacing: 0.5px; }
-        .input-wrapper { position: relative; margin: 8px 0 20px; }
-        .input-wrapper span { position: absolute; left: 15px; top: 50%; transform: translateY(-50%); font-weight: 800; color: var(--primary); }
-        input { width: 100%; padding: 15px 15px 15px 35px; border-radius: 14px; border: 2px solid #f1f5f9; box-sizing: border-box; font-size: 16px; font-weight: 700; outline: none; transition: 0.3s; }
-        input:focus { border-color: var(--primary); }
-        .utr-input { padding-left: 15px !important; border-color: #e2e8f0; }
-
-        /* Button */
-        .btn-submit { width: 100%; padding: 18px; border-radius: 16px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; margin-top: 20px; font-size: 15px; box-shadow: 0 8px 20px rgba(67, 97, 238, 0.2); }
-        .btn-submit:disabled { background: #cbd5e1; box-shadow: none; }
-
-        /* History */
-        .history-section { margin-top: 35px; border-top: 2px dashed #f1f5f9; padding-top: 20px; }
+        .qr-card { background: #fff; border: 2px solid #f1f5f9; border-radius: 24px; padding: 25px; text-align: center; margin-bottom: 20px; }
+        #qrBox img { width: 200px; height: 200px; border-radius: 15px; border: 1px solid #eee; padding: 8px; }
+        input { width: 100%; padding: 15px; border-radius: 14px; border: 2px solid #f1f5f9; box-sizing: border-box; font-size: 16px; font-weight: 700; outline: none; margin: 10px 0; }
+        .btn-submit { width: 100%; padding: 18px; border-radius: 16px; border: none; background: var(--primary); color: white; font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(67, 97, 238, 0.2); }
         .history-row { background: #f8fafc; padding: 15px; border-radius: 16px; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; border: 1px solid #f1f5f9; }
-        .hist-meta b { font-size: 16px; color: #1e293b; display: block; }
-        .hist-meta small { color: #64748b; font-size: 11px; font-weight: 600; }
-        
         .status-pill { padding: 5px 12px; border-radius: 10px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
         .pill-pending { background: #fff7ed; color: #9a3412; }
         .pill-approved { background: #ecfdf5; color: #065f46; }
-        .pill-rejected { background: #fef2f2; color: #991b1b; }
-
-        .notice { background: #fef2f2; padding: 12px; border-radius: 12px; border: 1px solid #fee2e2; margin-top: 15px; font-size: 12px; color: #991b1b; font-weight: 600; }
     </style>
 </head>
 <body>
-
 <div class="app">
-    <div class="header">
-        <button class="back-btn" onclick="history.back()">←</button>
-        <h2 style="margin:0; font-size:20px; font-weight: 900;">Add Money</h2>
-    </div>
-
+    <div class="header"><h2>Add Money</h2></div>
     <div class="qr-card">
-        <div id="qrBox">
-            <div class="qr-placeholder">Step 1:<br>Enter amount to<br>generate payment QR</div>
-        </div>
-        <p id="qrStatus" style="font-size:12px; font-weight:700; color:var(--success); margin-top:15px; display:none;">✅ QR Loaded! Scan and pay</p>
+        <div id="qrBox"><p style="color:#94a3b8;">Enter amount to generate QR</p></div>
     </div>
-
-    <div class="input-group">
-        <label>Deposit Amount (Min ₹100)</label>
-        <div class="input-wrapper">
-            <span>₹</span>
-            <input type="number" id="depAmt" placeholder="0.00" oninput="generateQR()">
-        </div>
-
-        <div id="utrSection" style="display:none;">
-            <label>12-Digit UTR Number</label>
-            <input type="text" id="utrInp" class="utr-input" placeholder="Enter Ref/UTR Number" maxlength="12">
-            
-            <div class="notice">
-                ⚠️ Galat UTR submit karne par account block ho sakta hai.
-            </div>
-
-            <button class="btn-submit" id="subBtn" onclick="submitDeposit()">SUBMIT DEPOSIT</button>
-        </div>
+    <input type="number" id="depAmt" placeholder="Enter Amount (Min ₹100)" oninput="generateQR()">
+    <div id="utrSection" style="display:none;">
+        <input type="text" id="utrInp" placeholder="Enter 12-Digit UTR Number" maxlength="12">
+        <button class="btn-submit" onclick="submitDeposit()">SUBMIT DEPOSIT</button>
     </div>
-
-    <div class="history-section">
-        <label style="margin-bottom: 15px; display: block;">Recent Transactions</label>
-        <div id="depositHistory">
-            <p style="text-align:center; font-size:12px; color:#94a3b8;">No deposits yet.</p>
-        </div>
+    <div style="margin-top:30px;">
+        <label>Recent Transactions</label>
+        <div id="depositHistory"></div>
     </div>
 </div>
 
@@ -93,93 +42,43 @@
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
     import { getDatabase, ref, push, serverTimestamp, onValue, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // Firebase Config Replace Karein
-    const firebaseConfig = { 
-        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
-        authDomain: "test-eb5e7.firebaseapp.com", 
-        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
-        projectId: "test-eb5e7", 
-        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
-    };
-
+    const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
     let userObj = null;
-    let MASTER_UPI = "";
+    let ADMIN_UPI = "";
 
-    // 1. Fetch Admin UPI Live
-    onValue(ref(db, "admin_settings/upi"), snap => {
-        if(snap.exists()){
-            MASTER_UPI = snap.val().id;
-            if(document.getElementById('depAmt').value >= 100) generateQR();
-        }
-    });
-
-    onAuthStateChanged(auth, u => { 
-        if(!u) location.href='login.html'; 
-        else { userObj = u; loadHistory(); }
-    });
+    onValue(ref(db, "admin_settings/upi"), s => { if(s.exists()) ADMIN_UPI = s.val().id; });
+    onAuthStateChanged(auth, u => { if(u) { userObj = u; loadHistory(); } });
 
     window.generateQR = () => {
         const amt = document.getElementById('depAmt').value;
-        if(amt >= 100 && MASTER_UPI) {
-            const upiUrl = `upi://pay?pa=${MASTER_UPI}&pn=DOTGAMES&am=${amt}&cu=INR`;
-            const qrApi = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encodeURIComponent(upiUrl)}`;
-            document.getElementById('qrBox').innerHTML = `<img src="${qrApi}">`;
+        if(amt >= 100 && ADMIN_UPI) {
+            const url = `upi://pay?pa=${ADMIN_UPI}&pn=DOTGAMES&am=${amt}&cu=INR`;
+            document.getElementById('qrBox').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(url)}">`;
             document.getElementById('utrSection').style.display = "block";
-            document.getElementById('qrStatus').style.display = "block";
-        } else {
-            document.getElementById('qrBox').innerHTML = `<div class="qr-placeholder">Min. ₹100</div>`;
-            document.getElementById('utrSection').style.display = "none";
-            document.getElementById('qrStatus').style.display = "none";
         }
     };
 
     window.submitDeposit = async () => {
         const utr = document.getElementById('utrInp').value;
-        const amt = document.getElementById('depAmt').value;
-        
-        if(!utr || utr.length < 12) return alert("Please enter valid 12-digit UTR");
-
-        document.getElementById('subBtn').disabled = true;
-        
-        await push(ref(db, "deposit_requests"), {
-            uid: userObj.uid,
-            email: userObj.email || "No Email",
-            amount: parseFloat(amt),
-            utr: utr,
-            status: "pending",
-            timestamp: serverTimestamp()
-        });
-
-        alert("Deposit Request Submitted! It will be approved within 30 mins.");
-        document.getElementById('utrInp').value = "";
-        document.getElementById('subBtn').disabled = false;
+        if(utr.length < 12) return alert("Invalid UTR");
+        await push(ref(db, "deposit_requests"), { uid: userObj.uid, email: userObj.email, amount: parseFloat(document.getElementById('depAmt').value), utr, status: "pending", timestamp: serverTimestamp() });
+        alert("Request Submitted!");
     };
 
     function loadHistory() {
-        const q = query(ref(db, "deposit_requests"), orderByChild("uid"), equalTo(userObj.uid));
-        onValue(q, snap => {
-            let html = "";
-            if(snap.exists()){
-                snap.forEach(child => {
-                    const d = child.val();
-                    html = `
-                    <div class="history-row">
-                        <div class="hist-meta">
-                            <b>₹${d.amount.toFixed(2)}</b>
-                            <small>UTR: ${d.utr}</small>
-                        </div>
-                        <span class="status-pill pill-${d.status.toLowerCase()}">${d.status}</span>
-                    </div>` + html;
-                });
-                document.getElementById("depositHistory").innerHTML = html;
-            }
+        onValue(query(ref(db, "deposit_requests"), orderByChild("uid"), equalTo(userObj.uid)), snap => {
+            let h = "";
+            snap.forEach(c => {
+                const d = c.val();
+                h = `<div class="history-row"><b>₹${d.amount}</b><span class="status-pill pill-${d.status}">${d.status}</span></div>` + h;
+            });
+            document.getElementById('depositHistory').innerHTML = h;
         });
     }
 </script>
-
 </body>
 </html>
