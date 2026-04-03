@@ -2,67 +2,88 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deposit | User Panel</title>
+    <title>Admin Dashboard</title>
     <style>
-        :root { --gold: #d4af37; --white: #ffffff; --sky: #00d2ff; }
-        body { background: var(--white); font-family: sans-serif; margin: 0; padding: 20px; text-align: center; }
-        .card { border: 2px solid #f0f0f0; border-radius: 20px; padding: 20px; max-width: 400px; margin: auto; box-shadow: 0 10px 30px rgba(0,0,0,0.05); }
-        #qrBox img { width: 220px; border-radius: 10px; margin: 15px 0; border: 5px solid var(--gold); }
-        input { width: 90%; padding: 12px; margin: 10px 0; border-radius: 10px; border: 1px solid #ddd; outline: none; font-weight: bold; }
-        .btn { width: 95%; padding: 15px; border-radius: 10px; border: none; background: var(--gold); color: white; font-weight: 800; cursor: pointer; box-shadow: 0 4px 15px rgba(212, 175, 55, 0.3); }
-        .status-box { margin-top: 20px; font-size: 12px; text-align: left; }
-        .row { display: flex; justify-content: space-between; padding: 10px; border-bottom: 1px solid #eee; }
+        :root { --gold: #d4af37; --sky: #00d2ff; }
+        body { background: #f8f9fa; font-family: sans-serif; padding: 20px; }
+        .card { background: white; padding: 25px; border-radius: 20px; border: 1px solid #eee; margin-bottom: 20px; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .stk-txt { font-size: 35px; font-weight: 900; color: var(--gold); }
+        input { padding: 12px; width: 250px; border-radius: 10px; border: 1px solid #ddd; outline: none; }
+        .btn-sky { background: var(--sky); color: white; border: none; padding: 12px 20px; border-radius: 10px; font-weight: bold; cursor: pointer; }
+        .req-box { border-bottom: 1px solid #eee; padding: 10px; display: flex; justify-content: space-between; }
     </style>
 </head>
 <body>
 
 <div class="card">
-    <h2 style="color: var(--gold);">DEPOSIT MONEY</h2>
-    <div id="qrBox"><p>Enter amount to see QR</p></div>
-    
-    <input type="number" id="amt" placeholder="Min ₹100" oninput="showQR()">
-    <div id="payArea" style="display:none;">
-        <input type="text" id="utr" maxlength="12" placeholder="Enter 12-Digit UTR">
-        <button class="btn" onclick="sendReq()">SUBMIT PAYMENT</button>
-    </div>
+    <h2>MY STOCK: <span id="stkVal" class="stk-txt">₹0</span></h2>
+    <input type="text" id="newUpi" placeholder="example@ybl">
+    <button class="btn-sky" onclick="saveAdminUpi()">UPDATE ADMIN UPI</button>
+</div>
 
-    <div class="status-box" id="hist"></div>
+<div class="card">
+    <h3>Buy Stock (Super Admin QR)</h3>
+    <input type="number" id="buyAmt" placeholder="Amount" oninput="genSuperQR()">
+    <div id="sqrContainer" style="margin:10px;"></div>
+    <input type="text" id="adminUtr" placeholder="Enter UTR">
+    <button class="btn-sky" style="background:var(--gold)" onclick="reqStock()">REQUEST REFILL</button>
+</div>
+
+<div class="card">
+    <h3>User Requests</h3>
+    <div id="uReqList"></div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, push, onValue, serverTimestamp, query, orderByChild, equalTo } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, increment, push, serverTimestamp, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
+        authDomain: "test-eb5e7.firebaseapp.com", 
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
+        projectId: "test-eb5e7", 
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
+    };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
+    let SUPER_UPI = "";
+    const AID = "admin_01";
 
-    let ADM_UPI = "";
-    const UID = "user_test_01"; // Replace with actual logged-in user UID
+    onValue(ref(db, "settings/super_upi"), s => { SUPER_UPI = s.val(); });
+    onValue(ref(db, `admins/${AID}/stock`), s => { document.getElementById('stkVal').innerText = "₹" + (s.val() || 0); });
 
-    onValue(ref(db, "admin_settings/upi"), s => { if(s.exists()) ADM_UPI = s.val().id; });
-
-    window.showQR = () => {
-        const a = document.getElementById('amt').value;
-        if(a >= 100 && ADM_UPI) {
-            document.getElementById('qrBox').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent('upi://pay?pa='+ADM_UPI+'&am='+a)}">`;
-            document.getElementById('payArea').style.display = 'block';
-        }
+    window.saveAdminUpi = () => {
+        update(ref(db, "settings"), { admin_upi: document.getElementById('newUpi').value });
+        alert("Admin UPI Live!");
     };
 
-    window.sendReq = () => {
-        const u = document.getElementById('utr').value;
-        if(u.length < 12) return alert("Invalid UTR");
-        push(ref(db, "deposit_requests"), { uid: UID, amount: parseFloat(document.getElementById('amt').value), utr: u, status: "pending", time: serverTimestamp() });
+    window.genSuperQR = () => {
+        const a = document.getElementById('buyAmt').value;
+        if(a > 0 && SUPER_UPI) document.getElementById('sqrContainer').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent('upi://pay?pa='+SUPER_UPI+'&am='+a)}" width="150">`;
+    };
+
+    window.reqStock = () => {
+        push(ref(db, "stock_requests"), { adminId: AID, amount: parseFloat(document.getElementById('buyAmt').value), utr: document.getElementById('adminUtr').value, status: "pending", time: serverTimestamp() });
         alert("Request Sent!");
     };
 
-    onValue(query(ref(db, "deposit_requests"), orderByChild("uid"), equalTo(UID)), s => {
-        let h = "<b>History:</b>";
-        s.forEach(c => { h += `<div class="row"><span>₹${c.val().amount}</span><b>${c.val().status}</b></div>`; });
-        document.getElementById('hist').innerHTML = h;
+    onValue(ref(db, "user_requests"), s => {
+        let h = "";
+        s.forEach(c => {
+            const d = c.val();
+            if(d.status === "pending") h += `<div class="req-box"><span>₹${d.amount}</span> <button class="btn-sky" style="background:green" onclick="approveUser('${c.key}','${d.uid}',${d.amount})">Approve</button></div>`;
+        });
+        document.getElementById('uReqList').innerHTML = h || "No requests";
     });
+
+    window.approveUser = async (rid, uid, amt) => {
+        const s = await get(ref(db, `admins/${AID}/stock`));
+        if((s.val() || 0) < amt) return alert("Low Stock!");
+        await update(ref(db, `admins/${AID}`), { stock: increment(-amt) });
+        await update(ref(db, `user_wallet/${uid}`), { balance: increment(amt) });
+        update(ref(db, `user_requests/${rid}`), { status: "approved" });
+    };
 </script>
 </body>
 </html>
