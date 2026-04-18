@@ -64,7 +64,6 @@
     let SUPER_UPI = "";
     const AID = "admin_01";
 
-    // Load Super Admin UPI & My Stock
     onValue(ref(db, "settings/super_upi"), s => { SUPER_UPI = s.val(); });
     onValue(ref(db, `admins/${AID}/stock`), s => { document.getElementById('stkVal').innerText = "₹" + (s.val() || 0); });
 
@@ -88,12 +87,11 @@
         const amt = parseFloat(document.getElementById('buyAmt').value);
         const utr = document.getElementById('adminUtr').value;
         if(!amt || utr.length < 10) return alert("Please enter valid Amount and UTR");
-        
         push(ref(db, "stock_requests"), { adminId: AID, amount: amt, utr: utr, status: "pending", time: serverTimestamp() });
-        alert("Refill Request Sent to Super Admin!");
+        alert("Refill Request Sent!");
     };
 
-    // User Requests with UTR and Cancel Option
+    // FIX: Show Phone, UTR and Handle Cancel safely
     onValue(ref(db, "user_requests"), s => {
         let h = "";
         s.forEach(c => {
@@ -103,8 +101,8 @@
                 <div class="req-box">
                     <div class="req-info">
                         <b>₹${d.amount}</b>
+                        <small>Phone: <span style="color:var(--sky)">${d.phone || 'N/A'}</span></small>
                         <small>UTR: ${d.utr}</small>
-                        <small>User ID: ${d.uid}</small>
                     </div>
                     <div class="action-btns">
                         <button class="approve-btn" onclick="approveUser('${c.key}','${d.uid}',${d.amount})">Approve</button>
@@ -118,24 +116,25 @@
 
     window.approveUser = async (rid, uid, amt) => {
         const s = await get(ref(db, `admins/${AID}/stock`));
-        if((s.val() || 0) < amt) return alert("Low Stock! Please refill first.");
+        if((s.val() || 0) < amt) return alert("Low Stock!");
         
-        if(confirm("Are you sure you want to APPROVE this payment?")) {
+        if(confirm("Approve this deposit?")) {
             await update(ref(db, `admins/${AID}`), { stock: increment(-amt) });
             await update(ref(db, `user_wallet/${uid}`), { balance: increment(amt) });
             await update(ref(db, `user_requests/${rid}`), { status: "approved" });
-            alert("Payment Approved!");
+            alert("Balance Added!");
         }
     };
 
+    // FIX: Only update request status, do not touch wallet balance
     window.cancelUser = async (rid) => {
-        const reason = prompt("Enter reason for rejection (Optional):");
-        if(confirm("Are you sure you want to CANCEL this payment?")) {
+        const reason = prompt("Enter rejection reason:");
+        if(confirm("Reject this order? (User's existing balance won't be affected)")) {
             await update(ref(db, `user_requests/${rid}`), { 
                 status: "rejected", 
-                reason: reason || "Payment not received" 
+                reason: reason || "Invalid Payment Details" 
             });
-            alert("Payment Rejected!");
+            alert("Deposit Cancelled!");
         }
     };
 </script>
