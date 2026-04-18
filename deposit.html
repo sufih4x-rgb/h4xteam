@@ -7,38 +7,51 @@
     <style>
         :root { --gold: #d4af37; --sky: #00d2ff; --white: #ffffff; }
         body { background: #fdfdfd; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; text-align: center; }
-        .card { background: var(--white); border-radius: 30px; padding: 30px; max-width: 400px; margin: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; }
+        .card { background: var(--white); border-radius: 30px; padding: 30px; max-width: 400px; margin: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; position: relative; }
         h2 { color: var(--gold); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
         #qrBox img { width: 230px; border-radius: 20px; border: 5px solid var(--gold); padding: 10px; background: white; box-shadow: 0 10px 20px rgba(212, 175, 55, 0.2); }
-        input { width: 100%; padding: 15px; margin: 15px 0; border-radius: 12px; border: 2px solid #eee; box-sizing: border-box; font-size: 16px; outline: none; font-weight: 600; }
-        .btn-sky { width: 100%; padding: 18px; border-radius: 15px; border: none; background: var(--sky); color: white; font-weight: 800; cursor: pointer; font-size: 16px; box-shadow: 0 8px 20px rgba(0, 210, 255, 0.3); }
-        .row { display: flex; justify-content: space-between; padding: 12px; background: #fff; border-radius: 10px; margin-top: 10px; border: 1px solid #f5f5f5; font-size: 14px; }
+        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 2px solid #eee; box-sizing: border-box; font-size: 16px; outline: none; font-weight: 600; transition: 0.3s; }
+        input:focus { border-color: var(--gold); }
+        .btn-sky { width: 100%; padding: 18px; border-radius: 15px; border: none; background: var(--sky); color: white; font-weight: 800; cursor: pointer; font-size: 16px; box-shadow: 0 8px 20px rgba(0, 210, 255, 0.3); margin-top: 10px; }
         
-        /* Registration Overlay */
+        /* Neon Glow Status UI */
+        .row { display: flex; justify-content: space-between; padding: 15px; background: #fff; border-radius: 15px; margin-top: 12px; border: 1px solid #f5f5f5; font-size: 14px; align-items: center; }
+        .status-pending { border: 2px solid var(--sky); box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); animation: glow 1.5s infinite alternate; }
+        @keyframes glow { from { box-shadow: 0 0 5px rgba(0, 210, 255, 0.2); } to { box-shadow: 0 0 20px rgba(0, 210, 255, 0.6); } }
+        
         #regOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:100; display:none; flex-direction:column; justify-content:center; align-items:center; }
+        .badge { background: var(--gold); color: white; padding: 4px 10px; border-radius: 20px; font-size: 10px; }
     </style>
 </head>
 <body>
 
 <div id="regOverlay">
     <div class="card">
-        <h2>Register</h2>
-        <p>Enter your Mobile Number to continue</p>
+        <h2>Verify Identity</h2>
+        <p style="color:#666; font-size: 14px;">Please link your Email & Phone</p>
+        <input type="email" id="regEmail" placeholder="Email Address">
         <input type="number" id="regPhone" placeholder="10-Digit Mobile Number">
-        <button class="btn-sky" onclick="registerUser()">START DEPOSITING</button>
+        <button class="btn-sky" onclick="registerUser()">LINK ACCOUNT</button>
     </div>
 </div>
 
 <div class="card" id="mainContent">
     <h2>Add Cash</h2>
-    <p id="userStatus" style="font-size:12px; color:var(--gold); font-weight:bold;"></p>
+    <div style="margin-bottom: 15px;">
+        <span id="displayMail" class="badge">Checking...</span>
+        <span id="displayPhone" class="badge">...</span>
+    </div>
+
     <div id="qrBox"><p style="color:#aaa;">Enter amount to see QR</p></div>
     <input type="number" id="amt" placeholder="Enter Amount (Min ₹100)" oninput="generateUserQR()">
+    
     <div id="payFields" style="display:none;">
         <input type="text" id="utr" placeholder="Enter 12-Digit UTR" maxlength="12">
         <button class="btn-sky" onclick="submitToAdmin()">SUBMIT PAYMENT</button>
     </div>
-    <div id="userHistory" style="margin-top:20px;"></div>
+
+    <h3 style="margin-top:30px; font-size:16px; color:#999;">Transaction History</h3>
+    <div id="userHistory"></div>
 </div>
 
 <script type="module">
@@ -55,16 +68,17 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     
-    const MY_UID = "user_01"; // Aap ise Auth se dynamically bhi le sakte hain
+    const MY_UID = "user_01"; 
     let ADMIN_UPI = "";
-    let USER_PHONE = "";
+    let USER_DATA = { email: "", phone: "" };
 
-    // 1. Check if user is registered
+    // 1. Check Registration & Sync Data
     async function checkRegistration() {
         const snapshot = await get(ref(db, `users/${MY_UID}`));
-        if (snapshot.exists() && snapshot.val().phone) {
-            USER_PHONE = snapshot.val().phone;
-            document.getElementById('userStatus').innerText = "Registered: " + USER_PHONE;
+        if (snapshot.exists() && snapshot.val().phone && snapshot.val().email) {
+            USER_DATA = snapshot.val();
+            document.getElementById('displayMail').innerText = USER_DATA.email;
+            document.getElementById('displayPhone').innerText = USER_DATA.phone;
             document.getElementById('regOverlay').style.display = "none";
         } else {
             document.getElementById('regOverlay').style.display = "flex";
@@ -72,13 +86,17 @@
     }
     checkRegistration();
 
-    // 2. Register User
+    // 2. Multi-Field Registration
     window.registerUser = () => {
+        const email = document.getElementById('regEmail').value;
         const phone = document.getElementById('regPhone').value;
-        if (phone.length !== 10) return alert("Please enter valid 10-digit number!");
         
-        set(ref(db, `users/${MY_UID}`), { phone: phone }).then(() => {
-            alert("Registered Successfully!");
+        if (!email.includes('@') || phone.length !== 10) {
+            return alert("Sorry! You are entering wrong Email or Number.");
+        }
+        
+        set(ref(db, `users/${MY_UID}`), { email: email, phone: phone }).then(() => {
+            alert("Identity Linked Successfully!");
             location.reload();
         });
     };
@@ -100,19 +118,33 @@
         
         push(ref(db, "user_requests"), { 
             uid: MY_UID, 
-            phone: USER_PHONE, // Registerd number yahan attach ho gaya
+            phone: USER_DATA.phone,
+            email: USER_DATA.email,
             amount: parseFloat(a), 
             utr: u, 
             status: "pending", 
             time: serverTimestamp() 
         });
-        alert("Request Sent! Admin will add balance to " + USER_PHONE);
+        alert("Request Sent! Balance will be added to your account.");
     };
 
+    // 3. Glow UI History
     onValue(ref(db, "user_requests"), (s) => {
         let h = "";
-        s.forEach(c => { if(c.val().uid === MY_UID) h += `<div class="row"><span>₹${c.val().amount}</span><b>${c.val().status}</b></div>`; });
-        document.getElementById('userHistory').innerHTML = h;
+        s.forEach(c => { 
+            const d = c.val();
+            if(d.uid === MY_UID) {
+                const glowClass = d.status === "pending" ? "status-pending" : "";
+                h = `<div class="row ${glowClass}">
+                        <div style="text-align:left;">
+                            <span style="font-weight:900; color:var(--gold);">₹${d.amount}</span><br>
+                            <small style="color:#aaa; font-size:10px;">${d.utr}</small>
+                        </div>
+                        <b style="color:${d.status === 'approved' ? '#2ecc71' : (d.status === 'rejected' ? '#e74c3c' : 'var(--sky)')}">${d.status.toUpperCase()}</b>
+                    </div>` + h; 
+            }
+        });
+        document.getElementById('userHistory').innerHTML = h || "<p style='color:#ccc;'>No History</p>";
     });
 </script>
 </body>
