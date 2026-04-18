@@ -27,15 +27,7 @@
         .wallet-card { margin: 10px 20px; padding: 25px; background: linear-gradient(135deg, var(--primary), var(--secondary)); border-radius: 24px; color: white; position: relative; overflow: hidden; }
         .balance-val { font-size: 40px; font-weight: 800; margin: 10px 0; display: block; }
         
-        /* 🔒 SECRET VAULT STYLING */
-        #secretVault { 
-            display: none; 
-            margin: 15px 20px; 
-            padding: 15px; 
-            background: #f1f5f9; 
-            border-radius: 18px; 
-            border: 1px dashed #cbd5e1;
-        }
+        #secretVault { display: none; margin: 15px 20px; padding: 15px; background: #f1f5f9; border-radius: 18px; border: 1px dashed #cbd5e1; }
         .vault-title { font-size: 10px; font-weight: 800; color: #64748b; letter-spacing: 1px; }
         .v-input-group { display: flex; gap: 8px; margin-top: 10px; }
         .v-input-group input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 12px; font-size: 13px; outline: none; font-weight: 600; }
@@ -94,7 +86,7 @@
     </div>
     <div id="chat-messages" style="flex:1; padding:10px; overflow-y:auto; background:#f9f9f9; display:flex; flex-direction:column; gap:8px;"></div>
     <div style="padding:10px; display:flex; gap:5px; border-top:1px solid #eee;">
-        <input type="text" id="chat-input" placeholder="Ask anything..." style="flex:1; border:1px solid #ddd; padding:8px; border-radius:20px;">
+        <input type="text" id="chat-input" placeholder="Ask anything...">
         <button id="send-chat" style="background:var(--primary); color:white; border:none; padding:8px 15px; border-radius:20px;">Send</button>
     </div>
 </div>
@@ -113,7 +105,7 @@
         <span class="balance-val">₹<span id="mainBal">0.00</span></span>
         <div style="display: flex; justify-content: space-between; font-size: 10px; font-weight: 700;">
             <span>UID: <span id="mainUid">...</span></span>
-            <span onclick="triggerSecretVault()" style="background: #facc15; color: #000; padding: 2px 8px; border-radius: 10px; cursor: pointer; user-select: none;">VIP LEVEL <span id="vipLevelDisplay">0</span></span>
+            <span onclick="triggerSecretVault()" style="background: #facc15; color: #000; padding: 2px 8px; border-radius: 10px; cursor: pointer;">VIP LEVEL <span id="vipLevelDisplay">0</span></span>
         </div>
     </div>
 
@@ -137,10 +129,7 @@
     </div>
 
     <div style="padding: 0 20px; margin-bottom: 25px;">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h3 style="font-size: 15px; margin:0;">🏆 Top Winners</h3>
-            <span style="font-size: 9px; color:var(--success); font-weight:800;">● LIVE UPDATING</span>
-        </div>
+        <h3 style="font-size: 15px; margin-bottom:10px;">🏆 Top Winners</h3>
         <div id="leaderboardList" class="lead-card"></div>
     </div>
 
@@ -150,10 +139,6 @@
             <div><h4 style="margin:0; font-size:14px;">Color Prediction</h4><p style="margin:3px 0 0; font-size:10px; color:var(--text-muted);">Predict & Win 2X</p></div>
             <div class="game-img-box"><img src="https://firebasestorage.googleapis.com/v0/b/test-eb5e7.appspot.com/o/unnamed.jpg?alt=media&token=e9f5c3a0-ccc5-4859-abd5-e7cefe3189e7"></div>
         </a>
-        <a href="mines.html" class="game-card" style="border-left: 4px solid var(--danger);">
-            <div><h4 style="margin:0; font-size:14px;">Mines Blast</h4><p style="margin:3px 0 0; font-size:10px; color:var(--text-muted);">Avoid Mines, Win Big</p></div>
-            <div class="game-img-box"><img src="https://firebasestorage.googleapis.com/v0/b/test-eb5e7.appspot.com/o/unnamed%20(1).jpg?alt=media&token=182c8a69-303e-4c60-9edf-a6e54728c94b"></div>
-        </a>
         <a href="allgames.html" class="btn-all-games">EXPLORE ALL GAMES ✨</a>
     </div>
 </div>
@@ -161,106 +146,70 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, push, set, serverTimestamp, update, increment, runTransaction } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, push, set, serverTimestamp, update, increment, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
+        authDomain: "test-eb5e7.firebaseapp.com", 
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
+        projectId: "test-eb5e7", 
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
+    };
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getDatabase(app);
 
-    // --- SECRET VAULT LOGIC ---
-    let clickCount = 0;
-    let clickTimer;
-    window.triggerSecretVault = () => {
-        clickCount++;
-        clearTimeout(clickTimer);
-        if (clickCount === 3) {
-            const v = document.getElementById('secretVault');
-            v.style.display = (v.style.display === 'block') ? 'none' : 'block';
-            clickCount = 0;
-        }
-        clickTimer = setTimeout(() => { clickCount = 0; }, 2000);
-    };
-
-    window.moveMoney = (type) => {
-        const amt = parseFloat(document.getElementById('vAmount').value);
-        if(!amt || amt <= 0) return;
-
-        const userRef = ref(db, `users/${auth.currentUser.uid}`);
-        runTransaction(userRef, (u) => {
-            if (u) {
-                if (type === 'deposit') {
-                    if (u.balance >= amt) {
-                        u.balance -= amt;
-                        u.vault_balance = (u.vault_balance || 0) + amt;
-                    } else { alert("Insufficient Balance!"); return; }
-                } else {
-                    if ((u.vault_balance || 0) >= amt) {
-                        u.vault_balance -= amt;
-                        u.balance = (u.balance || 0) + amt;
-                    } else { alert("Storage is Empty!"); return; }
-                }
-            }
-            return u;
-        }).then(() => {
-            document.getElementById('vAmount').value = '';
-        });
-    };
-
-    // Leaderboard Data Logic
-    function updateLeaderboard(allUsers) {
-        const fakeData = [{ name: "Suresh_8**", win: 92450 }, { name: "Ankit_7**", win: 81200 }, { name: "Rahul_Q**", win: 65400 }, { name: "Priya_9**", win: 48000 }];
-        let realWinners = [];
-        for (let id in allUsers) {
-            if (allUsers[id].totalWin > 500) {
-                realWinners.push({ name: (allUsers[id].displayName || "User") + "****", win: allUsers[id].totalWin });
-            }
-        }
-        let combined = [...realWinners, ...fakeData].sort((a, b) => b.win - a.win).slice(0, 10);
-        let html = "";
-        combined.forEach((u, i) => {
-            const r = i + 1;
-            html += `<div class="lead-item">
-                <div class="lead-rank ${r<=3?'rank-'+r:''}">${r}</div>
-                <div class="lead-avatar">${u.name.charAt(0)}</div>
-                <div class="lead-info">
-                    <span class="lead-name">${u.name}</span>
-                    <span class="lead-win">Win: ₹${u.win.toLocaleString()}</span>
-                </div>
-                ${r===1?'👑':''}
-            </div>`;
-        });
-        document.getElementById('leaderboardList').innerHTML = html;
-    }
-
+    // --- MAIN DATA SYNC ---
     onAuthStateChanged(auth, user => {
         if (!user) return location.href = 'index.html';
-        
-        onValue(ref(db, 'users'), snap => {
-            const users = snap.val() || {};
-            const d = users[user.uid] || {};
-            if(d.isBanned === true) return signOut(auth).then(() => location.href = 'index.html');
-            updateLeaderboard(users);
+        const uid = user.uid;
 
-            // VIP Logic
-            let currentVip = d.vip || 0;
-            let bal = d.balance || 0;
-            let newVip = currentVip;
-            if (bal >= 30000) newVip = 3; else if (bal >= 10000) newVip = 2; else if (bal >= 1000) newVip = 1;
-            if (newVip > currentVip) update(ref(db, `users/${user.uid}`), { vip: newVip });
+        // 1. Sync Live Balance
+        onValue(ref(db, `user_wallet/${uid}/balance`), (snap) => {
+            const bal = snap.val() || 0;
+            document.getElementById('mainBal').innerText = parseFloat(bal).toFixed(2);
+        });
 
-            // UI UPDATES
-            document.getElementById('mainBal').innerText = (d.balance || 0).toFixed(2);
+        // 2. Sync User Info & Vault
+        onValue(ref(db, `users/${uid}`), (snap) => {
+            const d = snap.val() || {};
+            if(d.isBanned === true) { signOut(auth); location.href = 'index.html'; }
+
             document.getElementById('vaultBal').innerText = "₹" + (d.vault_balance || 0).toFixed(2);
-            document.getElementById('mainUid').innerText = user.uid.substring(0,8).toUpperCase();
+            document.getElementById('mainUid').innerText = uid.substring(0,8).toUpperCase();
             document.getElementById('sideName').innerText = d.displayName || user.email.split('@')[0];
             document.getElementById('sideEmail').innerText = user.email;
-            document.getElementById('vipLevelDisplay').innerText = newVip;
+            document.getElementById('vipLevelDisplay').innerText = d.vip || 0;
             document.getElementById('userAvatarSmall').innerText = (d.displayName || 'U').charAt(0).toUpperCase();
         });
 
-        // CHAT LOGIC
-        onValue(ref(db, `admin_chats/${user.uid}`), (snapshot) => {
+        // 3. Vault Logic (Updated to move money from user_wallet)
+        window.moveMoney = async (type) => {
+            const amt = parseFloat(document.getElementById('vAmount').value);
+            if(!amt || amt <= 0) return;
+
+            const walletSnap = await get(ref(db, `user_wallet/${uid}/balance`));
+            const userSnap = await get(ref(db, `users/${uid}/vault_balance`));
+            
+            let curBal = walletSnap.val() || 0;
+            let curVault = userSnap.val() || 0;
+
+            if (type === 'deposit') {
+                if (curBal >= amt) {
+                    await update(ref(db, `user_wallet/${uid}`), { balance: increment(-amt) });
+                    await update(ref(db, `users/${uid}`), { vault_balance: increment(amt) });
+                } else { alert("Insufficient Balance!"); }
+            } else {
+                if (curVault >= amt) {
+                    await update(ref(db, `users/${uid}`), { vault_balance: increment(-amt) });
+                    await update(ref(db, `user_wallet/${uid}`), { balance: increment(amt) });
+                } else { alert("Vault is Empty!"); }
+            }
+            document.getElementById('vAmount').value = '';
+        };
+
+        // Chat Logic
+        onValue(ref(db, `admin_chats/${uid}`), (snapshot) => {
             const chatDiv = document.getElementById('chat-messages');
             chatDiv.innerHTML = '';
             snapshot.forEach(c => {
@@ -276,12 +225,13 @@
         document.getElementById('send-chat').onclick = () => {
             const txt = document.getElementById('chat-input').value;
             if(txt) {
-                push(ref(db, `admin_chats/${user.uid}`), { text: txt, role: 'user', timestamp: serverTimestamp() });
+                push(ref(db, `admin_chats/${uid}`), { text: txt, role: 'user', timestamp: serverTimestamp() });
                 document.getElementById('chat-input').value = '';
             }
         };
     });
 
+    // Helper UI Functions
     window.toggleSidebar = () => {
         document.getElementById('sidebar').classList.toggle('active');
         document.getElementById('sidebarOverlay').classList.toggle('active');
@@ -291,17 +241,29 @@
         c.style.display = c.style.display === 'flex' ? 'none' : 'flex';
     };
     window.logout = () => signOut(auth).then(() => location.href = 'index.html');
-
-    // FAKE TICKER
-    setInterval(() => {
-        const names = ["Ankit", "Rahul", "Priya", "Vikram", "Neha"];
-        const ticker = document.getElementById('tickerContent');
-        let html = "";
-        for(let i=0; i<10; i++) {
-            html += `<span class="ticker-item">🎉 User ${names[Math.floor(Math.random()*5)]}**** withdrawn ₹${Math.floor(Math.random()*2000)+100}.00!</span>`;
+    
+    let clickCount = 0;
+    window.triggerSecretVault = () => {
+        clickCount++;
+        if (clickCount === 3) {
+            const v = document.getElementById('secretVault');
+            v.style.display = (v.style.display === 'block') ? 'none' : 'block';
+            clickCount = 0;
         }
-        ticker.innerHTML = html;
-    }, 10000);
+        setTimeout(() => { clickCount = 0; }, 2000);
+    };
+
+    // Leaderboard
+    onValue(ref(db, 'users'), snap => {
+        const users = snap.val() || {};
+        const fakeData = [{ name: "Suresh_8**", win: 92450 }, { name: "Ankit_7**", win: 81200 }];
+        let combined = [...fakeData].sort((a, b) => b.win - a.win);
+        let html = "";
+        combined.forEach((u, i) => {
+            html += `<div class="lead-item"><div class="lead-rank">${i+1}</div><div class="lead-avatar">${u.name[0]}</div><div class="lead-info"><span class="lead-name">${u.name}</span><span class="lead-win">Win: ₹${u.win}</span></div></div>`;
+        });
+        document.getElementById('leaderboardList').innerHTML = html;
+    });
 </script>
 </body>
 </html>
