@@ -142,25 +142,37 @@ button{
 <div class="container">
 
 <!-- SETTINGS -->
+
 <div class="card">
 
 <h2>Admin Panel</h2>
 
 <h3>Payment Settings</h3>
 
-<input type="text" id="upi" placeholder="Enter Admin UPI">
+<input type="text"
+id="upi"
+placeholder="Enter Admin UPI">
 
-<input type="number" id="minAmt" placeholder="Minimum Amount">
+<input type="number"
+id="minAmt"
+placeholder="Minimum Amount">
 
-<input type="number" id="maxAmt" placeholder="Maximum Amount">
+<input type="number"
+id="maxAmt"
+placeholder="Maximum Amount">
 
-<button class="saveBtn" onclick="saveSettings()">
+<button
+class="saveBtn"
+onclick="saveSettings()">
 SAVE SETTINGS
 </button>
 
 </div>
 
+
+
 <!-- REQUESTS -->
+
 <div class="card">
 
 <h3>Deposit Requests</h3>
@@ -171,9 +183,13 @@ SAVE SETTINGS
 
 </div>
 
+
+
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { initializeApp }
+
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
 import {
 
@@ -184,13 +200,15 @@ set,
 update,
 get
 
-} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+}
+
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 
 
-// =======================
+// ======================
 // FIREBASE CONFIG
-// =======================
+// ======================
 
 const firebaseConfig = {
 
@@ -214,9 +232,9 @@ measurementId: "G-ECKCTBLQJ8"
 
 
 
-// =======================
+// ======================
 // INIT
-// =======================
+// ======================
 
 const app = initializeApp(firebaseConfig);
 
@@ -224,9 +242,9 @@ const db = getDatabase(app);
 
 
 
-// =======================
+// ======================
 // LOAD SETTINGS
-// =======================
+// ======================
 
 onValue(ref(db,"settings"),(snap)=>{
 
@@ -249,11 +267,11 @@ d.max_amount || 50000;
 
 
 
-// =======================
+// ======================
 // SAVE SETTINGS
-// =======================
+// ======================
 
-window.saveSettings = () => {
+window.saveSettings = async () => {
 
 const upi =
 document.getElementById('upi').value;
@@ -276,25 +294,23 @@ return alert("Minimum should be smaller");
 
 }
 
-set(ref(db,"settings"),{
+await set(ref(db,"settings"),{
 
 admin_upi:upi,
 min_amount:min,
 max_amount:max
 
-}).then(()=>{
+});
 
 alert("Settings Saved");
-
-});
 
 };
 
 
 
-// =======================
+// ======================
 // LOAD REQUESTS
-// =======================
+// ======================
 
 onValue(ref(db,"user_requests"),(snap)=>{
 
@@ -335,31 +351,38 @@ html = `
 </div>
 
 <div class="row">
+<div class="label">UID</div>
+<div class="value">${d.uid}</div>
+</div>
+
+<div class="row">
 <div class="label">Date</div>
 <div class="value">${date}</div>
 </div>
 
 <div class="status">
-Status: ${d.status.toUpperCase()}
+STATUS :
+${d.status.toUpperCase()}
 </div>
 
 <textarea
 id="reason_${id}"
-placeholder="Reject reason"
-></textarea>
+placeholder="Reject reason"></textarea>
 
 <button
 class="acceptBtn"
-onclick="approveRequest('${id}')"
->
-ACCEPT
+onclick="approveRequest('${id}')">
+
+ACCEPT PAYMENT
+
 </button>
 
 <button
 class="rejectBtn"
-onclick="rejectRequest('${id}')"
->
-REJECT
+onclick="rejectRequest('${id}')">
+
+REJECT PAYMENT
+
 </button>
 
 </div>
@@ -369,15 +392,20 @@ REJECT
 });
 
 document.getElementById('requests').innerHTML =
-html || `<div class="empty">No Requests</div>`;
+
+html ||
+
+`<div class="empty">
+No Requests
+</div>`;
 
 });
 
 
 
-// =======================
+// ======================
 // APPROVE PAYMENT
-// =======================
+// ======================
 
 window.approveRequest = async (id) => {
 
@@ -397,11 +425,16 @@ return alert("Request not found");
 
 const data = snap.val();
 
+
+
+// PREVENT DOUBLE APPROVE
 if(data.status === "approved"){
 
 return alert("Already Approved");
 
 }
+
+
 
 const uid = data.uid;
 
@@ -410,21 +443,23 @@ Number(data.amount || 0);
 
 
 
-// USER BALANCE REF
-const balanceRef =
-ref(db, `users/${uid}/balance`);
+// USER WALLET
+const walletRef =
+ref(db, `user_wallet/${uid}/balance`);
 
-const balanceSnap =
-await get(balanceRef);
+const walletSnap =
+await get(walletRef);
 
 let currentBalance = 0;
 
-if(balanceSnap.exists()){
+if(walletSnap.exists()){
 
 currentBalance =
-Number(balanceSnap.val());
+Number(walletSnap.val());
 
 }
+
+
 
 const newBalance =
 currentBalance + amount;
@@ -432,17 +467,19 @@ currentBalance + amount;
 
 
 // UPDATE BALANCE
-await set(balanceRef, newBalance);
+await set(walletRef, newBalance);
 
 
 
-// UPDATE REQUEST STATUS
+// UPDATE STATUS
 await update(requestRef, {
 
 status:"approved",
 notice:""
 
 });
+
+
 
 alert("Payment Approved & Balance Added");
 
@@ -458,9 +495,9 @@ alert("Error");
 
 
 
-// =======================
+// ======================
 // REJECT PAYMENT
-// =======================
+// ======================
 
 window.rejectRequest = async (id) => {
 
