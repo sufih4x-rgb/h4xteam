@@ -1,151 +1,602 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Deposit | Luxury Royale</title>
-    <style>
-        :root { --gold: #d4af37; --sky: #00d2ff; --white: #ffffff; }
-        body { background: #fdfdfd; font-family: 'Segoe UI', sans-serif; margin: 0; padding: 20px; text-align: center; }
-        .card { background: var(--white); border-radius: 30px; padding: 30px; max-width: 400px; margin: auto; box-shadow: 0 20px 40px rgba(0,0,0,0.05); border: 1px solid #f0f0f0; position: relative; }
-        h2 { color: var(--gold); font-weight: 800; text-transform: uppercase; letter-spacing: 2px; }
-        #qrBox img { width: 230px; border-radius: 20px; border: 5px solid var(--gold); padding: 10px; background: white; box-shadow: 0 10px 20px rgba(212, 175, 55, 0.2); }
-        input { width: 100%; padding: 15px; margin: 10px 0; border-radius: 12px; border: 2px solid #eee; box-sizing: border-box; font-size: 16px; outline: none; font-weight: 600; transition: 0.3s; }
-        input:focus { border-color: var(--gold); }
-        .btn-sky { width: 100%; padding: 18px; border-radius: 15px; border: none; background: var(--sky); color: white; font-weight: 800; cursor: pointer; font-size: 16px; box-shadow: 0 8px 20px rgba(0, 210, 255, 0.3); margin-top: 10px; }
-        
-        /* Neon Glow Status UI */
-        .row { display: flex; justify-content: space-between; padding: 15px; background: #fff; border-radius: 15px; margin-top: 12px; border: 1px solid #f5f5f5; font-size: 14px; align-items: center; }
-        .status-pending { border: 2px solid var(--sky); box-shadow: 0 0 15px rgba(0, 210, 255, 0.4); animation: glow 1.5s infinite alternate; }
-        @keyframes glow { from { box-shadow: 0 0 5px rgba(0, 210, 255, 0.2); } to { box-shadow: 0 0 20px rgba(0, 210, 255, 0.6); } }
-        
-        #regOverlay { position: fixed; top:0; left:0; width:100%; height:100%; background:white; z-index:100; display:none; flex-direction:column; justify-content:center; align-items:center; }
-        .badge { background: var(--gold); color: white; padding: 4px 10px; border-radius: 20px; font-size: 10px; }
-    </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Deposit Panel</title>
+
+<style>
+:root{
+    --white:#ffffff;
+    --light:#f5f7fb;
+    --border:#e5e7eb;
+    --text:#111827;
+    --gray:#6b7280;
+    --green:#22c55e;
+    --red:#ef4444;
+    --blue:#3b82f6;
+}
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    background:linear-gradient(135deg,#f8fafc,#eef2ff);
+    min-height:100vh;
+    padding:20px;
+}
+
+.card{
+    max-width:420px;
+    margin:auto;
+    background:var(--white);
+    border-radius:28px;
+    padding:25px;
+    box-shadow:0 10px 40px rgba(0,0,0,0.08);
+    border:1px solid #f1f1f1;
+}
+
+h2{
+    text-align:center;
+    color:var(--text);
+    font-size:28px;
+    font-weight:800;
+    margin-bottom:10px;
+}
+
+.sub{
+    text-align:center;
+    color:var(--gray);
+    margin-bottom:25px;
+    font-size:14px;
+}
+
+.profile{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+    margin-bottom:20px;
+}
+
+.badge{
+    background:#f3f4f6;
+    padding:8px 14px;
+    border-radius:30px;
+    font-size:12px;
+    font-weight:600;
+    color:#374151;
+}
+
+#qrBox{
+    margin-top:15px;
+}
+
+#qrBox img{
+    width:240px;
+    background:white;
+    padding:15px;
+    border-radius:25px;
+    border:1px solid #eee;
+    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+}
+
+input{
+    width:100%;
+    padding:16px;
+    border-radius:15px;
+    border:2px solid var(--border);
+    margin-top:12px;
+    outline:none;
+    font-size:15px;
+    font-weight:600;
+    transition:0.3s;
+    background:white;
+}
+
+input:focus{
+    border-color:var(--blue);
+}
+
+button{
+    width:100%;
+    padding:17px;
+    border:none;
+    border-radius:15px;
+    background:var(--blue);
+    color:white;
+    font-size:16px;
+    font-weight:800;
+    margin-top:15px;
+    cursor:pointer;
+    transition:0.3s;
+}
+
+button:hover{
+    transform:translateY(-2px);
+}
+
+.limitBox{
+    background:#f9fafb;
+    border-radius:15px;
+    padding:14px;
+    margin-top:15px;
+    font-size:13px;
+    color:#374151;
+    border:1px solid #eee;
+}
+
+.historyTitle{
+    margin-top:28px;
+    margin-bottom:15px;
+    font-size:18px;
+    font-weight:800;
+    color:#111827;
+}
+
+.row{
+    background:white;
+    border-radius:20px;
+    padding:15px;
+    margin-bottom:12px;
+    border:1px solid #eee;
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    box-shadow:0 4px 12px rgba(0,0,0,0.04);
+}
+
+.left{
+    text-align:left;
+}
+
+.amount{
+    font-size:20px;
+    font-weight:900;
+    color:#111827;
+}
+
+.small{
+    color:#9ca3af;
+    font-size:11px;
+    margin-top:4px;
+}
+
+.status{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    font-weight:800;
+    font-size:13px;
+}
+
+.dot{
+    width:12px;
+    height:12px;
+    border-radius:50%;
+}
+
+.green{
+    background:var(--green);
+    box-shadow:0 0 12px rgba(34,197,94,0.7);
+}
+
+.red{
+    background:var(--red);
+    box-shadow:0 0 12px rgba(239,68,68,0.7);
+}
+
+.blue{
+    background:var(--blue);
+    box-shadow:0 0 12px rgba(59,130,246,0.7);
+}
+
+.notice{
+    margin-top:7px;
+    color:var(--red);
+    font-size:12px;
+    font-weight:600;
+}
+
+#regOverlay{
+    position:fixed;
+    inset:0;
+    background:white;
+    z-index:999;
+    display:none;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+}
+
+.empty{
+    text-align:center;
+    color:#9ca3af;
+    padding:20px;
+}
+</style>
 </head>
+
 <body>
 
+<!-- REGISTER -->
 <div id="regOverlay">
     <div class="card">
-        <h2>Verify Identity</h2>
-        <p style="color:#666; font-size: 14px;">Please link your Email & Phone</p>
+        <h2>Verify Account</h2>
+        <p class="sub">Link your email and mobile number</p>
+
         <input type="email" id="regEmail" placeholder="Email Address">
-        <input type="number" id="regPhone" placeholder="10-Digit Mobile Number">
-        <button class="btn-sky" onclick="registerUser()">LINK ACCOUNT</button>
+        <input type="number" id="regPhone" placeholder="10 Digit Mobile Number">
+
+        <button onclick="registerUser()">LINK ACCOUNT</button>
     </div>
 </div>
 
-<div class="card" id="mainContent">
+<!-- MAIN -->
+<div class="card">
+
     <h2>Add Cash</h2>
-    <div style="margin-bottom: 15px;">
-        <span id="displayMail" class="badge">Checking...</span>
+    <p class="sub">Fast & Secure Deposit</p>
+
+    <div class="profile">
+        <span id="displayMail" class="badge">Loading...</span>
         <span id="displayPhone" class="badge">...</span>
     </div>
 
-    <div id="qrBox"><p style="color:#aaa;">Enter amount to see QR</p></div>
-    <input type="number" id="amt" placeholder="Enter Amount (Min ₹100)" oninput="generateUserQR()">
-    
-    <div id="payFields" style="display:none;">
-        <input type="text" id="utr" placeholder="Enter 12-Digit UTR" maxlength="12">
-        <button class="btn-sky" onclick="submitToAdmin()">SUBMIT PAYMENT</button>
+    <div class="limitBox">
+        Minimum Deposit:
+        <b>₹<span id="minAmt">100</span></b>
+        <br><br>
+        Maximum Deposit:
+        <b>₹<span id="maxAmt">50000</span></b>
     </div>
 
-    <h3 style="margin-top:30px; font-size:16px; color:#999;">Transaction History</h3>
+    <div id="qrBox">
+        <p style="color:#9ca3af;">Enter amount to generate QR</p>
+    </div>
+
+    <input type="number" id="amt" placeholder="Enter Amount" oninput="generateUserQR()">
+
+    <div id="payFields" style="display:none;">
+        <input type="text" id="utr" maxlength="12" placeholder="Enter 12 Digit UTR">
+
+        <button onclick="submitToAdmin()">
+            SUBMIT PAYMENT
+        </button>
+    </div>
+
+    <div class="historyTitle">Transaction History</div>
+
     <div id="userHistory"></div>
+
 </div>
 
 <script type="module">
-    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, push, set, get, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    const firebaseConfig = { 
-        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
-        authDomain: "test-eb5e7.firebaseapp.com", 
-        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
-        projectId: "test-eb5e7", 
-        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
-    };
-    const app = initializeApp(firebaseConfig);
-    const db = getDatabase(app);
-    
-    const MY_UID = "user_01"; 
-    let ADMIN_UPI = "";
-    let USER_DATA = { email: "", phone: "" };
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
-    // 1. Check Registration & Sync Data
-    async function checkRegistration() {
-        const snapshot = await get(ref(db, `users/${MY_UID}`));
-        if (snapshot.exists() && snapshot.val().phone && snapshot.val().email) {
-            USER_DATA = snapshot.val();
-            document.getElementById('displayMail').innerText = USER_DATA.email;
-            document.getElementById('displayPhone').innerText = USER_DATA.phone;
-            document.getElementById('regOverlay').style.display = "none";
-        } else {
-            document.getElementById('regOverlay').style.display = "flex";
-        }
-    }
-    checkRegistration();
+import {
+getDatabase,
+ref,
+onValue,
+push,
+set,
+get,
+serverTimestamp
+} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // 2. Multi-Field Registration
-    window.registerUser = () => {
-        const email = document.getElementById('regEmail').value;
-        const phone = document.getElementById('regPhone').value;
-        
-        if (!email.includes('@') || phone.length !== 10) {
-            return alert("Sorry! You are entering wrong Email or Number.");
-        }
-        
-        set(ref(db, `users/${MY_UID}`), { email: email, phone: phone }).then(() => {
-            alert("Identity Linked Successfully!");
-            location.reload();
-        });
-    };
+const firebaseConfig = {
+  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+  authDomain: "test-eb5e7.firebaseapp.com",
+  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+  projectId: "test-eb5e7",
+  storageBucket: "test-eb5e7.appspot.com",
+  messagingSenderId: "366282855653",
+  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+  measurementId: "G-ECKCTBLQJ8"
+};
 
-    onValue(ref(db, "settings/admin_upi"), (s) => { if(s.exists()) ADMIN_UPI = s.val(); });
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-    window.generateUserQR = () => {
-        const a = document.getElementById('amt').value;
-        if(a >= 100 && ADMIN_UPI) {
-            document.getElementById('qrBox').innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent('upi://pay?pa='+ADMIN_UPI+'&am='+a+'&cu=INR')}">`;
-            document.getElementById('payFields').style.display = 'block';
-        }
-    };
+const MY_UID = "user_01";
 
-    window.submitToAdmin = () => {
-        const u = document.getElementById('utr').value;
-        const a = document.getElementById('amt').value;
-        if(u.length < 12) return alert("Invalid UTR!");
-        
-        push(ref(db, "user_requests"), { 
-            uid: MY_UID, 
-            phone: USER_DATA.phone,
-            email: USER_DATA.email,
-            amount: parseFloat(a), 
-            utr: u, 
-            status: "pending", 
-            time: serverTimestamp() 
-        });
-        alert("Request Sent! Balance will be added to your account.");
-    };
+let ADMIN_UPI = "";
+let MIN_AMOUNT = 100;
+let MAX_AMOUNT = 50000;
 
-    // 3. Glow UI History
-    onValue(ref(db, "user_requests"), (s) => {
-        let h = "";
-        s.forEach(c => { 
-            const d = c.val();
-            if(d.uid === MY_UID) {
-                const glowClass = d.status === "pending" ? "status-pending" : "";
-                h = `<div class="row ${glowClass}">
-                        <div style="text-align:left;">
-                            <span style="font-weight:900; color:var(--gold);">₹${d.amount}</span><br>
-                            <small style="color:#aaa; font-size:10px;">${d.utr}</small>
-                        </div>
-                        <b style="color:${d.status === 'approved' ? '#2ecc71' : (d.status === 'rejected' ? '#e74c3c' : 'var(--sky)')}">${d.status.toUpperCase()}</b>
-                    </div>` + h; 
-            }
-        });
-        document.getElementById('userHistory').innerHTML = h || "<p style='color:#ccc;'>No History</p>";
-    });
+let USER_DATA = {
+email:"",
+phone:""
+};
+
+
+
+// =========================
+// CHECK USER
+// =========================
+
+async function checkRegistration(){
+
+const snapshot = await get(ref(db, `users/${MY_UID}`));
+
+if(snapshot.exists()){
+
+USER_DATA = snapshot.val();
+
+document.getElementById('displayMail').innerText =
+USER_DATA.email;
+
+document.getElementById('displayPhone').innerText =
+USER_DATA.phone;
+
+document.getElementById('regOverlay').style.display = "none";
+
+}else{
+
+document.getElementById('regOverlay').style.display = "flex";
+
+}
+
+}
+
+checkRegistration();
+
+
+
+// =========================
+// REGISTER
+// =========================
+
+window.registerUser = () => {
+
+const email =
+document.getElementById('regEmail').value;
+
+const phone =
+document.getElementById('regPhone').value;
+
+if(!email.includes("@")){
+
+return alert("Invalid Email");
+
+}
+
+if(phone.length != 10){
+
+return alert("Invalid Mobile Number");
+
+}
+
+set(ref(db, `users/${MY_UID}`), {
+
+email,
+phone
+
+}).then(()=>{
+
+alert("Account Linked Successfully");
+
+location.reload();
+
+});
+
+};
+
+
+
+// =========================
+// ADMIN SETTINGS
+// =========================
+
+onValue(ref(db,"settings"),(snap)=>{
+
+if(snap.exists()){
+
+const data = snap.val();
+
+ADMIN_UPI = data.admin_upi || "";
+
+MIN_AMOUNT = data.min_amount || 100;
+
+MAX_AMOUNT = data.max_amount || 50000;
+
+document.getElementById('minAmt').innerText =
+MIN_AMOUNT;
+
+document.getElementById('maxAmt').innerText =
+MAX_AMOUNT;
+
+}
+
+});
+
+
+
+// =========================
+// AUTO QR
+// =========================
+
+window.generateUserQR = () => {
+
+const amount =
+parseFloat(document.getElementById('amt').value);
+
+if(!amount){
+
+document.getElementById('qrBox').innerHTML =
+`<p style="color:#9ca3af;">Enter amount to generate QR</p>`;
+
+return;
+
+}
+
+if(amount < MIN_AMOUNT){
+
+document.getElementById('qrBox').innerHTML =
+`<p style="color:red;">Minimum ₹${MIN_AMOUNT}</p>`;
+
+return;
+
+}
+
+if(amount > MAX_AMOUNT){
+
+document.getElementById('qrBox').innerHTML =
+`<p style="color:red;">Maximum ₹${MAX_AMOUNT}</p>`;
+
+return;
+
+}
+
+if(ADMIN_UPI){
+
+const upiLink =
+`upi://pay?pa=${ADMIN_UPI}&pn=Deposit&am=${amount}&cu=INR`;
+
+document.getElementById('qrBox').innerHTML =
+
+`<img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiLink)}">`;
+
+document.getElementById('payFields').style.display =
+"block";
+
+}
+
+};
+
+
+
+// =========================
+// SUBMIT REQUEST
+// =========================
+
+window.submitToAdmin = () => {
+
+const utr =
+document.getElementById('utr').value;
+
+const amount =
+parseFloat(document.getElementById('amt').value);
+
+if(utr.length != 12){
+
+return alert("Invalid UTR");
+
+}
+
+push(ref(db,"user_requests"),{
+
+uid:MY_UID,
+email:USER_DATA.email,
+phone:USER_DATA.phone,
+
+amount,
+utr,
+
+status:"pending",
+
+notice:"",
+
+time:Date.now()
+
+});
+
+alert("Payment Request Sent");
+
+document.getElementById('utr').value = "";
+
+};
+
+
+
+// =========================
+// HISTORY
+// =========================
+
+onValue(ref(db,"user_requests"),(snap)=>{
+
+let html = "";
+
+snap.forEach(c=>{
+
+const d = c.val();
+
+if(d.uid === MY_UID){
+
+const date =
+new Date(d.time || Date.now())
+.toLocaleString();
+
+let dot = "blue";
+let text = "PENDING";
+
+if(d.status === "approved"){
+
+dot = "green";
+text = "APPROVED";
+
+}
+
+if(d.status === "rejected"){
+
+dot = "red";
+text = "REJECTED";
+
+}
+
+html = `
+
+<div class="row">
+
+<div class="left">
+
+<div class="amount">
+₹${d.amount}
+</div>
+
+<div class="small">
+UTR: ${d.utr}
+</div>
+
+<div class="small">
+${date}
+</div>
+
+${d.notice ? `
+<div class="notice">
+Reason: ${d.notice}
+</div>
+` : ""}
+
+</div>
+
+<div class="status">
+
+<div class="dot ${dot}"></div>
+
+${text}
+
+</div>
+
+</div>
+
+` + html;
+
+}
+
+});
+
+document.getElementById('userHistory').innerHTML =
+html || `<div class="empty">No Transactions</div>`;
+
+});
+
 </script>
+
 </body>
 </html>
