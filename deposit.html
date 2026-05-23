@@ -1,11 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-<title>Deposit Panel</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>User Deposit Panel</title>
 
 <style>
+
 :root{
     --white:#ffffff;
     --light:#f5f7fb;
@@ -14,7 +16,7 @@
     --gray:#6b7280;
     --green:#22c55e;
     --red:#ef4444;
-    --blue:#3b82f6;
+    --blue:#2563eb;
 }
 
 *{
@@ -25,34 +27,52 @@
 }
 
 body{
-    background:linear-gradient(135deg,#f8fafc,#eef2ff);
+    background:linear-gradient(135deg,#eff6ff,#f8fafc);
     min-height:100vh;
     padding:20px;
 }
 
 .card{
-    max-width:420px;
+    max-width:430px;
     margin:auto;
-    background:var(--white);
+    background:white;
     border-radius:28px;
     padding:25px;
     box-shadow:0 10px 40px rgba(0,0,0,0.08);
-    border:1px solid #f1f1f1;
 }
 
 h2{
     text-align:center;
-    color:var(--text);
     font-size:28px;
     font-weight:800;
-    margin-bottom:10px;
+    color:#111827;
 }
 
 .sub{
     text-align:center;
-    color:var(--gray);
-    margin-bottom:25px;
-    font-size:14px;
+    color:#6b7280;
+    margin-top:6px;
+    margin-bottom:20px;
+}
+
+.balanceBox{
+    background:#111827;
+    color:white;
+    padding:18px;
+    border-radius:20px;
+    text-align:center;
+    margin-bottom:20px;
+}
+
+.balanceLabel{
+    font-size:13px;
+    opacity:0.7;
+}
+
+.balanceAmount{
+    font-size:30px;
+    font-weight:900;
+    margin-top:5px;
 }
 
 .profile{
@@ -68,21 +88,17 @@ h2{
     padding:8px 14px;
     border-radius:30px;
     font-size:12px;
-    font-weight:600;
-    color:#374151;
+    font-weight:700;
 }
 
-#qrBox{
-    margin-top:15px;
-}
-
-#qrBox img{
-    width:240px;
-    background:white;
-    padding:15px;
-    border-radius:25px;
+.limitBox{
+    background:#f9fafb;
     border:1px solid #eee;
-    box-shadow:0 10px 30px rgba(0,0,0,0.08);
+    padding:15px;
+    border-radius:16px;
+    margin-bottom:15px;
+    font-size:14px;
+    color:#374151;
 }
 
 input{
@@ -94,8 +110,6 @@ input{
     outline:none;
     font-size:15px;
     font-weight:600;
-    transition:0.3s;
-    background:white;
 }
 
 input:focus{
@@ -104,34 +118,33 @@ input:focus{
 
 button{
     width:100%;
-    padding:17px;
+    padding:16px;
     border:none;
     border-radius:15px;
     background:var(--blue);
     color:white;
-    font-size:16px;
+    font-size:15px;
     font-weight:800;
-    margin-top:15px;
     cursor:pointer;
-    transition:0.3s;
+    margin-top:14px;
 }
 
-button:hover{
-    transform:translateY(-2px);
+#qrBox{
+    text-align:center;
+    margin-top:20px;
 }
 
-.limitBox{
-    background:#f9fafb;
-    border-radius:15px;
+#qrBox img{
+    width:240px;
+    background:white;
     padding:14px;
-    margin-top:15px;
-    font-size:13px;
-    color:#374151;
+    border-radius:25px;
     border:1px solid #eee;
+    box-shadow:0 10px 25px rgba(0,0,0,0.08);
 }
 
 .historyTitle{
-    margin-top:28px;
+    margin-top:30px;
     margin-bottom:15px;
     font-size:18px;
     font-weight:800;
@@ -140,14 +153,13 @@ button:hover{
 
 .row{
     background:white;
+    border:1px solid #eee;
     border-radius:20px;
     padding:15px;
     margin-bottom:12px;
-    border:1px solid #eee;
     display:flex;
     justify-content:space-between;
     align-items:center;
-    box-shadow:0 4px 12px rgba(0,0,0,0.04);
 }
 
 .left{
@@ -161,9 +173,16 @@ button:hover{
 }
 
 .small{
-    color:#9ca3af;
     font-size:11px;
+    color:#9ca3af;
     margin-top:4px;
+}
+
+.notice{
+    color:var(--red);
+    margin-top:8px;
+    font-size:12px;
+    font-weight:700;
 }
 
 .status{
@@ -192,14 +211,7 @@ button:hover{
 
 .blue{
     background:var(--blue);
-    box-shadow:0 0 12px rgba(59,130,246,0.7);
-}
-
-.notice{
-    margin-top:7px;
-    color:var(--red);
-    font-size:12px;
-    font-weight:600;
+    box-shadow:0 0 12px rgba(37,99,235,0.7);
 }
 
 #regOverlay{
@@ -218,68 +230,165 @@ button:hover{
     color:#9ca3af;
     padding:20px;
 }
+
 </style>
 </head>
 
 <body>
 
 <!-- REGISTER -->
+
 <div id="regOverlay">
-    <div class="card">
-        <h2>Verify Account</h2>
-        <p class="sub">Link your email and mobile number</p>
 
-        <input type="email" id="regEmail" placeholder="Email Address">
-        <input type="number" id="regPhone" placeholder="10 Digit Mobile Number">
-
-        <button onclick="registerUser()">LINK ACCOUNT</button>
-    </div>
-</div>
-
-<!-- MAIN -->
 <div class="card">
 
-    <h2>Add Cash</h2>
-    <p class="sub">Fast & Secure Deposit</p>
+<h2>Verify Account</h2>
 
-    <div class="profile">
-        <span id="displayMail" class="badge">Loading...</span>
-        <span id="displayPhone" class="badge">...</span>
-    </div>
+<p class="sub">
+Link your email and mobile number
+</p>
 
-    <div class="limitBox">
-        Minimum Deposit:
-        <b>₹<span id="minAmt">100</span></b>
-        <br><br>
-        Maximum Deposit:
-        <b>₹<span id="maxAmt">50000</span></b>
-    </div>
+<input type="email"
+id="regEmail"
+placeholder="Email Address">
 
-    <div id="qrBox">
-        <p style="color:#9ca3af;">Enter amount to generate QR</p>
-    </div>
+<input type="number"
+id="regPhone"
+placeholder="10 Digit Mobile Number">
 
-    <input type="number" id="amt" placeholder="Enter Amount" oninput="generateUserQR()">
-
-    <div id="payFields" style="display:none;">
-        <input type="text" id="utr" maxlength="12" placeholder="Enter 12 Digit UTR">
-
-        <button onclick="submitToAdmin()">
-            SUBMIT PAYMENT
-        </button>
-    </div>
-
-    <div class="historyTitle">Transaction History</div>
-
-    <div id="userHistory"></div>
+<button onclick="registerUser()">
+LINK ACCOUNT
+</button>
 
 </div>
+
+</div>
+
+
+
+<!-- MAIN -->
+
+<div class="card">
+
+<h2>Add Cash</h2>
+
+<p class="sub">
+Fast & Secure Deposit
+</p>
+
+
+
+<!-- BALANCE -->
+
+<div class="balanceBox">
+
+<div class="balanceLabel">
+Available Balance
+</div>
+
+<div class="balanceAmount">
+₹<span id="userBalance">0</span>
+</div>
+
+</div>
+
+
+
+<!-- PROFILE -->
+
+<div class="profile">
+
+<span id="displayMail"
+class="badge">
+Loading...
+</span>
+
+<span id="displayPhone"
+class="badge">
+...
+</span>
+
+</div>
+
+
+
+<!-- LIMIT -->
+
+<div class="limitBox">
+
+Minimum Deposit:
+<b>
+₹<span id="minAmt">100</span>
+</b>
+
+<br><br>
+
+Maximum Deposit:
+<b>
+₹<span id="maxAmt">50000</span>
+</b>
+
+</div>
+
+
+
+<!-- QR -->
+
+<div id="qrBox">
+
+<p style="color:#9ca3af;">
+Enter amount to generate QR
+</p>
+
+</div>
+
+
+
+<!-- AMOUNT -->
+
+<input type="number"
+id="amt"
+placeholder="Enter Amount"
+oninput="generateUserQR()">
+
+
+
+<!-- PAYMENT -->
+
+<div id="payFields" style="display:none;">
+
+<input type="text"
+id="utr"
+maxlength="12"
+placeholder="Enter 12 Digit UTR">
+
+<button onclick="submitToAdmin()">
+SUBMIT PAYMENT
+</button>
+
+</div>
+
+
+
+<!-- HISTORY -->
+
+<div class="historyTitle">
+Transaction History
+</div>
+
+<div id="userHistory"></div>
+
+</div>
+
+
 
 <script type="module">
 
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { initializeApp }
+from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 
 import {
+
 getDatabase,
 ref,
 onValue,
@@ -287,58 +396,102 @@ push,
 set,
 get,
 serverTimestamp
+
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+
+
+// ======================
+// FIREBASE CONFIG
+// ======================
+
 const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
+
+apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+
+authDomain: "test-eb5e7.firebaseapp.com",
+
+databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+
+projectId: "test-eb5e7",
+
+storageBucket: "test-eb5e7.appspot.com",
+
+messagingSenderId: "366282855653",
+
+appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+
+measurementId: "G-ECKCTBLQJ8"
+
 };
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+
+
+// ======================
+// INIT
+// ======================
+
+const app =
+initializeApp(firebaseConfig);
+
+const db =
+getDatabase(app);
+
+
+
+// ======================
+// USER ID
+// ======================
 
 const MY_UID = "user_01";
 
+
+
+// ======================
+// VARIABLES
+// ======================
+
 let ADMIN_UPI = "";
+
 let MIN_AMOUNT = 100;
+
 let MAX_AMOUNT = 50000;
 
 let USER_DATA = {
+
 email:"",
 phone:""
+
 };
 
 
 
-// =========================
+// ======================
 // CHECK USER
-// =========================
+// ======================
 
 async function checkRegistration(){
 
-const snapshot = await get(ref(db, `users/${MY_UID}`));
+const snapshot =
+await get(ref(db, `users/${MY_UID}`));
 
 if(snapshot.exists()){
 
 USER_DATA = snapshot.val();
 
-document.getElementById('displayMail').innerText =
-USER_DATA.email;
+document.getElementById('displayMail')
+.innerText = USER_DATA.email;
 
-document.getElementById('displayPhone').innerText =
-USER_DATA.phone;
+document.getElementById('displayPhone')
+.innerText = USER_DATA.phone;
 
-document.getElementById('regOverlay').style.display = "none";
+document.getElementById('regOverlay')
+.style.display = "none";
 
 }else{
 
-document.getElementById('regOverlay').style.display = "flex";
+document.getElementById('regOverlay')
+.style.display = "flex";
 
 }
 
@@ -348,9 +501,9 @@ checkRegistration();
 
 
 
-// =========================
-// REGISTER
-// =========================
+// ======================
+// REGISTER USER
+// ======================
 
 window.registerUser = () => {
 
@@ -375,11 +528,12 @@ return alert("Invalid Mobile Number");
 set(ref(db, `users/${MY_UID}`), {
 
 email,
-phone
+phone,
+balance:0
 
 }).then(()=>{
 
-alert("Account Linked Successfully");
+alert("Account Linked");
 
 location.reload();
 
@@ -389,27 +543,42 @@ location.reload();
 
 
 
-// =========================
-// ADMIN SETTINGS
-// =========================
+// ======================
+// LOAD BALANCE
+// ======================
+
+onValue(ref(db, `users/${MY_UID}/balance`),
+
+(snap)=>{
+
+document.getElementById('userBalance')
+.innerText = snap.val() || 0;
+
+});
+
+
+
+// ======================
+// LOAD SETTINGS
+// ======================
 
 onValue(ref(db,"settings"),(snap)=>{
 
 if(snap.exists()){
 
-const data = snap.val();
+const d = snap.val();
 
-ADMIN_UPI = data.admin_upi || "";
+ADMIN_UPI = d.admin_upi || "";
 
-MIN_AMOUNT = data.min_amount || 100;
+MIN_AMOUNT = d.min_amount || 100;
 
-MAX_AMOUNT = data.max_amount || 50000;
+MAX_AMOUNT = d.max_amount || 50000;
 
-document.getElementById('minAmt').innerText =
-MIN_AMOUNT;
+document.getElementById('minAmt')
+.innerText = MIN_AMOUNT;
 
-document.getElementById('maxAmt').innerText =
-MAX_AMOUNT;
+document.getElementById('maxAmt')
+.innerText = MAX_AMOUNT;
 
 }
 
@@ -417,19 +586,24 @@ MAX_AMOUNT;
 
 
 
-// =========================
+// ======================
 // AUTO QR
-// =========================
+// ======================
 
 window.generateUserQR = () => {
 
 const amount =
-parseFloat(document.getElementById('amt').value);
+parseFloat(
+document.getElementById('amt').value
+);
 
 if(!amount){
 
 document.getElementById('qrBox').innerHTML =
-`<p style="color:#9ca3af;">Enter amount to generate QR</p>`;
+
+`<p style="color:#9ca3af;">
+Enter amount to generate QR
+</p>`;
 
 return;
 
@@ -438,7 +612,10 @@ return;
 if(amount < MIN_AMOUNT){
 
 document.getElementById('qrBox').innerHTML =
-`<p style="color:red;">Minimum ₹${MIN_AMOUNT}</p>`;
+
+`<p style="color:red;">
+Minimum ₹${MIN_AMOUNT}
+</p>`;
 
 return;
 
@@ -447,7 +624,10 @@ return;
 if(amount > MAX_AMOUNT){
 
 document.getElementById('qrBox').innerHTML =
-`<p style="color:red;">Maximum ₹${MAX_AMOUNT}</p>`;
+
+`<p style="color:red;">
+Maximum ₹${MAX_AMOUNT}
+</p>`;
 
 return;
 
@@ -456,14 +636,15 @@ return;
 if(ADMIN_UPI){
 
 const upiLink =
+
 `upi://pay?pa=${ADMIN_UPI}&pn=Deposit&am=${amount}&cu=INR`;
 
 document.getElementById('qrBox').innerHTML =
 
 `<img src="https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(upiLink)}">`;
 
-document.getElementById('payFields').style.display =
-"block";
+document.getElementById('payFields')
+.style.display = "block";
 
 }
 
@@ -471,9 +652,9 @@ document.getElementById('payFields').style.display =
 
 
 
-// =========================
-// SUBMIT REQUEST
-// =========================
+// ======================
+// SUBMIT PAYMENT
+// ======================
 
 window.submitToAdmin = () => {
 
@@ -481,7 +662,9 @@ const utr =
 document.getElementById('utr').value;
 
 const amount =
-parseFloat(document.getElementById('amt').value);
+parseFloat(
+document.getElementById('amt').value
+);
 
 if(utr.length != 12){
 
@@ -492,10 +675,13 @@ return alert("Invalid UTR");
 push(ref(db,"user_requests"),{
 
 uid:MY_UID,
+
 email:USER_DATA.email,
+
 phone:USER_DATA.phone,
 
 amount,
+
 utr,
 
 status:"pending",
@@ -514,9 +700,9 @@ document.getElementById('utr').value = "";
 
 
 
-// =========================
+// ======================
 // HISTORY
-// =========================
+// ======================
 
 onValue(ref(db,"user_requests"),(snap)=>{
 
@@ -529,15 +715,18 @@ const d = c.val();
 if(d.uid === MY_UID){
 
 const date =
+
 new Date(d.time || Date.now())
 .toLocaleString();
 
 let dot = "blue";
+
 let text = "PENDING";
 
 if(d.status === "approved"){
 
 dot = "green";
+
 text = "APPROVED";
 
 }
@@ -545,6 +734,7 @@ text = "APPROVED";
 if(d.status === "rejected"){
 
 dot = "red";
+
 text = "REJECTED";
 
 }
@@ -568,9 +758,11 @@ ${date}
 </div>
 
 ${d.notice ? `
+
 <div class="notice">
 Reason: ${d.notice}
 </div>
+
 ` : ""}
 
 </div>
@@ -591,8 +783,14 @@ ${text}
 
 });
 
-document.getElementById('userHistory').innerHTML =
-html || `<div class="empty">No Transactions</div>`;
+document.getElementById('userHistory')
+.innerHTML =
+
+html ||
+
+`<div class="empty">
+No Transactions
+</div>`;
 
 });
 
