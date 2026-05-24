@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tiranga Games | Play & Win</title>
+    <title> INT Games | Play & Win</title>
     <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -118,29 +118,34 @@
     const db = getDatabase(app);
     const auth = getAuth(app);
 
-    let uid = "", balance = 0, selection = null, hasBet = false, periodId = "", lastBetAmt = 0;
+    let uid = "", balance = 0, selection = null, periodId = "", previousPeriodId = "";
 
-    // 1. REAL-TIME CLOCK & PERIOD SYNC
-    setInterval(() => {
+    // 1. GLOBAL TIME SYNC & AUTOMATIC RESULT GENERATION
+    setInterval(async () => {
         const now = new Date();
         const totalSec = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
         const rem = 60 - (totalSec % 60);
         const pId = now.toISOString().slice(0,10).replace(/-/g,'') + Math.floor(totalSec / 60);
 
         if(periodId !== pId) {
+            previousPeriodId = periodId;
             periodId = pId;
             document.getElementById('periodDisplay').innerText = periodId;
-            if(hasBet) handleGameResult(); // Game ends at period change
+            
+            // Only user 1 triggers server-side calculation fallback if Node script is not running
+            if(uid) {
+                processGameResults(previousPeriodId);
+            }
             loadHistory();
         }
 
         const s = rem % 60;
         document.getElementById('timerClock').innerText = `00:${s < 10 ? '0'+s : s}`;
         
-        // Lock betting in last 5 seconds
+        // Lock betting window in last 5 seconds
         if(rem <= 5) {
             document.getElementById('mainBetBtn').disabled = true;
-            document.getElementById('mainBetBtn').innerText = "WAITING...";
+            document.getElementById('mainBetBtn').innerText = "WAITING FOR RESULT...";
         } else {
             document.getElementById('mainBetBtn').disabled = false;
             updateFooter();
@@ -150,10 +155,23 @@
     onAuthStateChanged(auth, u => {
         if(u) {
             uid = u.uid;
+            // Realtime user sync (Auto-updates wallet even if game was closed)
             onValue(ref(db, `users/${uid}`), s => {
                 if(s.exists()){
                     balance = s.val().balance || 0;
                     document.getElementById('balDisplay').innerText = balance.toFixed(2);
+                }
+            });
+
+            // Listen for previous round outcome for popup display
+            onValue(ref(db, `user_bets/${uid}`), async (snap) => {
+                if(snap.exists()){
+                    const data = snap.val();
+                    // If a recent settled bet is found, show popup to returning user
+                    if (data.status === "settled" && data.notified === false) {
+                        showPopup(data.win, data.win ? data.amount * 1.92 : data.amount);
+                        await update(ref(db, `user_bets/${uid}`), { notified: true });
+                    }
                 }
             });
         }
@@ -175,48 +193,75 @@
         if(!selection) return alert("Please select RED or GREEN!");
         if(amt < 10) return alert("Minimum bet is ₹10");
         if(amt > balance) return alert("Insufficient Balance!");
-        if(hasBet) return alert("You already placed a bet for this round.");
 
-        lastBetAmt = amt;
+        // Anti-multi-bet validation for current round
+        const currentBetCheck = await get(ref(db, `user_bets/${uid}`));
+        if(currentBetCheck.exists() && currentBetCheck.val().periodId === periodId) {
+            return alert("You already placed a bet for this round.");
+        }
+
         try {
+            // Deduct money safely
             await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
-            // Push bet to global node for Admin to see
-            await set(ref(db, `global_bets/${periodId}/${uid}`), { choice: selection, amount: amt });
-            hasBet = true;
+            
+            // Log under user node
+            await set(ref(db, `user_bets/${uid}`), {
+                choice: selection,
+                amount: amt,
+                periodId: periodId,
+                status: "pending",
+                notified: false
+            });
+
+            // Log under admin global view node
+            await set(ref(db, `global_bets/${periodId}/${uid}`), {
+                uid: uid,
+                choice: selection,
+                amount: amt,
+                timestamp: Date.now()
+            });
+
             alert("Bet Placed Successfully!");
         } catch(e) { alert("Betting Error: " + e.message); }
     };
 
-    async function handleGameResult() {
-        if(!hasBet) return;
+    // Centralized single match executor
+    async function processGameResults(targetPeriod) {
+        if(!targetPeriod) return;
 
-        // 1. Check Admin Control
-        const adminSnap = await get(ref(db, `admin_control`));
-        let resultColor = adminSnap.exists() ? adminSnap.val() : "AUTO";
+        // Fetch or create unique round outcome
+        const resRef = ref(db, `results_1min/${targetPeriod}`);
+        const resSnap = await get(resRef);
+        let finalColor;
 
-        // 2. AUTO Algorithm (Anti-Profit Mode)
-        if(resultColor === "AUTO") {
-            // Hard coded: If balance > 500, higher chance of losing
-            const risk = (balance > 500) ? 0.8 : 0.5;
-            resultColor = (Math.random() < risk) ? (selection === 'RED' ? 'GREEN' : 'RED') : (selection);
-        }
+        if(!resSnap.exists()) {
+            const adminSnap = await get(ref(db, `admin_control`));
+            let controlMode = adminSnap.exists() ? adminSnap.val() : "AUTO";
 
-        const isWin = (selection === resultColor);
-        const winAmt = lastBetAmt * 1.92; // 1.92x Multiplier
-
-        // Store result in history for others
-        await set(ref(db, `results_1min/${periodId}`), { color: resultColor });
-
-        if(isWin) {
-            await update(ref(db, `users/${uid}`), { balance: increment(winAmt) });
-            showPopup(true, winAmt);
+            if(controlMode === "AUTO") {
+                finalColor = Math.random() < 0.5 ? 'RED' : 'GREEN';
+            } else {
+                finalColor = controlMode; // forced admin color
+            }
+            await set(resRef, { color: finalColor });
         } else {
-            showPopup(false, lastBetAmt);
+            finalColor = resSnap.val().color;
         }
 
-        // Reset for next round
-        hasBet = false; selection = null;
-        document.querySelectorAll('.bet-btn').forEach(b => b.classList.remove('selected'));
+        // Process User outcome
+        const betSnap = await get(ref(db, `user_bets/${uid}`));
+        if(betSnap.exists() && betSnap.val().periodId === targetPeriod && betSnap.val().status === "pending") {
+            const betData = betSnap.val();
+            const isWin = (betData.choice === finalColor);
+            const winAmt = betData.amount * 1.92;
+
+            if(isWin) {
+                await update(ref(db, `users/${uid}`), { balance: increment(winAmt) });
+                await update(ref(db, `user_bets/${uid}`), { status: "settled", win: true });
+            } else {
+                await update(ref(db, `user_bets/${uid}`), { status: "settled", win: false });
+            }
+        }
     }
 
     function showPopup(win, amt) {
