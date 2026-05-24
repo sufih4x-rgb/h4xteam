@@ -99,11 +99,21 @@
         if (!user) return window.location = "login.html";
         uid = user.uid;
         
+        // FIXED: Live Balance tracking changed to 'user_wallet' node
+        onValue(ref(db, `user_wallet/${uid}/balance`), snap => {
+            if(snap.exists()){
+                userBal = parseFloat(snap.val()) || 0;
+                document.getElementById("balanceText").innerText = userBal.toFixed(2);
+            } else {
+                userBal = 0;
+                document.getElementById("balanceText").innerText = "0.00";
+            }
+        });
+
+        // Fetch user's profile display name safely
         onValue(ref(db, "users/" + uid), snap => {
             if(snap.exists()){
-                userBal = snap.val().balance || 0;
                 uName = snap.val().displayName || "User";
-                document.getElementById("balanceText").innerText = userBal.toFixed(2);
             }
         });
 
@@ -119,7 +129,6 @@
                 const data = child.val();
                 const key = child.key;
 
-                // POPUP ALERT LOGIC
                 if(!data.userNotified && data.status !== "Pending") {
                     showBigNotify(data.status, data.amount, data.reason || "", key);
                 }
@@ -151,7 +160,6 @@
             document.getElementById("notifMsg").innerText = `Reason: ${reason || "Policy Violation"}`;
         }
         overlay.style.display = "flex";
-        // Mark as seen so popup doesn't repeat
         update(ref(db, `withdrawals/${key}`), { userNotified: true });
     }
 
@@ -174,7 +182,9 @@
         document.getElementById("withdrawBtn").innerText = "Processing...";
 
         try {
-            await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
+            // FIXED: Balance is now safely deducted from the central 'user_wallet' node
+            await update(ref(db, `user_wallet/${uid}`), { balance: increment(-amt) });
+            
             await push(ref(db, "withdrawals"), {
                 uid: uid,
                 displayName: uName,
@@ -186,8 +196,14 @@
             });
             alert("Withdrawal request submitted!");
             document.getElementById("amount").value = "";
+            document.getElementById("upi1").value = "";
+            document.getElementById("upi2").value = "";
             document.getElementById("withdrawBtn").innerText = "SUBMIT WITHDRAWAL";
-        } catch(e) { alert(e.message); }
+        } catch(e) { 
+            alert(e.message); 
+            document.getElementById("withdrawBtn").disabled = false;
+            document.getElementById("withdrawBtn").innerText = "SUBMIT WITHDRAWAL";
+        }
     };
 </script>
 </body>
