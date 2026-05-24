@@ -132,7 +132,6 @@
             periodId = pId;
             document.getElementById('periodDisplay').innerText = periodId;
             
-            // Only user 1 triggers server-side calculation fallback if Node script is not running
             if(uid) {
                 processGameResults(previousPeriodId);
             }
@@ -142,7 +141,6 @@
         const s = rem % 60;
         document.getElementById('timerClock').innerText = `00:${s < 10 ? '0'+s : s}`;
         
-        // Lock betting window in last 5 seconds
         if(rem <= 5) {
             document.getElementById('mainBetBtn').disabled = true;
             document.getElementById('mainBetBtn').innerText = "WAITING FOR RESULT...";
@@ -155,19 +153,21 @@
     onAuthStateChanged(auth, u => {
         if(u) {
             uid = u.uid;
-            // Realtime user sync (Auto-updates wallet even if game was closed)
-            onValue(ref(db, `users/${uid}`), s => {
+            
+            // FIXED: Dashboard ke saath sync karne ke liye 'user_wallet' node se balance read kar rahe hain
+            onValue(ref(db, `user_wallet/${uid}/balance`), s => {
                 if(s.exists()){
-                    balance = s.val().balance || 0;
+                    balance = parseFloat(s.val()) || 0;
                     document.getElementById('balDisplay').innerText = balance.toFixed(2);
+                } else {
+                    balance = 0;
+                    document.getElementById('balDisplay').innerText = "0.00";
                 }
             });
 
-            // Listen for previous round outcome for popup display
             onValue(ref(db, `user_bets/${uid}`), async (snap) => {
                 if(snap.exists()){
                     const data = snap.val();
-                    // If a recent settled bet is found, show popup to returning user
                     if (data.status === "settled" && data.notified === false) {
                         showPopup(data.win, data.win ? data.amount * 1.92 : data.amount);
                         await update(ref(db, `user_bets/${uid}`), { notified: true });
@@ -194,17 +194,15 @@
         if(amt < 10) return alert("Minimum bet is ₹10");
         if(amt > balance) return alert("Insufficient Balance!");
 
-        // Anti-multi-bet validation for current round
         const currentBetCheck = await get(ref(db, `user_bets/${uid}`));
         if(currentBetCheck.exists() && currentBetCheck.val().periodId === periodId) {
             return alert("You already placed a bet for this round.");
         }
 
         try {
-            // Deduct money safely
-            await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
+            // FIXED: Safe deduction using 'user_wallet' path
+            await update(ref(db, `user_wallet/${uid}`), { balance: increment(-amt) });
             
-            // Log under user node
             await set(ref(db, `user_bets/${uid}`), {
                 choice: selection,
                 amount: amt,
@@ -213,7 +211,6 @@
                 notified: false
             });
 
-            // Log under admin global view node
             await set(ref(db, `global_bets/${periodId}/${uid}`), {
                 uid: uid,
                 choice: selection,
@@ -225,11 +222,9 @@
         } catch(e) { alert("Betting Error: " + e.message); }
     };
 
-    // Centralized single match executor
     async function processGameResults(targetPeriod) {
         if(!targetPeriod) return;
 
-        // Fetch or create unique round outcome
         const resRef = ref(db, `results_1min/${targetPeriod}`);
         const resSnap = await get(resRef);
         let finalColor;
@@ -241,14 +236,13 @@
             if(controlMode === "AUTO") {
                 finalColor = Math.random() < 0.5 ? 'RED' : 'GREEN';
             } else {
-                finalColor = controlMode; // forced admin color
+                finalColor = controlMode;
             }
             await set(resRef, { color: finalColor });
         } else {
             finalColor = resSnap.val().color;
         }
 
-        // Process User outcome
         const betSnap = await get(ref(db, `user_bets/${uid}`));
         if(betSnap.exists() && betSnap.val().periodId === targetPeriod && betSnap.val().status === "pending") {
             const betData = betSnap.val();
@@ -256,7 +250,8 @@
             const winAmt = betData.amount * 1.92;
 
             if(isWin) {
-                await update(ref(db, `users/${uid}`), { balance: increment(winAmt) });
+                // FIXED: Adding winning cash to 'user_wallet' path
+                await update(ref(db, `user_wallet/${uid}`), { balance: increment(winAmt) });
                 await update(ref(db, `user_bets/${uid}`), { status: "settled", win: true });
             } else {
                 await update(ref(db, `user_bets/${uid}`), { status: "settled", win: false });
@@ -298,7 +293,7 @@
                 <div class="hist-row">
                     <span style="color:#64748b">${c.key.slice(-4)}</span>
                     <span style="font-weight:900">-</span>
-                    <div class="dot" style="background:${d.color === 'RED' ? 'var(--red)' : 'var(--win-green)'}; box-shadow: 0 0 10px ${d.color === 'RED' ? 'var(--red)' : 'var(--win-green)'}"></div>
+                   <div class="dot" style="background:${d.color === 'RED' ? 'var(--red)' : 'var(--win-green)'}; box-shadow: 0 0 10px ${d.color === 'RED' ? 'var(--red)' : 'var(--win-green)'}"></div>
                 </div>` + table.innerHTML;
             });
         });
