@@ -30,7 +30,7 @@
 <div class="lobby-container">
     <div style="font-weight:800; margin-bottom:15px; font-size: 18px;">🔥 PREMIUM GAMES</div>
     <div class="game-grid" id="gameGrid">
-        </div>
+    </div>
 </div>
 
 <script type="module">
@@ -38,15 +38,26 @@
     import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
-    const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
+        authDomain: "test-eb5e7.firebaseapp.com", 
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
+        projectId: "test-eb5e7", 
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
+    };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
     const auth = getAuth(app);
 
     onAuthStateChanged(auth, u => {
         if(u) {
-            onValue(ref(db, `users/${u.uid}`), s => {
-                document.getElementById("uBal").innerText = (s.val()?.balance || 0).toFixed(2);
+            // FIXED: Balance node tracking update, linked directly to central user_wallet
+            onValue(ref(db, `user_wallet/${u.uid}/balance`), s => {
+                if(s.exists()){
+                    document.getElementById("uBal").innerText = parseFloat(s.val()).toFixed(2);
+                } else {
+                    document.getElementById("uBal").innerText = "0.00";
+                }
             });
         } else { window.location.href = "login.html"; }
     });
