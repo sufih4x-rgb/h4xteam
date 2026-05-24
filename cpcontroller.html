@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Super Admin | Tiranga Control</title>
+    <title>Super Admin | INT Control</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
         :root { --primary: #4361ee; --bg: #0f172a; --card: #1e293b; --white: #ffffff; --success: #10b981; --danger: #ef4444; --warning: #f59e0b; }
@@ -21,14 +21,14 @@
         .btn-red { background: var(--danger); color: white; }
         .btn-green { background: var(--success); color: white; }
         .btn-auto { background: #64748b; color: white; }
-        .active-mode { border: 4px solid var(--white); transform: scale(1.05); }
+        .active-mode { border: 4px solid var(--white); transform: scale(1.02); box-shadow: 0 0 15px rgba(255,255,255,0.2); }
 
         .stat-box { display: flex; justify-content: space-around; margin-top: 15px; }
         .stat-item { text-align: center; }
         .stat-item span { display: block; font-size: 12px; color: #94a3b8; }
         .stat-item b { font-size: 20px; }
 
-        .badge { padding: 5px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; }
+        .badge { padding: 5px 10px; border-radius: 6px; font-size: 10px; font-weight: 800; text-transform: uppercase; }
         .badge-red { background: rgba(239, 68, 68, 0.2); color: var(--danger); }
         .badge-green { background: rgba(16, 185, 129, 0.2); color: var(--success); }
     </style>
@@ -42,17 +42,17 @@
     </div>
     <div style="text-align: right;">
         <div style="color:var(--danger); font-weight:900; font-size:24px;" id="adminClock">00:00</div>
-        <div id="modeStatus" class="badge" style="background:var(--primary)">MODE: AUTO</div>
+        <div id="modeStatus" class="badge" style="background:var(--primary); margin-top: 5px; display: inline-block;">MODE: FETCHING...</div>
     </div>
 </div>
 
 <div class="control-grid">
     <div class="control-card">
         <h3>Result Control</h3>
-        <p style="font-size:12px; color:#94a3b8;">Force next winning color</p>
+        <p style="font-size:12px; color:#94a3b8;">Force next winning color dynamically</p>
         <button class="btn btn-red" id="forceRED" onclick="setMode('RED')">FORCE RED</button>
         <button class="btn btn-green" id="forceGREEN" onclick="setMode('GREEN')">FORCE GREEN</button>
-        <button class="btn btn-auto active-mode" id="forceAUTO" onclick="setMode('AUTO')">AUTO (SYSTEM)</button>
+        <button class="btn btn-auto" id="forceAUTO" onclick="setMode('AUTO')">AUTO (ANTI-PROFIT SYSTEM)</button>
     </div>
 
     <div class="control-card">
@@ -67,19 +67,22 @@
                 <b id="totalGreenAmt" style="color:var(--success);">₹0</b>
             </div>
         </div>
-        <p style="margin-top:20px; font-size:11px; color:#94a3b8;">Tip: High investment side should lose for profit.</p>
+        <p style="margin-top:20px; font-size:11px; color:#10b981; font-weight: 600; background: rgba(16, 185, 129, 0.1); padding: 8px; border-radius: 8px;">
+            💡 Smart Suggestion: <span id="smartSuggestion" style="color:#fff;">Calculating...</span>
+        </p>
     </div>
 </div>
 
 <div class="bet-monitor">
-    <h3 style="padding: 0 20px;">Live User Bets</h3>
+    <h3 style="padding: 0 20px;">Live User Bets (This Round)</h3>
     <div class="bet-row" style="color:#94a3b8; font-weight:800; border-bottom: 2px solid #334155;">
         <span>User ID</span>
         <span>Selection</span>
         <span>Amount</span>
     </div>
     <div id="betList">
-        </div>
+        <p style="text-align:center; color:#64748b; padding:20px;">Waiting for bets...</p>
+    </div>
 </div>
 
 <script type="module">
@@ -98,8 +101,11 @@
     const db = getDatabase(app);
 
     let periodId = "";
+    let previousPeriodId = "";
+    let globalRedAmount = 0;
+    let globalGreenAmount = 0;
 
-    // 1. Clock & Period Logic (Sync with User)
+    // 1. Clock & Period Logic (Universal 1-Min Sync)
     setInterval(() => {
         const now = new Date();
         const totalSec = (now.getHours() * 3600) + (now.getMinutes() * 60) + now.getSeconds();
@@ -107,42 +113,53 @@
         const pId = now.toISOString().slice(0,10).replace(/-/g,'') + Math.floor(totalSec / 60);
         
         if(periodId !== pId) {
+            previousPeriodId = periodId;
             periodId = pId;
             document.getElementById('currentPeriod').innerText = periodId;
-            listenToBets(periodId); // New period start, listen to new bets
+            listenToBets(periodId); // Sync and listen to real-time incoming pool
         }
         const s = rem % 60;
         document.getElementById('adminClock').innerText = `00:${s < 10 ? '0'+s : s}`;
+
+        // Automatically push dynamic result database logs 2 seconds before the round finishes
+        if(rem === 2 && periodId) {
+            calculateAndPushResult(periodId);
+        }
     }, 1000);
 
-    // 2. Result Control Logic
-    window.setMode = (mode) => {
-        set(ref(db, 'admin_control'), mode);
-        
-        // UI Button highlight
+    // 2. Real-Time Admin Command Handler
+    window.setMode = async (mode) => {
+        await set(ref(db, 'admin_control'), mode);
+        updateUI(mode);
+    };
+
+    function updateUI(mode) {
         document.querySelectorAll('.btn').forEach(b => b.classList.remove('active-mode'));
         if(mode === 'RED') document.getElementById('forceRED').classList.add('active-mode');
         if(mode === 'GREEN') document.getElementById('forceGREEN').classList.add('active-mode');
         if(mode === 'AUTO') document.getElementById('forceAUTO').classList.add('active-mode');
         
         document.getElementById('modeStatus').innerText = "MODE: " + mode;
-    };
+    }
 
-    // 3. Listen to Live Bets for Current Period
+    // 3. Sync Active Pool Metrics
     function listenToBets(pId) {
         onValue(ref(db, `global_bets/${pId}`), snap => {
             const list = document.getElementById('betList');
-            let redTotal = 0;
-            let greenTotal = 0;
+            globalRedAmount = 0;
+            globalGreenAmount = 0;
             let html = "";
 
             if(snap.exists()) {
                 snap.forEach(child => {
                     const bet = child.val();
-                    const userId = child.key.substring(0, 6) + "...";
+                    const userId = child.key.substring(0, 8) + "...";
                     
-                    if(bet.choice === 'RED') redTotal += bet.amount;
-                    else greenTotal += bet.amount;
+                    if(bet.choice === 'RED') {
+                        globalRedAmount += bet.amount;
+                    } else {
+                        globalGreenAmount += bet.amount;
+                    }
 
                     html += `
                     <div class="bet-row">
@@ -153,17 +170,56 @@
                 });
                 list.innerHTML = html;
             } else {
-                list.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">Waiting for bets...</p>`;
+                list.innerHTML = `<p style="text-align:center; color:#64748b; padding:20px;">Waiting for user actions...</p>`;
             }
 
-            document.getElementById('totalRedAmt').innerText = "₹" + redTotal;
-            document.getElementById('totalGreenAmt').innerText = "₹" + greenTotal;
+            document.getElementById('totalRedAmt').innerText = "₹" + globalRedAmount;
+            document.getElementById('totalGreenAmt').innerText = "₹" + globalGreenAmount;
+
+            // Generate Smart System Suggestions based on platform volume
+            const suggestion = document.getElementById('smartSuggestion');
+            if(globalRedAmount === globalGreenAmount) {
+                suggestion.innerText = "Equal Pool. Perfect for Pure Random.";
+            } else if(globalRedAmount > globalGreenAmount) {
+                suggestion.innerText = "Kill RED pool to save ₹" + (globalRedAmount - globalGreenAmount) + " (Give GREEN)";
+            } else {
+                suggestion.innerText = "Kill GREEN pool to save ₹" + (globalGreenAmount - globalRedAmount) + " (Give RED)";
+            }
         });
     }
 
-    // Load initial mode
+    // 4. Autonomous Intelligent Fail-safe Result Architecture
+    async function calculateAndPushResult(targetPeriod) {
+        const resRef = ref(db, `results_1min/${targetPeriod}`);
+        const snap = await get(resRef);
+        
+        // If results haven't been declared yet, parse admin overrides or auto-calculate pool margins
+        if(!snap.exists()) {
+            const adminSnap = await get(ref(db, 'admin_control'));
+            let currentMode = adminSnap.exists() ? adminSnap.val() : "AUTO";
+            let determinedColor = "RED";
+
+            if(currentMode === "AUTO") {
+                if(globalRedAmount > globalGreenAmount) {
+                    determinedColor = "GREEN"; // Force green to maximize platform profit margin
+                } else if (globalGreenAmount > globalRedAmount) {
+                    determinedColor = "RED";   // Force red to minimize loss
+                } else {
+                    determinedColor = Math.random() < 0.5 ? "RED" : "GREEN"; // Balance probability split
+                }
+            } else {
+                determinedColor = currentMode; // Override with chosen colors
+            }
+
+            // Secure the transaction log node
+            await set(resRef, { color: determinedColor });
+        }
+    }
+
+    // Initialize Active Core Control Mode
     get(ref(db, 'admin_control')).then(s => {
-        if(s.exists()) setMode(s.val());
+        if(s.exists()) updateUI(s.val());
+        else updateUI("AUTO");
     });
 
 </script>
