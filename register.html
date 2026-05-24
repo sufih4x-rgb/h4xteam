@@ -1,4 +1,8 @@
-<!DOCTYPE html>
+<div class="input-group">
+            <label>Password</label>
+            <div class="pass-wrapper">
+                <input id="pass" type="password" placeholder="••••••••">
+     <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -66,11 +70,7 @@
             <input id="mobile" type="tel" placeholder="10 digit number">
         </div>
 
-        <div class="input-group">
-            <label>Password</label>
-            <div class="pass-wrapper">
-                <input id="pass" type="password" placeholder="••••••••">
-                <i class="fa-solid fa-eye-slash toggle-pass" onclick="togglePassword('pass', this)"></i>
+           <i class="fa-solid fa-eye-slash toggle-pass" onclick="togglePassword('pass', this)"></i>
             </div>
         </div>
 
@@ -90,7 +90,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
     import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-database.js";
-    import { getAuth, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+    import { getAuth, createUserWithEmailAndPassword, sendEmailVerification } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
     const firebaseConfig = {
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
@@ -143,7 +143,10 @@
             const res = await createUserWithEmailAndPassword(auth, email, pass);
             const user = res.user;
 
-            // 2. Save all info to Realtime Database (Email verification skipped as requested)
+            // 2. Send Email Verification
+            await sendEmailVerification(user);
+
+            // 3. Save all info to Realtime Database
             await set(ref(db, "users/" + user.uid), {
                 firstName: firstName,
                 lastName: lastName,
@@ -159,8 +162,8 @@
                 createdAt: Date.now()
             });
 
-            alert("Registration Successful!");
-            window.location.href = "dashboard.html"; // Redirect to your home/dashboard page
+            alert("Registration Successful! A verification email has been sent to " + email + ". Please verify your email before logging in.");
+            window.location.href = "index.html"; // Redirecting to login/index page so they can verify and login
 
         } catch (e) {
             alert("Error: " + e.message);
