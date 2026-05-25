@@ -14,15 +14,15 @@
         .bal { color: var(--gold); font-weight: 900; border: 1.5px solid var(--gold); padding: 4px 12px; border-radius: 50px; font-size: 14px; }
 
         .game-zone { height: 320px; position: relative; background: radial-gradient(circle at bottom left, #2a080c, #05070a); overflow: hidden; border-bottom: 2px solid #1f222e; display: flex; justify-content: center; align-items: center; }
-        #multiplier { font-size: 60px; font-weight: 900; z-index: 10; }
-        #plane { position: absolute; width: 75px; z-index: 5; transition: 0.5s linear; display: none; }
-        .crashed { transform: rotate(45deg) translateY(600px) !important; opacity: 0; transition: 1s ease-in !important; }
+        #multiplier { font-size: 60px; font-weight: 900; z-index: 10; transition: color 0.2s; }
+        #plane { position: absolute; width: 75px; z-index: 5; transition: left 0.2s linear, bottom 0.2s linear, transform 0.5s ease; display: none; transform: scaleX(-1); }
+        .crashed { transform: scaleX(-1) rotate(65deg) translateY(600px) !important; opacity: 0; transition: all 0.8s ease-in !important; }
 
         .bet-loader { text-align: center; z-index: 20; position: absolute; }
         .timer-circ { width: 80px; height: 80px; border: 4px solid var(--green); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 30px; font-weight: 900; color: var(--green); margin: 0 auto 10px; }
 
-        .controls { padding: 20px; background: var(--card); border-radius: 25px 25px 0 0; }
-        .amt-input { width: 100%; background: #000; border: 1.5px solid #333; padding: 12px; border-radius: 10px; color: #fff; font-size: 22px; font-weight: 900; text-align: center; margin-bottom: 10px; outline: none; }
+        .controls { padding: 20px; background: var(--card); border-radius: 25px 25px 0 0; box-shadow: 0 -10px 30px rgba(0,0,0,0.5); }
+        .amt-input { width: 100%; background: #000; border: 1.5px solid #333; padding: 12px; border-radius: 10px; color: #fff; font-size: 22px; font-weight: 900; text-align: center; margin-bottom: 10px; outline: none; box-sizing: border-box; }
         
         /* Auto Exit Toggle */
         .auto-box { display: flex; justify-content: space-between; align-items: center; background: #000; padding: 10px 15px; border-radius: 10px; margin-bottom: 15px; border: 1px solid #2d313f; }
@@ -33,31 +33,33 @@
         input:checked + .slider { background-color: var(--green); }
         input:checked + .slider:before { transform: translateX(22px); }
 
-        .btn { width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 900; font-size: 18px; cursor: pointer; text-transform: uppercase; }
+        .btn { width: 100%; padding: 16px; border-radius: 12px; border: none; font-weight: 900; font-size: 18px; cursor: pointer; text-transform: uppercase; transition: transform 0.1s; }
+        .btn:active { transform: scale(0.98); }
         .btn-bet { background: var(--green); color: white; box-shadow: 0 4px 0 #15803d; }
         .btn-cash { background: var(--gold); color: #000; box-shadow: 0 4px 0 #a16207; display: none; }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; box-shadow: none; }
         
-        #msg { text-align: center; font-size: 12px; margin-top: 10px; color: #64748b; font-weight: 700; }
+        #msg { text-align: center; font-size: 12px; margin-top: 10px; color: #64748b; font-weight: 700; height: 15px; }
     </style>
 </head>
 <body>
 
 <div class="header">
-    <div style="font-weight: 900;" onclick="handleBack()">⬅ EXIT</div>
+    <div style="font-weight: 900; cursor: pointer;" onclick="handleBack()">⬅ EXIT</div>
     <div class="bal">₹<span id="uBal">0.00</span></div>
 </div>
 
 <div class="game-zone">
     <div id="betUI" class="bet-loader" style="display:none;">
-        <div class="timer-circ" id="count">15</div>
-        <div style="font-size: 10px; font-weight: 800; color: var(--green);">BETTING PHASE</div>
+        <div class="timer-circ" id="count">10</div>
+        <div style="font-size: 10px; font-weight: 800; color: var(--green); letter-spacing: 1px;">BETTING PHASE</div>
     </div>
     <div id="multiplier" style="display:none;">1.00x</div>
     <img id="plane" src="https://i.ibb.co/Y7XvX0k/plane.png">
 </div>
 
 <div class="controls">
-    <input type="number" class="amt-input" id="amt" value="100">
+    <input type="number" class="amt-input" id="amt" value="100" min="10">
     
     <div class="auto-box">
         <span style="font-size: 13px; font-weight: 800;">AUTO CASH OUT (2.0x)</span>
@@ -69,7 +71,7 @@
 
     <button id="bBtn" class="btn btn-bet" onclick="placeBet()">PLACE BET</button>
     <button id="cBtn" class="btn btn-cash" onclick="cashOut()">CASH OUT</button>
-    <div id="msg">Connecting to server...</div>
+    <div id="msg">Connecting to ecosystem server...</div>
 </div>
 
 <script type="module">
@@ -83,102 +85,187 @@
     const auth = getAuth(app);
 
     let uid, balance = 0, myBet = 0, hasBet = false, isCashed = false, currentX = 1.0;
+    let localCurrentPeriod = 0, clientProcessingState = false;
 
     onAuthStateChanged(auth, u => {
         if(!u) return;
         uid = u.uid;
-        onValue(ref(db, `users/${uid}`), s => {
-            balance = s.val()?.balance || 0;
-            document.getElementById("uBal").innerText = balance.toFixed(2);
+        
+        // Centralized structural balance tracker mapping
+        onValue(ref(db, `user_wallet/${uid}/balance`), s => {
+            if(s.exists()){
+                balance = parseFloat(s.val()) || 0;
+                document.getElementById("uBal").innerText = balance.toFixed(2);
+            }
         });
-        syncGame();
+        
+        syncGlobalEcosystem();
     });
 
-    function syncGame() {
-        onValue(ref(db, `aviator_sync`), snap => {
-            const data = snap.val();
-            if(!data) return;
-            const mText = document.getElementById("multiplier");
-            const plane = document.getElementById("plane");
-            const bBtn = document.getElementById("bBtn");
-            const cBtn = document.getElementById("cBtn");
+    // DISTRIBUTED REALTIME INFINITE TIME LOOP PARSER ENGINE
+    function syncGlobalEcosystem() {
+        onValue(ref(db, ".info/serverTimeOffset"), offsetSnap => {
+            const offset = offsetSnap.val() || 0;
             
-            currentX = data.x;
+            setInterval(() => {
+                const serverTime = Date.now() + offset;
+                const totalSeconds = Math.floor(serverTime / 1000);
+                const loopIndex = totalSeconds % 35; // 35 seconds absolute full uniform cycle
+                const periodId = Math.floor(totalSeconds / 35);
 
-            if(data.state === "BETTING") {
-                document.getElementById("betUI").style.display = "block";
-                document.getElementById("count").innerText = data.time;
-                mText.style.display = "none";
-                plane.style.display = "none";
-                plane.classList.remove("crashed");
-                bBtn.style.display = "block";
-                bBtn.disabled = false;
-                cBtn.style.display = "none";
-                isCashed = false;
-                document.getElementById("msg").innerText = "Next round starting...";
-            } 
-            else if(data.state === "FLYING") {
-                document.getElementById("betUI").style.display = "none";
-                mText.style.display = "block";
-                mText.innerText = currentX.toFixed(2) + "x";
-                plane.style.display = "block";
-                plane.style.left = Math.min(75, 10 + (currentX * 3)) + "%";
-                plane.style.bottom = Math.min(65, 15 + (currentX * 4)) + "%";
+                if (localCurrentPeriod !== periodId) {
+                    localCurrentPeriod = periodId;
+                    clientProcessingState = false;
+                    resetRoundState();
+                }
 
-                if(hasBet && !isCashed) {
-                    bBtn.style.display = "none";
-                    cBtn.style.display = "block";
-                    cBtn.innerText = `CASH OUT ₹${(myBet * currentX).toFixed(2)}`;
+                const betUI = document.getElementById("betUI");
+                const mText = document.getElementById("multiplier");
+                const plane = document.getElementById("plane");
+                const bBtn = document.getElementById("bBtn");
+                const cBtn = document.getElementById("cBtn");
+                const msg = document.getElementById("msg");
 
-                    // AUTO EXIT LOGIC (Only if Toggle is ON)
-                    const isAutoOn = document.getElementById("autoToggle").checked;
-                    if(isAutoOn && currentX >= 2.0) {
-                        cashOut();
+                if (loopIndex < 10) {
+                    // Phase A: Shared Live Betting Phase (10 Seconds)
+                    betUI.style.display = "block";
+                    document.getElementById("count").innerText = (10 - loopIndex);
+                    mText.style.display = "none";
+                    plane.style.display = "none";
+                    plane.classList.remove("crashed");
+                    
+                    if(!hasBet) {
+                        bBtn.style.display = "block";
+                        bBtn.innerText = "PLACE BET";
+                        bBtn.disabled = false;
+                    }
+                    cBtn.style.display = "none";
+                } 
+                else if (loopIndex >= 10 && loopIndex < 32) {
+                    // Phase B: Live Continuous Mathematical Flight (22 Seconds)
+                    betUI.style.display = "none";
+                    mText.style.display = "block";
+                    mText.style.color = "#ffffff";
+                    plane.style.display = "block";
+
+                    // Calculate curve factor values
+                    let timeFactor = (loopIndex - 10); 
+                    
+                    // Controlled trajectory scale vector matrix calculation
+                    currentX = 1.0 + (Math.pow(timeFactor, 2) * 0.015);
+                    mText.innerText = currentX.toFixed(2) + "x";
+
+                    // Absolute smooth visual plot parameters positioning 
+                    plane.style.left = Math.min(78, 12 + (timeFactor * 3.2)) + "%";
+                    plane.style.bottom = Math.min(70, 15 + (Math.pow(timeFactor, 1.4) * 2.2)) + "%";
+
+                    if (hasBet && !isCashed) {
+                        bBtn.style.display = "none";
+                        cBtn.style.display = "block";
+                        cBtn.innerText = `CASH OUT ₹${(myBet * currentX).toFixed(2)}`;
+
+                        // Auto Cash Out Trigger Module
+                        const isAutoOn = document.getElementById("autoToggle").checked;
+                        if (isAutoOn && currentX >= 2.0) {
+                            cashOut();
+                        }
+                    }
+                } 
+                else {
+                    // Phase C: Central Interception Crash Phase (Last 3 Seconds)
+                    if (!clientProcessingState) {
+                        clientProcessingState = true;
+                        executeServerlessCrash();
                     }
                 }
-            } 
-            else if(data.state === "CRASHED") {
-                mText.innerText = "CRASHED!";
-                mText.style.color = "#ea1d39";
-                plane.classList.add("crashed");
-                if(hasBet && !isCashed) document.getElementById("msg").innerText = "LOST ₹" + myBet;
-                hasBet = false;
-                bBtn.disabled = true;
-                cBtn.style.display = "none";
-            }
+            }, 250); // Fast cycle rate check optimization for visual smoothness
         });
     }
 
+    function executeServerlessCrash() {
+        const mText = document.getElementById("multiplier");
+        const plane = document.getElementById("plane");
+        const bBtn = document.getElementById("bBtn");
+        const cBtn = document.getElementById("cBtn");
+        const msg = document.getElementById("msg");
+
+        mText.innerText = "FLEW AWAY!";
+        mText.style.color = var(--red);
+        plane.classList.add("crashed");
+
+        if (hasBet && !isCashed) {
+            msg.innerText = "LOST ₹" + myBet.toFixed(2);
+            // Log raw payload matrix to analytics telemetry data path
+            trackAdminEcosystemMetrics(myBet, 0, false);
+        }
+        
+        hasBet = false;
+        bBtn.disabled = true;
+        bBtn.style.display = "block";
+        bBtn.innerText = "PLACE BET";
+        cBtn.style.display = "none";
+    }
+
     window.placeBet = async () => {
-        const amt = parseFloat(document.getElementById("amt").value);
-        if(amt > balance || amt < 10) return alert("Check Balance!");
-        await update(ref(db, `users/${uid}`), { balance: increment(-amt) });
+        const amtInput = document.getElementById("amt");
+        const amt = parseFloat(amtInput.value);
+        if(amt > balance || amt < 10 || isNaN(amt)) return alert("Check Wallet Balance!");
+        
+        await update(ref(db, `user_wallet/${uid}`), { balance: increment(-amt) });
         myBet = amt; hasBet = true; isCashed = false;
-        document.getElementById("bBtn").innerText = "BET PLACED";
-        document.getElementById("bBtn").disabled = true;
+        
+        const bBtn = document.getElementById("bBtn");
+        bBtn.innerText = "BET PLACED";
+        bBtn.disabled = true;
+        document.getElementById("msg").innerText = "Waiting for flight takeoff...";
     };
 
     window.cashOut = async () => {
         if(!hasBet || isCashed) return;
         isCashed = true;
-        const win = myBet * currentX;
-        await update(ref(db, `users/${uid}`), { balance: increment(win) });
+        const winAmount = myBet * currentX;
+        
+        await update(ref(db, `user_wallet/${uid}`), { balance: increment(winAmount) });
         confetti({ particleCount: 150, spread: 70, origin: { y: 0.8 } });
+        
         document.getElementById("cBtn").style.display = "none";
-        document.getElementById("bBtn").style.display = "block";
-        document.getElementById("bBtn").innerText = "WIN ₹" + win.toFixed(2);
+        const bBtn = document.getElementById("bBtn");
+        bBtn.style.display = "block";
+        bBtn.innerText = "WIN ₹" + winAmount.toFixed(2);
+        document.getElementById("msg").innerText = "Success! Earnings safely distributed.";
+
+        // Transmit secure tracking logs to backend operational registers
+        trackAdminEcosystemMetrics(myBet, winAmount, true);
     };
 
-    // BACK/EXIT LOGIC: Instant Cashout on exit
+    async function trackAdminEcosystemMetrics(investment, returnAmt, isVictory) {
+        let systemNetProfit = investment - returnAmt;
+        let todayStamp = new Date().toISOString().split('T')[0];
+
+        // Safely increment absolute values onto shared administrative dashboards
+        await update(ref(db, `aviator_admin_ledger/stats`), {
+            totalSystemProfit: increment(systemNetProfit),
+            totalUsersPaidOut: increment(returnAmt)
+        });
+
+        await update(ref(db, `aviator_admin_ledger/daily/${todayStamp}`), {
+            investmentVolume: increment(investment),
+            payoutVolume: increment(returnAmt)
+        });
+    }
+
+    function resetRoundState() {
+        isCashed = false;
+        document.getElementById("msg").innerText = "Awaiting transaction logs...";
+    }
+
     window.handleBack = async () => {
         if(hasBet && !isCashed && currentX > 1.0) {
-            await cashOut(); // Exit karne se pehle jo mil raha hai le lo
-            alert("Exiting... Profit cashed out!");
+            await cashOut();
         }
         window.history.back();
     };
 
-    // Listen for browser back button
     window.addEventListener('popstate', handleBack);
 </script>
 </body>
