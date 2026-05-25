@@ -89,7 +89,7 @@
 
     window.startGame = async () => {
         activeBet = parseFloat(document.getElementById("betInp").value);
-        if(activeBet > balance || activeBet < 10) return alert("Invalid Bet");
+        if(activeBet > balance || activeBet < 1) return alert(" MINIMUM 1₹ BET");
         
         // FIXED: Deduct bet amount from 'user_wallet' node safely
         await update(ref(db, `user_wallet/${auth.currentUser.uid}`), { balance: increment(-activeBet) });
