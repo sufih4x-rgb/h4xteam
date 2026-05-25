@@ -7,7 +7,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { --dragon: #1e40af; --tiger: #b45309; --tie: #059669; --gold: #fbbf24; }
-        body { margin: 0; background: #000; color: white; font-family: 'Inter', sans-serif; display: flex; justify-content: center; }
+        body { margin: 0; background: #000; color: white; font-family: 'Inter', sans-serif; display: flex; justify-content: center; padding-bottom: 220px; }
         .game-container { width: 100%; max-width: 450px; min-height: 100vh; background: radial-gradient(circle at top, #1e1e1e, #000); position: relative; }
         .header { display: flex; justify-content: space-between; padding: 15px; border-bottom: 2px solid var(--gold); background: #000; }
         .timer-box { text-align: center; font-size: 26px; font-weight: 900; margin: 15px 0; color: var(--gold); }
@@ -18,7 +18,16 @@
         .zone { flex: 1; border-radius: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-weight: 900; cursor: pointer; position: relative; border: 2px solid rgba(255,255,255,0.1); }
         .z-dragon { background: var(--dragon); } .z-tiger { background: var(--tiger); } .z-tie { flex: 0.6; background: var(--tie); font-size: 12px; }
         .chip-badge { position: absolute; top: -10px; background: var(--gold); color: #000; padding: 2px 8px; border-radius: 10px; font-size: 11px; display: none; }
-        .footer { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #111; padding: 20px; box-sizing: border-box; border-radius: 25px 25px 0 0; }
+        
+        /* Stats and Logs History UI */
+        .history-panel { padding: 15px; margin-top: 10px; background: rgba(255,255,255,0.03); border-radius: 15px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.05); }
+        .panel-title { font-size: 13px; font-weight: 900; color: var(--gold); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+        .trend-dots { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 15px; }
+        .dot { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 900; color: white; }
+        .dot-D { background: var(--dragon); } .dot-T { background: var(--tiger); } .dot-E { background: var(--tie); }
+        .tx-row { display: flex; justify-content: space-between; font-size: 12px; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.05); }
+
+        .footer { position: fixed; bottom: 0; width: 100%; max-width: 450px; background: #111; padding: 20px; box-sizing: border-box; border-radius: 25px 25px 0 0; z-index: 1000; }
         .chips { display: flex; justify-content: center; gap: 12px; margin-bottom: 15px; }
         .chip { width: 45px; height: 45px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 900; cursor: pointer; border: 2px dashed #fff; }
         .chip.active { border: 3px solid var(--gold); transform: scale(1.1); }
@@ -41,6 +50,19 @@
         <div class="zone z-tie" onclick="placeBet('tie')"><div id="b-tie" class="chip-badge">0</div>TIE</div>
         <div class="zone z-tiger" onclick="placeBet('tiger')"><div id="b-tiger" class="chip-badge">0</div>TIGER</div>
     </div>
+
+    <div style="padding: 0 15px;">
+        <div class="history-panel">
+            <div class="panel-title">Recent Game Results (Trend)</div>
+            <div id="trendContainer" class="trend-dots"></div>
+            
+            <div class="panel-title" style="margin-top:15px;">My Personal Bet Transactions</div>
+            <div id="txLogs" style="max-height: 120px; overflow-y: auto;">
+                <p style="font-size:11px; color:#aaa; text-align:center;">No bets placed in this session yet.</p>
+            </div>
+        </div>
+    </div>
+
     <div class="footer">
         <div class="chips">
             <div class="chip active" onclick="selChip(10, this)" style="background:#1e40af">10</div>
@@ -53,7 +75,7 @@
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
     import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, update, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, increment, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
     const app = initializeApp(firebaseConfig);
@@ -61,50 +83,139 @@
     const db = getDatabase(app);
 
     let uid, balance = 0, selectedChip = 10, mySide = null, myBet = 0;
+    let localCurrentPeriod = 0, payoutCalculated = false;
     const cards = ['A','2','3','4','5','6','7','8','9','10','J','Q','K'];
 
     onAuthStateChanged(auth, user => {
         if(!user) return;
         uid = user.uid;
-        onValue(ref(db, `users/${uid}`), s => {
-            balance = s.val()?.balance || 0;
-            document.getElementById("uBal").innerText = balance.toFixed(2);
+        
+        // FIXED: Real-time balance tracker directed to 'user_wallet' node
+        onValue(ref(db, `user_wallet/${uid}/balance`), s => {
+            if(s.exists()){
+                balance = parseFloat(s.val()) || 0;
+                document.getElementById("uBal").innerText = balance.toFixed(2);
+            }
         });
-        syncGame();
+        
+        syncGameLoop();
+        listenToHistory();
     });
 
-    function syncGame() {
-        onValue(ref(db, "dt_live"), snap => {
-            const data = snap.val();
-            if(!data) return;
-            const timerEl = document.getElementById("timer");
+    // UNIFIED REAL-TIME 1-MINUTE DISTRIBUTED CLOCK SYSTEM
+    function syncGameLoop() {
+        // Listening to a single reference timestamp node
+        onValue(ref(db, ".info/serverTimeOffset"), offsetSnap => {
+            const offset = offsetSnap.val() || 0;
             
-            if(data.state === "BETTING") {
-                timerEl.innerText = "BETTING: " + data.time + "s";
-                timerEl.style.color = "var(--gold)";
-                resetBoard();
-            } else {
-                timerEl.innerText = "REVEALING...";
-                timerEl.style.color = "#ff4757";
-                showCards(data.dCard, data.tCard);
-            }
+            setInterval(async () => {
+                const serverTime = Date.now() + offset;
+                const totalSeconds = Math.floor(serverTime / 1000);
+                const secondInMinute = totalSeconds % 60;
+                const periodId = Math.floor(totalSeconds / 60);
+
+                const timerEl = document.getElementById("timer");
+                
+                if (localCurrentPeriod !== periodId) {
+                    localCurrentPeriod = periodId;
+                    payoutCalculated = false;
+                    resetBoard();
+                }
+
+                if (secondInMinute < 45) {
+                    // Betting Window (0 to 44 seconds)
+                    let timeLeft = 45 - secondInMinute;
+                    timerEl.innerText = "BETTING: " + timeLeft + "s";
+                    timerEl.style.color = "var(--gold)";
+                } else {
+                    // Reveal Window (45 to 59 seconds)
+                    timerEl.innerText = "REVEALING...";
+                    timerEl.style.color = "#ff4757";
+                    
+                    if (!payoutCalculated) {
+                        payoutCalculated = true;
+                        executeServerlessRoll(periodId);
+                    }
+                }
+            }, 1000);
         });
     }
 
+    // Deterministic Pseudo-Random Generation across all client instances
+    async function executeServerlessRoll(periodId) {
+        // Base seed computation from absolute period ID matching all clients
+        const seedValue = periodId * 3491; 
+        const dCardIndex = (seedValue % 13);
+        const tCardIndex = ((seedValue + 7) % 13);
+
+        // Visual animation
+        showCards(dCardIndex, tCardIndex);
+
+        let winningSide = "tie";
+        if (dCardIndex > tCardIndex) winningSide = "dragon";
+        else if (tCardIndex > dCardIndex) winningSide = "tiger";
+
+        // Push global summary sync node safely once per round inside client simulation
+        if(uid) {
+            const currentRoundRef = ref(db, `dt_history/${periodId}`);
+            const checkNode = await get(currentRoundRef);
+            if(!checkNode.exists()) {
+                await set(currentRoundRef, {
+                    period: periodId,
+                    winner: winningSide,
+                    dCard: dCardIndex,
+                    tCard: tCardIndex,
+                    timestamp: Date.now()
+                });
+            }
+
+            // Settlement module
+            if (mySide && myBet > 0) {
+                let multiplier = 0;
+                let outcomeStatus = "LOSS";
+                
+                if (mySide === winningSide) {
+                    outcomeStatus = "WIN";
+                    multiplier = winningSide === "tie" ? 9 : 2; // Tie 9x, Dragon/Tiger 2x
+                }
+
+                let netPayout = myBet * multiplier;
+                if(netPayout > 0) {
+                    await update(ref(db, `user_wallet/${uid}`), { balance: increment(netPayout) });
+                }
+
+                // Append local interactive HTML statement logs
+                const logBox = document.getElementById("txLogs");
+                if(logBox.innerHTML.includes("No bets placed")) logBox.innerHTML = "";
+                
+                logBox.innerHTML = `
+                    <div class="tx-row">
+                        <span>Period: <b>...${String(periodId).slice(-4)}</b> (${mySide.toUpperCase()})</span>
+                        <span style="color: ${outcomeStatus === 'WIN' ? 'var(--success)' : 'var(--danger)'}; font-weight:900;">
+                            ${outcomeStatus} (₹${netPayout || -myBet})
+                        </span>
+                    </div>` + logBox.innerHTML;
+
+                mySide = null;
+                myBet = 0;
+            }
+        }
+    }
+
     window.placeBet = async (side) => {
-        const status = document.getElementById("timer").innerText;
-        if(!status.includes("BETTING") || balance < selectedChip) return;
+        const statusStr = document.getElementById("timer").innerText;
+        if(!statusStr.includes("BETTING") || balance < selectedChip) return;
         if(mySide && mySide !== side) return alert("One side only!");
 
-        mySide = side; myBet += selectedChip;
-        await update(ref(db, `users/${uid}`), { balance: increment(-selectedChip) });
+        mySide = side; 
+        myBet += selectedChip;
         
-        // Admin real-time update
-        const sideKey = side === 'dragon' ? 'totalDragon' : (side === 'tiger' ? 'totalTiger' : 'totalTie');
-        await update(ref(db, "dt_live"), { [sideKey]: increment(selectedChip) });
+        // Process Real-time Wallet Deduction
+        await update(ref(db, `user_wallet/${uid}`), { balance: increment(-selectedChip) });
 
         const badge = document.getElementById(`b-${side}`);
-        badge.innerText = "₹" + myBet; badge.style.display = "block";
+        badge.innerText = "₹" + myBet; 
+        badge.style.display = "block";
     };
 
     function showCards(d, t) {
@@ -115,9 +226,25 @@
     }
 
     function resetBoard() {
-        mySide = null; myBet = 0;
         document.querySelectorAll(".card").forEach(c => { c.classList.remove("reveal"); c.innerText="?"; });
         document.querySelectorAll(".chip-badge").forEach(b => b.style.display="none");
+    }
+
+    function listenToHistory() {
+        onValue(ref(db, "dt_history"), snap => {
+            const container = document.getElementById("trendContainer");
+            container.innerHTML = "";
+            let records = [];
+            snap.forEach(c => { records.push(c.val()); });
+            
+            // Show last 12 match trends
+            records.slice(-12).forEach(r => {
+                let symbol = r.winner === "dragon" ? "D" : (r.winner === "tiger" ? "T" : "TIE");
+                let charCode = symbol.charAt(0);
+                container.innerHTML += `<div class="dot dot-${charCode}">${charCode}</div>`;
+            });
+            if(records.length === 0) container.innerHTML = "<span style='font-size:11px; color:#aaa;'>Waiting for data...</span>";
+        });
     }
 
     window.selChip = (v, el) => {
