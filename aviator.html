@@ -126,6 +126,18 @@
                 const cBtn = document.getElementById("cBtn");
                 const msg = document.getElementById("msg");
 
+                // Checking force crash state from database sync pool
+                onValue(ref(db, `aviator_sync/state`), stateSnap => {
+                    if (stateSnap.exists() && stateSnap.val() === "CRASHED" && loopIndex >= 10 && loopIndex < 32) {
+                        if (!clientProcessingState) {
+                            clientProcessingState = true;
+                            executeServerlessCrash();
+                        }
+                    }
+                }, { onlyOnce: true });
+
+                if (clientProcessingState) return;
+
                 if (loopIndex < 10) {
                     // Phase A: Shared Live Betting Phase (10 Seconds)
                     betUI.style.display = "block";
@@ -190,7 +202,7 @@
         const msg = document.getElementById("msg");
 
         mText.innerText = "FLEW AWAY!";
-        mText.style.color = var(--red);
+        mText.style.color = "#ea1d39"; // Fixed broken var parameter reference assignment
         plane.classList.add("crashed");
 
         if (hasBet && !isCashed) {
