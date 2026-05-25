@@ -1,18 +1,14 @@
-<div class="input-group">
-            <label>Password</label>
-            <div class="pass-wrapper">
-                <input id="pass" type="password" placeholder="••••••••">
-     <!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Join DOT GAMES | Premium Access</title>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         :root { --primary: #4361ee; --bg: #f4f7fe; --white: #ffffff; --text-dark: #1e293b; --text-muted: #64748b; --success: #10b981; }
-        body { background: var(--bg); color: var(--text-dark); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; }
+        body { background: var(--bg); color: var(--text-dark); font-family: 'Plus Jakarta Sans', sans-serif; margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; padding: 20px; box-sizing: border-box; }
         .auth-container { width: 100%; max-width: 450px; }
         .auth-card { background: var(--white); padding: 30px 25px; border-radius: 32px; box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05); text-align: center; }
         .logo-area { width: 60px; height: 60px; background: #eef2ff; color: var(--primary); border-radius: 20px; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 800; margin: 0 auto 20px; }
@@ -27,7 +23,7 @@
         input:focus { border-color: var(--primary); background: #fff; }
         
         .pass-wrapper { position: relative; }
-        .toggle-pass { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; font-size: 16px; }
+        .toggle-pass { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: var(--text-muted); cursor: pointer; font-size: 16px; z-index: 5; }
 
         .btn { width: 100%; padding: 16px; background: var(--primary); color: white; border: none; border-radius: 16px; font-size: 16px; font-weight: 700; cursor: pointer; transition: 0.3s; margin-top: 10px; }
         .btn:disabled { background: #cbd5e1; cursor: not-allowed; }
@@ -70,7 +66,11 @@
             <input id="mobile" type="tel" placeholder="10 digit number">
         </div>
 
-           <i class="fa-solid fa-eye-slash toggle-pass" onclick="togglePassword('pass', this)"></i>
+        <div class="input-group">
+            <label>Password</label>
+            <div class="pass-wrapper">
+                <input id="pass" type="password" placeholder="••••••••">
+                <i class="fa-solid fa-eye-slash toggle-pass" onclick="togglePassword('pass', this)"></i>
             </div>
         </div>
 
@@ -128,7 +128,6 @@
         const passConfirm = document.getElementById("passConfirm").value;
         const btn = document.getElementById("regBtn");
 
-        // Validation logic
         if (!firstName || !lastName || !username || !email || mobile.length < 10) {
             return alert("Please fill all details correctly!");
         }
@@ -139,14 +138,12 @@
         btn.innerText = "Creating Account...";
 
         try {
-            // 1. Create User in Firebase Auth
             const res = await createUserWithEmailAndPassword(auth, email, pass);
             const user = res.user;
 
-            // 2. Send Email Verification
             await sendEmailVerification(user);
 
-            // 3. Save all info to Realtime Database
+            // Storing user under user_wallet structured rules for consistency
             await set(ref(db, "users/" + user.uid), {
                 firstName: firstName,
                 lastName: lastName,
@@ -162,8 +159,13 @@
                 createdAt: Date.now()
             });
 
+            // Creating wallet setup inside central tracking point instantly
+            await set(ref(db, "user_wallet/" + user.uid), {
+                balance: 0
+            });
+
             alert("Registration Successful! A verification email has been sent to " + email + ". Please verify your email before logging in.");
-            window.location.href = "index.html"; // Redirecting to login/index page so they can verify and login
+            window.location.href = "index.html";
 
         } catch (e) {
             alert("Error: " + e.message);
