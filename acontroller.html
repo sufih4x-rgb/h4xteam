@@ -2,52 +2,216 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Aviator Admin | Live Control</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aviator Admin | Master Ecosystem Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800;900&display=swap" rel="stylesheet">
     <style>
-        body { background: #0f172a; color: white; font-family: sans-serif; text-align: center; padding: 20px; }
-        .box { background: #1e293b; padding: 30px; border-radius: 20px; max-width: 500px; margin: auto; border: 1px solid #334155; }
-        .crash-btn { background: #ef4444; color: white; padding: 20px; width: 100%; border: none; border-radius: 10px; font-size: 24px; font-weight: 900; cursor: pointer; margin-top: 20px; }
-        .x-display { font-size: 50px; color: #f1c40f; margin: 20px 0; font-weight: 900; }
+        :root { --bg: #0b0f19; --card: #151d30; --border: #242f4d; --accent: #00f2fe; --red: #ef4444; --green: #10b981; --gold: #f1c40f; }
+        body { background: var(--bg); color: #f8fafc; font-family: 'Inter', sans-serif; margin: 0; padding: 20px; }
+        .dashboard { max-width: 1000px; margin: auto; }
+        
+        h1 { font-weight: 900; letter-spacing: -1px; text-transform: uppercase; margin-bottom: 30px; text-align: left; }
+        h1 span { color: var(--accent); }
+
+        /* Grid Layout for Analytics */
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 20px; margin-bottom: 30px; }
+        .card { background: var(--card); padding: 20px; border-radius: 16px; border: 1px solid var(--border); text-align: left; position: relative; overflow: hidden; }
+        .card::before { content: ''; position: absolute; top: 0; left: 0; width: 4px; height: 100%; background: var(--border); }
+        .card.profit::before { background: var(--green); }
+        .card.payout::before { background: var(--gold); }
+        .card-label { font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 1px; }
+        .card-val { font-size: 28px; font-weight: 900; margin-top: 5px; font-variant-numeric: tabular-nums; }
+
+        /* Engine Room */
+        .control-room { display: grid; grid-template-columns: 1fr 1.2fr; gap: 20px; }
+        @media(max-width: 768px) { .control-room { grid-template-columns: 1fr; } }
+        
+        .panel { background: var(--card); padding: 25px; border-radius: 20px; border: 1px solid var(--border); text-align: left; }
+        .panel h2 { font-weight: 800; margin-top: 0; border-bottom: 1px solid var(--border); padding-bottom: 12px; font-size: 18px; }
+        
+        .x-display { font-size: 55px; font-weight: 900; color: #fff; text-align: center; margin: 25px 0; font-variant-numeric: tabular-nums; text-shadow: 0 0 20px rgba(255,255,255,0.1); }
+        
+        .status-badge { display: inline-block; padding: 4px 12px; border-radius: 50px; font-size: 11px; font-weight: 900; letter-spacing: 1px; text-transform: uppercase; background: #000; text-align: center; margin-bottom: 10px; }
+        
+        .crash-btn { background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; padding: 18px; width: 100%; border: none; border-radius: 12px; font-size: 18px; font-weight: 900; cursor: pointer; box-shadow: 0 4px 15px rgba(239, 68, 68, 0.3); transition: all 0.2s; text-transform: uppercase; }
+        .crash-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(239, 68, 68, 0.4); }
+        .crash-btn:active { transform: translateY(0); }
+
+        /* Log List styling */
+        .log-box { font-family: monospace; background: #000; padding: 15px; border-radius: 10px; height: 180px; overflow-y: auto; font-size: 12px; color: #38bdf8; border: 1px solid var(--border); }
+        .log-line { margin-bottom: 6px; border-bottom: 1px dashed #111; padding-bottom: 4px; }
     </style>
 </head>
 <body>
-    <div class="box">
-        <h2>ENGINE CONTROL</h2>
-        <div id="state" style="color:#2ecc71">PHASE: BETTING</div>
-        <div class="x-display" id="showX">1.00x</div>
-        <button class="crash-btn" onclick="forceCrash()">CRASH PLANE NOW 💥</button>
+
+<div class="dashboard">
+    <h1>Aviator Elite <span>| Master Matrix Control</span></h1>
+
+    <!-- LIVE TELEMETRY LEDGER STATS -->
+    <div class="grid">
+        <div class="card profit">
+            <div class="card-label">Total System Profit (Net)</div>
+            <div class="card-val" id="sysProfit" style="color: var(--green);">₹0.00</div>
+        </div>
+        <div class="card payout">
+            <div class="card-label">Total Users Payout (Today)</div>
+            <div class="card-val" id="userPaid" style="color: var(--gold);">₹0.00</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Today's Total Volume</div>
+            <div class="card-val" id="todayVol" style="color: #38bdf8;">₹0.00</div>
+        </div>
+        <div class="card">
+            <div class="card-label">Yesterday's Operational Volume</div>
+            <div class="card-val" id="yestVol" style="color: #94a3b8;">₹0.00</div>
+        </div>
     </div>
+
+    <!-- ENGINE INTERCEPTOR ROOM -->
+    <div class="control-room">
+        <div class="panel">
+            <h2>LIVE RADAR INTERCEPTOR</h2>
+            <div style="text-align: center;">
+                <div class="status-badge" id="stateBadge" style="color: var(--green);">INITIALIZING</div>
+            </div>
+            <div class="x-display" id="showX">1.00x</div>
+            <button class="crash-btn" onclick="forceEcosystemIntercept()">FORCE CRASH MULTIPLIER 💥</button>
+        </div>
+
+        <div class="panel">
+            <h2>SYSTEM OPERATIONAL LOGS</h2>
+            <div class="log-box" id="adminLogs">
+                <div class="log-line">[SYSTEM]: Core synchronization engines initiated securely...</div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, update, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = { apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", authDomain: "test-eb5e7.firebaseapp.com", databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", projectId: "test-eb5e7", appId: "1:366282855653:web:dca7e000f5a22fb11f300c" };
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let state = "BETTING", timer = 15, x = 1.0, manualCrash = false;
+    let currentGlobalState = "BETTING";
+    let interceptModeActive = false;
 
-    setInterval(() => {
-        if(state === "BETTING") {
-            timer--;
-            if(timer <= 0) { state = "FLYING"; x = 1.0; }
-        } 
-        else if(state === "FLYING") {
-            x += 0.04;
-            if(x >= 30.0 || manualCrash) { state = "CRASHED"; timer = 5; manualCrash = false; }
-        } 
-        else if(state === "CRASHED") {
-            timer--;
-            if(timer <= 0) { state = "BETTING"; timer = 15; }
+    // Connect to Ledger Engine and sync tracking data
+    function syncLedgerEngine() {
+        const todayStamp = new Date().toISOString().split('T')[0];
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yestStamp = yesterday.toISOString().split('T')[0];
+
+        // Global lifetime stats hook
+        onValue(ref(db, `aviator_admin_ledger/stats`), s => {
+            if(s.exists()){
+                const data = s.val();
+                document.getElementById("sysProfit").innerText = "₹" + (data.totalSystemProfit || 0).toFixed(2);
+                document.getElementById("userPaid").innerText = "₹" + (data.totalUsersPaidOut || 0).toFixed(2);
+            }
+        });
+
+        // Today's ledger tracking module
+        onValue(ref(db, `aviator_admin_ledger/daily/${todayStamp}`), s => {
+            if(s.exists()){
+                const data = s.val();
+                const totalToday = (data.investmentVolume || 0) + (data.payoutVolume || 0);
+                document.getElementById("todayVol").innerText = "₹" + totalToday.toFixed(2);
+            } else {
+                document.getElementById("todayVol").innerText = "₹0.00";
+            }
+        });
+
+        // Yesterday's volume data snapshot view
+        onValue(ref(db, `aviator_admin_ledger/daily/${yestStamp}`), s => {
+            if(s.exists()){
+                const data = s.val();
+                const totalYest = (data.investmentVolume || 0) + (data.payoutVolume || 0);
+                document.getElementById("yestVol").innerText = "₹" + totalYest.toFixed(2);
+            } else {
+                document.getElementById("yestVol").innerText = "₹0.00";
+            }
+        });
+    }
+
+    // REAL-TIME ECOSYSTEM LOOP PARSER (Synchronized directly with User Device Viewport)
+    function launchEcosystemClock() {
+        onValue(ref(db, ".info/serverTimeOffset"), offsetSnap => {
+            const offset = offsetSnap.val() || 0;
+            
+            setInterval(() => {
+                const serverTime = Date.now() + offset;
+                const totalSeconds = Math.floor(serverTime / 1000);
+                const loopIndex = totalSeconds % 35; // Shared uniform timeline sequence loop
+
+                const badge = document.getElementById("stateBadge");
+                const xText = document.getElementById("showX");
+
+                if (loopIndex < 10) {
+                    currentGlobalState = "BETTING";
+                    badge.innerText = `PHASE: BETTING (${10 - loopIndex}s)`;
+                    badge.style.color = "var(--green)";
+                    xText.innerText = "WAITING...";
+                    xText.style.color = "#64748b";
+                    interceptModeActive = false;
+                } 
+                else if (loopIndex >= 10 && loopIndex < 32) {
+                    currentGlobalState = "FLYING";
+                    badge.innerText = "PHASE: FLIGHT IN PROGRESS";
+                    badge.style.color = "var(--gold)";
+                    xText.style.color = "#ffffff";
+
+                    let timeFactor = (loopIndex - 10);
+                    let currentMultiplier = 1.0 + (Math.pow(timeFactor, 2) * 0.015);
+                    
+                    if(interceptModeActive) {
+                        xText.innerText = "FLEW AWAY!";
+                        xText.style.color = "var(--red)";
+                        badge.innerText = "PHASE: INTERCEPTED";
+                        badge.style.color = "var(--red)";
+                    } else {
+                        xText.innerText = currentMultiplier.toFixed(2) + "x";
+                    }
+                } 
+                else {
+                    currentGlobalState = "CRASHED";
+                    badge.innerText = "PHASE: PLANE CRASHED";
+                    badge.style.color = "var(--red)";
+                    xText.innerText = "FLEW AWAY!";
+                    xText.style.color = "var(--red)";
+                }
+            }, 250);
+        });
+    }
+
+    // MASTER ECOSYSTEM RADAR INTERCEPT TRIGGER
+    window.forceEcosystemIntercept = async () => {
+        if(currentGlobalState !== "FLYING" || interceptModeActive) {
+            pushLog("[WARN] Intercept can only be executed during a live active flight phase.");
+            return;
         }
 
-        update(ref(db, `aviator_sync`), { state, time: timer, x });
-        document.getElementById("showX").innerText = x.toFixed(2) + "x";
-        document.getElementById("state").innerText = "PHASE: " + state;
-    }, 1000);
+        interceptModeActive = true;
+        pushLog("[CRITICAL] Interception command processed. Forcing instant flight crash sequence...");
+        
+        // Push secure override signal payload to shared synchronizer pool database path
+        await set(ref(db, `aviator_sync/state`), "CRASHED");
+        pushLog("[SUCCESS] Global clients successfully forced to abort and drop investments.");
+    };
 
-    window.forceCrash = () => { manualCrash = true; };
+    function pushLog(message) {
+        const logBox = document.getElementById("adminLogs");
+        const timeStr = new Date().toLocaleTimeString();
+        logBox.innerHTML += `<div class="log-line"><strong>[${timeStr}]</strong> ${message}</div>`;
+        logBox.scrollTop = logBox.scrollHeight;
+    }
+
+    // Execute system bootstrap loops
+    syncLedgerEngine();
+    launchEcosystemClock();
 </script>
 </body>
 </html>
