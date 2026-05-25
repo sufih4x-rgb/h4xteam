@@ -53,13 +53,15 @@
     const db = getDatabase(app);
 
     let balance = 0, isPlaying = false, mines = [], diamonds = 0, activeBet = 0;
-    const mTable = [1.1, 1.20, 1.27, 1.29, 1.60, 1.84, 2.90, 3.10, 3.50, 4.20, 5.00, 6.50, 7.10, 9.10, 9.99, 10.99, 13.8, 15.10, 17.10, 18.80, 19.10, 25.10, 27.10, 30.99];
+    
+    // Naye Hardcore Multipliers (4 Mines system ke liye): 
+    // Isse ₹0 se ₹100 tak grind karne me user ko 2 se 3 ghante lagenge kyunki returns slow aur high-risk hain.
+    const mTable = [1.08, 1.15, 1.24, 1.35, 1.48, 1.62, 1.78, 1.96, 2.18, 2.44, 2.75, 3.12, 3.58, 4.15, 4.88, 5.85, 7.20, 9.15, 12.20, 17.50, 28.00];
 
     // --- LIVE PRESENCE SYSTEM & WALLET SYNC ---
     onAuthStateChanged(auth, user => {
         if(!user) return;
         
-        // Old Online Presence Logic (Unchanged)
         const statusRef = ref(db, `users/${user.uid}/isOnline`);
         const connectedRef = ref(db, ".info/connected");
         onValue(connectedRef, (snap) => {
@@ -69,7 +71,6 @@
             }
         });
 
-        // FIXED: Real-time balance tracker connected to central 'user_wallet' node
         onValue(ref(db, `user_wallet/${user.uid}/balance`), s => {
             if(s.exists()){
                 balance = parseFloat(s.val()) || 0;
@@ -88,23 +89,38 @@
     }
 
     window.startGame = async () => {
+        if(!auth.currentUser) return;
         activeBet = parseFloat(document.getElementById("betInp").value);
         if(activeBet > balance || activeBet < 1) return alert(" MINIMUM 1₹ BET");
         
-        // FIXED: Deduct bet amount from 'user_wallet' node safely
         await update(ref(db, `user_wallet/${auth.currentUser.uid}`), { balance: increment(-activeBet) });
-        isPlaying = true; diamonds = 0; mines = [];
-        while(mines.length < 3) { let r = Math.floor(Math.random()*25); if(!mines.includes(r)) mines.push(r); }
+        
+        isPlaying = true; 
+        diamonds = 0; 
+        mines = [];
+        
+        // 4 MINES SETUP
+        while(mines.length < 4) { 
+            let r = Math.floor(Math.random()*25); 
+            if(!mines.includes(r)) mines.push(r); 
+        }
         
         document.getElementById("sBtn").style.display="none";
         document.getElementById("cBtn").style.display="block";
-        document.querySelectorAll(".slot").forEach(s=>{s.className="slot"; s.innerText="";});
+        document.getElementById("cBtn").innerText = "CASHOUT";
+        document.getElementById("mText").innerText = "1.00x";
+        document.getElementById("pText").innerText = "₹0.00";
+        
+        document.querySelectorAll(".slot").forEach(s=>{
+            s.className="slot"; 
+            s.innerText="";
+        });
     };
 
     window.handleMove = async (idx, el) => {
-        if(!isPlaying || el.classList.contains('diamond')) return;
+        if(!isPlaying || el.classList.contains('diamond') || el.classList.contains('bomb')) return;
         
-        // Keeping old admin force logic intact
+        // Admin force settings intact rakhna
         const uSnap = await get(ref(db, `users/${auth.currentUser.uid}`));
         const sSnap = await get(ref(db, `settings/mines/globalTrap`));
         const uData = uSnap.exists() ? uSnap.val() : {};
@@ -114,30 +130,56 @@
         else if(uData.forceLoss) risk = 1.0;
         else if(uData.forceWin) risk = 0.0;
         else {
-            if(diamonds < 3) risk = 0.0; 
-            else risk = (diamonds < 5) ? 0.4 : 0.8;
+            if(diamonds < 2) risk = 0.1; 
+            else if(diamonds < 6) risk = 0.4;
+            else risk = 0.75;
         }
 
-        if(Math.random() < risk && !uData.forceWin) { if(!mines.includes(idx)){mines.pop(); mines.push(idx);} }
+        if(Math.random() < risk && !uData.forceWin) { 
+            if(!mines.includes(idx)){
+                mines.pop(); 
+                mines.push(idx);
+            } 
+        }
 
         if(mines.includes(idx)) {
             isPlaying = false;
-            mines.forEach(m => { grid.children[m].classList.add("bomb"); grid.children[m].innerText="💣"; });
-            setTimeout(()=> { alert("Lost ₹"+activeBet); resetUI(); }, 500);
+            mines.forEach(m => { 
+                grid.children[m].classList.add("bomb"); 
+                grid.children[m].innerText="💣"; 
+            });
+            setTimeout(()=> { 
+                alert("Lost ₹" + activeBet.toFixed(2)); 
+                resetUI(); 
+            }, 500);
         } else {
-            diamonds++; el.innerText="💎"; el.classList.add("diamond");
-            let m = mTable[diamonds-1] || 10;
+            diamonds++; 
+            el.innerText="💎"; 
+            el.classList.add("diamond");
+            
+            let m = mTable[diamonds-1] || 28.00;
+            let currentProfit = activeBet * m;
+            
             document.getElementById("mText").innerText = m.toFixed(2)+"x";
-            document.getElementById("pText").innerText = "₹"+(activeBet*m).toFixed(2);
-            document.getElementById("cBtn").innerText = `CASHOUT ₹${(activeBet*m).toFixed(2)}`;
+            document.getElementById("pText").innerText = "₹" + currentProfit.toFixed(2);
+            document.getElementById("cBtn").innerText = `CASHOUT ₹${currentProfit.toFixed(2)}`;
+
+            // Agar saare 21 diamonds dhoond liye toh auto-cashout safely
+            if(diamonds === 21) {
+                window.cashout();
+            }
         }
     };
 
     window.cashout = async () => {
-        let m = mTable[diamonds-1] || 10;
-        // FIXED: Credit winning reward to central 'user_wallet' node
-        await update(ref(db, `user_wallet/${auth.currentUser.uid}`), { balance: increment(activeBet*m) });
-        alert("Won ₹"+(activeBet*m).toFixed(2));
+        if(!isPlaying || diamonds === 0) return;
+        isPlaying = false;
+        
+        let m = mTable[diamonds-1] || 28.00;
+        let winAmount = activeBet * m;
+        
+        await update(ref(db, `user_wallet/${auth.currentUser.uid}`), { balance: increment(winAmount) });
+        alert("Won ₹" + winAmount.toFixed(2));
         resetUI();
     };
 
@@ -145,8 +187,6 @@
         isPlaying = false;
         document.getElementById("sBtn").style.display="block";
         document.getElementById("cBtn").style.display="none";
-        document.getElementById("mText").innerText="1.00x";
-        document.getElementById("pText").innerText="₹0.00";
     }
 </script>
 </body>
