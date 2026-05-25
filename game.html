@@ -191,7 +191,7 @@
     window.placeBet = async () => {
         const amt = parseInt(document.getElementById('betAmount').value);
         if(!selection) return alert("Please select RED or GREEN!");
-        if(amt < 10) return alert("Minimum bet is ₹10");
+        if(amt < 1) return alert("Minimum bet is ₹1");
         if(amt > balance) return alert("Insufficient Balance!");
 
         const currentBetCheck = await get(ref(db, `user_bets/${uid}`));
