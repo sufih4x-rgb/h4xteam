@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andar Bahar - Global Synchronized Loop</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        :root { --bg: #060814; --surface: #0e1326; --card-bg: #1d283c; --primary: #fbbf24; --purple: #c084fc; --success: #10b981; --danger: #f43f5e; --text: #f3f4f6; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; }
+        .app-shell { width: 100%; max-width: 480px; min-height: 100vh; background: #090d1a; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.7); }
+        
+        .top-nav { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; background: var(--surface); }
+        .period-badge { background: #1e293b; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #38bdf8; border: 1px solid #334155; }
+        
+        /* 30s + 10s Synchronized Progress Bar Clock */
+        .timer-banner { background: linear-gradient(135deg, #0f172a, #1e1b4b); padding: 15px; margin: 12px 15px 0 15px; border-radius: 14px; border: 1px solid #3b82f6; display: flex; justify-content: space-between; align-items: center; }
+        .timer-digits { font-size: 26px; font-weight: 900; color: var(--primary); font-family: monospace; }
+        .timer-label { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        .wallet-banner { background: #0e1326; margin: 10px 15px; padding: 12px 20px; border-radius: 12px; border: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; }
+        .bal-val { font-size: 22px; font-weight: 900; color: var(--success); }
+
+        .board { flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
+        .joker-section { background: var(--surface); border: 2px dashed #3b82f6; padding: 12px; border-radius: 14px; text-align: center; }
+        
+        .card-display { width: 65px; height: 90px; background: white; color: black; border-radius: 8px; display: inline-flex; justify-content: center; align-items: center; font-size: 24px; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.3); margin-top: 5px; }
+        .red-card { color: var(--danger); }
+        .black-card { color: #111827; }
+
+        .slots-container { display: flex; gap: 12px; }
+        .slot-box { flex: 1; background: var(--surface); padding: 12px; border-radius: 14px; border: 1px solid #1e293b; min-height: 110px; text-align: center; transition: 0.3s; }
+        .slot-box.active-andar { border-color: var(--primary); background: rgba(251,191,36,0.05); }
+        .slot-box.active-bahar { border-color: var(--purple); background: rgba(192,132,252,0.05); }
+        
+        .stream-cards { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 10px; }
+        .mini-card { width: 32px; height: 45px; background: white; color: black; font-size: 11px; font-weight: 700; border-radius: 4px; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+
+        .choice-row { display: flex; gap: 12px; margin: 5px 15px; }
+        .bet-side-btn { flex: 1; padding: 14px; border: 2px solid #334155; border-radius: 12px; font-weight: 800; font-size: 15px; color: white; background: var(--card-bg); cursor: pointer; transition: 0.2s; }
+        .bet-side-btn.selected-a { background: rgba(251,191,36,0.2); border-color: var(--primary); color: var(--primary); }
+        .bet-side-btn.selected-b { background: rgba(192,132,252,0.2); border-color: var(--purple); color: var(--purple); }
+
+        .controls { background: var(--surface); padding: 15px 20px; border-radius: 20px 20px 0 0; border-top: 1px solid #1e293b; }
+        .input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .input-row input { flex: 1; padding: 10px; background: #060814; border: 1px solid #374151; border-radius: 10px; color: white; font-size: 18px; font-weight: 700; text-align: center; }
+        .math-btn { background: #374151; border: none; color: white; width: 38px; height: 38px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
+
+        .chips-scroll { display: flex; gap: 5px; margin-bottom: 12px; }
+        .chip { flex: 1; background: var(--card-bg); border: 1px solid #374151; padding: 8px 0; border-radius: 8px; font-size: 12px; font-weight: 700; color: white; cursor: pointer; text-align: center; }
+
+        .lock-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 12px; color: white; font-size: 16px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
+        .lock-btn:disabled { background: #1e293b; color: #6b7280; cursor: not-allowed; }
+        
+        .limits-label { text-align: center; font-size: 11px; color: #6b7280; margin-top: 8px; font-weight: 600; }
+        .status-toast { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); padding: 15px 30px; border-radius: 25px; font-weight: 900; font-size: 18px; display: none; z-index: 100; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+    <div class="status-toast" id="toastAlert"></div>
+
+    <div class="top-nav">
+        <div style="font-weight:900; font-size:16px; letter-spacing:0.5px;">MULTIPLAYER LOBBY</div>
+        <div class="period-badge">Period: <span id="currentPeriodText">---------</span></div>
+    </div>
+
+    <!-- Live Timer Interface Section -->
+    <div class="timer-banner">
+        <div>
+            <div class="timer-label" id="timerStatusLabel">Awaiting Bets</div>
+            <div style="font-size:11px; color:#94a3b8; margin-top:2px;" id="helperSubtext">Place your chips on your side</div>
+        </div>
+        <div class="timer-digits" id="secondsCounterText">30s</div>
+    </div>
+
+    <div class="wallet-banner">
+        <div style="font-size:12px; font-weight:700; color:#9ca3af;">YOUR BALANCE</div>
+        <div class="bal-val">₹<span id="walletBalText">0.00</span></div>
+    </div>
+
+    <div class="board">
+        <div class="joker-section">
+            <div style="font-size:11px; font-weight:700; color:#3b82f6; letter-spacing:0.5px;">COMMON JOKER</div>
+            <div id="jokerCardBox" class="card-display">?</div>
+        </div>
+
+        <div class="slots-container">
+            <div class="slot-box" id="boxAndar">
+                <div style="font-size:13px; font-weight:900; color:var(--primary); letter-spacing:0.5px;">ANDAR</div>
+                <div class="stream-cards" id="andarCardsGrid"></div>
+            </div>
+            <div class="slot-box" id="boxBahar">
+                <div style="font-size:13px; font-weight:900; color:var(--purple); letter-spacing:0.5px;">BAHAR</div>
+                <div class="stream-cards" id="baharCardsGrid"></div>
+            </div>
+        </div>
+        <div id="statusMessage" style="text-align:center; font-size:12px; color:#9ca3af; font-weight:600;"></div>
+    </div>
+
+    <div class="choice-row">
+        <button class="bet-side-btn" id="sideA" onclick="selectGameSide('ANDAR')">ANDAR (1.90x)</button>
+        <button class="bet-side-btn" id="sideB" onclick="selectGameSide('BAHAR')">BAHAR (1.90x)</button>
+    </div>
+
+    <div class="controls">
+        <div class="input-row">
+            <button class="math-btn" onclick="adjustValue(-10)">-</button>
+            <input type="number" id="betAmountField" value="10">
+            <button class="math-btn" onclick="adjustValue(10)">+</button>
+        </div>
+        <div class="chips-scroll">
+            <button class="chip" onclick="setChips(10)">₹10</button>
+            <button class="chip" onclick="setChips(50)">₹50</button>
+            <button class="chip" onclick="setChips(100)">₹100</button>
+            <button class="chip" onclick="setChips(500)">₹500</button>
+            <button class="chip" style="background:#334155;" onclick="doubleChips()">2X</button>
+        </div>
+        <button class="lock-btn" id="lockBetBtn" onclick="lockBetTransaction()">Lock Bet Size 🔒</button>
+        <div class="limits-label">Min: ₹<span id="lblMinBet">10</span> | Max: ₹<span id="lblMaxBet">5000</span></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, onValue, get, update, increment, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
+        authDomain: "test-eb5e7.firebaseapp.com", 
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
+        projectId: "test-eb5e7", 
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    let uid = "";
+    let playerSelectedSide = "";
+    let finalBetLockedAmount = 0;
+    let isBetPlacedThisRound = false;
+    let activePeriodId = "";
+    
+    let minBetLimit = 10;
+    let maxBetLimit = 5000;
+    const internalPayoutFactor = 1.90; // Balanced math for controlled progression
+    
+    const suites = ['♦','♥️','♠️','♣️'];
+    const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+
+    window.selectGameSide = (side) => {
+        if(isBetPlacedThisRound) return;
+        playerSelectedSide = side;
+        document.getElementById("sideA").className = "bet-side-btn" + (side === "ANDAR" ? " selected-a" : "");
+        document.getElementById("sideB").className = "bet-side-btn" + (side === "BAHAR" ? " selected-b" : "");
+    };
+
+    window.adjustValue = (x) => { if(!isBetPlacedThisRound) { let el = document.getElementById("betAmountField"); let v = (parseInt(el.value) || 0) + x; if(v >= minBetLimit) el.value = v; } };
+    window.setChips = (x) => { if(!isBetPlacedThisRound) document.getElementById("betAmountField").value = x; };
+    window.doubleChips = () => { if(!isBetPlacedThisRound) document.getElementById("betAmountField").value = (parseInt(document.getElementById("betAmountField").value) || 10) * 2; };
+
+    onAuthStateChanged(auth, user => {
+        if(!user) return location.href = "index.html";
+        uid = user.uid;
+        onValue(ref(db, `user_wallet/${uid}/balance`), snap => {
+            document.getElementById("walletBalText").innerText = parseFloat(snap.val() || 0).toFixed(2);
+        });
+
+        // Listen for Admin Dynamic Config Limits
+        onValue(ref(db, 'ab_game_config'), snap => {
+            if(snap.exists()){
+                let conf = snap.val();
+                minBetLimit = parseInt(conf.minBet || 10);
+                maxBetLimit = parseInt(conf.maxBet || 5000);
+                document.getElementById("lblMinBet").innerText = minBetLimit;
+                document.getElementById("lblMaxBet").innerText = maxBetLimit;
+            }
+        });
+        
+        // Synchronize with the central server clock channel
+        syncWithGlobalEngineLoop();
+    });
+
+    window.lockBetTransaction = async () => {
+        const amt = parseInt(document.getElementById("betAmountField").value);
+        if(!playerSelectedSide) { alert("Please pick Andar or Bahar side!"); return; }
+        if(isNaN(amt) || amt < minBetLimit || amt > maxBetLimit) { 
+            alert(`Bet size must be between ₹${minBetLimit} and ₹${maxBetLimit}`); 
+            return; 
+        }
+
+        const balSnap = await get(ref(db, `user_wallet/${uid}/balance`));
+        if((balSnap.val() || 0) < amt) { alert("Insufficient Wallet Balance!"); return; }
+
+        isBetPlacedThisRound = true;
+        finalBetLockedAmount = amt;
+        
+        document.getElementById("lockBetBtn").disabled = true;
+        document.getElementById("lockBetBtn").innerText = "BET LOCKED ✅";
+        disableBettingUI(true);
+        
+        // Deduct money from wallet immediately
+        await update(ref(db, `user_wallet/${uid}`), { balance: increment(-finalBetLockedAmount) });
+        
+        // Broadcast user bet to pool for Admin calculations
+        await update(ref(db, `ab_live_pools/${activePeriodId}/${playerSelectedSide}`), {
+            totalAmount: increment(finalBetLockedAmount)
+        });
+
+        document.getElementById("statusMessage").innerText = `Registered ₹${finalBetLockedAmount} on ${playerSelectedSide}`;
+    };
+
+    function disableBettingUI(status) {
+        document.getElementById("sideA").disabled = status;
+        document.getElementById("sideB").disabled = status;
+        document.getElementById("betAmountField").disabled = status;
+    }
+
+    // Central Engine Sync Loop (30s Bet + 10s Payout Show Window)
+    function syncWithGlobalEngineLoop() {
+        onValue(ref(db, 'ab_current_loop_state'), async (snapshot) => {
+            if(!snapshot.exists()) return;
+            const loopState = snapshot.val();
+            
+            const serverSeconds = loopState.secondsLeft;
+            const currentPhase = loopState.phase; // "BETTING" or "SHOWTIME"
+            
+            activePeriodId = loopState.periodId;
+            document.getElementById("currentPeriodText").innerText = activePeriodId;
+
+            if (currentPhase === "BETTING") {
+                document.getElementById("secondsCounterText").innerText = serverSeconds + "s";
+                document.getElementById("timerStatusLabel").innerText = "Awaiting Bets";
+                document.getElementById("helperSubtext").innerText = "Predict where the card will land";
+                
+                if(!isBetPlacedThisRound) {
+                    document.getElementById("lockBetBtn").disabled = false;
+                    document.getElementById("lockBetBtn").innerText = "Lock Bet Size 🔒";
+                    disableBettingUI(false);
+                }
+            } 
+            else if (currentPhase === "SHOWTIME") {
+                document.getElementById("secondsCounterText").innerText = "00s";
+                document.getElementById("timerStatusLabel").innerText = "SHOWTIME 🃏";
+                document.getElementById("helperSubtext").innerText = "Cards Dealing... No more bets";
+                document.getElementById("lockBetBtn").disabled = true;
+                document.getElementById("lockBetBtn").innerText = "BETTING CLOSED 🚫";
+                disableBettingUI(true);
+                
+                // If cards are not rendered yet for this round, load the shared matrix
+                if(document.getElementById("jokerCardBox").innerText === "?") {
+                    renderSharedRoundOutcome(loopState.outcomeDetails);
+                }
+            }
+            
+            // Clean up board at the start of a brand new period block
+            if(currentPhase === "BETTING" && serverSeconds === 30) {
+                resetBoardForNewPeriod();
+            }
+        });
+    }
+
+    function resetBoardForNewPeriod() {
+        isBetPlacedThisRound = false;
+        finalBetLockedAmount = 0;
+        playerSelectedSide = "";
+        document.getElementById("sideA").className = "bet-side-btn";
+        document.getElementById("sideB").className = "bet-side-btn";
+        document.getElementById("jokerCardBox").innerText = "?";
+        document.getElementById("jokerCardBox").className = "card-display";
+        document.getElementById("andarCardsGrid").innerHTML = "";
+        document.getElementById("baharCardsGrid").innerHTML = "";
+        document.getElementById("statusMessage").innerText = "New period active! Bet window open.";
+        document.getElementById("boxAndar").className = "slot-box";
+        document.getElementById("boxBahar").className = "slot-box";
+    }
+
+    function renderSharedRoundOutcome(outcome) {
+        if(!outcome) return;
+        
+        // Step 1: Render common Joker card
+        let isJokerRed = (outcome.jokerSuite === '♦' || outcome.jokerSuite === '♥️');
+        const jokerBox = document.getElementById("jokerCardBox");
+        jokerBox.className = "card-display " + (isJokerRed ? "red-card" : "black-card");
+        jokerBox.innerText = `${outcome.jokerRank}${outcome.jokerSuite}`;
+
+        // Step 2: Animate and distribute items step by step over 10 seconds total duration
+        let localCardsArr = outcome.cardsDealtSequence || [];
+        let i = 0;
+        
+        let dealTimerInterval = setInterval(() => {
+            if(i >= localCardsArr.length) {
+                clearInterval(dealTimerInterval);
+                displayFinalRoundResolution(outcome.winningSide);
+                return;
+            }
+            
+            let item = localCardsArr[i];
+            let isItemRed = (item.suite === '♦' || item.suite === '♥️');
+            let colorStyle = isItemRed ? 'color:var(--danger)' : 'color:#111827';
+            let cardHtml = `<div class="mini-card" style="${colorStyle}">${item.rank}${item.suite}</div>`;
+            
+            if(item.side === "ANDAR") {
+                document.getElementById("andarCardsGrid").innerHTML += cardHtml;
+                document.getElementById("boxAndar").classList.add("active-andar");
+                document.getElementById("boxBahar").classList.remove("active-bahar");
+            } else {
+                document.getElementById("baharCardsGrid").innerHTML += cardHtml;
+                document.getElementById("boxBahar").classList.add("active-bahar");
+                document.getElementById("boxAndar").classList.remove("active-andar");
+            }
+            i++;
+        }, 600); // 10s Window animation timing allocation
+    }
+
+    async function displayFinalRoundResolution(winnerZone) {
+        document.getElementById("statusMessage").innerText = `Winner declared: ${winnerZone} 🎉`;
+        
+        if(isBetPlacedThisRound) {
+            let userWonRound = (playerSelectedSide === winnerZone);
+            let absolutePayout = userWonRound ? (finalBetLockedAmount * internalPayoutFactor) : 0;
+            
+            if(userWonRound && absolutePayout > 0) {
+                await update(ref(db, `user_wallet/${uid}`), { balance: increment(absolutePayout) });
+            }
+
+            // Client side immediate score feedback
+            let toast = document.getElementById("toastAlert");
+            toast.innerText = userWonRound ? `WINNER (+₹${absolutePayout.toFixed(2)})` : `LOSS (-₹${finalBetLockedAmount})`;
+            toast.style.background = userWonRound ? "var(--success)" : "var(--danger)";
+            toast.style.display = "block";
+            setTimeout(() => { toast.style.display = "none"; }, 3500);
+            
+            isBetPlacedThisRound = false; // Reset flag safe state
+        }
+    }
+</script>
+</body>
+</html>
