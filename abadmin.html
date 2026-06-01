@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Andar Bahar - Core Server Loop Pulse Engine</title>
+    <style>
+        body { font-family: monospace; background: #02040a; color: #00ff66; padding: 30px; }
+        .log-box { background: #090f1f; border: 1px solid #1e293b; padding: 20px; border-radius: 10px; height: 350px; overflow-y: scroll; color: #94a3b8; }
+        .accent { color: #fbbf24; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<h2>⚙️ Andar Bahar Continuous Loop Synchronizer Server</h2>
+<p>Keep this tab open as background daemon worker to rotate global game states every 40 seconds.</p>
+
+<div style="background:#0f172a; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid #334155;">
+    <div>CURRENT REALTIME CLOCK PERIOD: <span id="srvPeriod" class="accent">---------</span></div>
+    <div>ACTIVE RUNNING PHASE STATUS: <span id="srvPhase" style="color:#38bdf8; font-weight:bold;">BETTING</span></div>
+    <div>SECONDS TIMER LEFT IN PHASE: <span id="srvSecs" style="color:#ef476f; font-weight:bold;">30</span></div>
+</div>
+
+<h4>Live Server Console Logs Stream:</h4>
+<div class="log-box" id="terminalLogs"></div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, update, increment, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
+        authDomain: "test-eb5e7.firebaseapp.com", 
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
+        projectId: "test-eb5e7", 
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let currentPhase = "BETTING"; // "BETTING" (30s) or "SHOWTIME" (10s)
+    let secondsCounter = 30;
+    let activePeriodUniqueStr = "";
+
+    function generateNewPeriodString() {
+        let d = new Date();
+        let yyyymmdd = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+        let timestampSeed = String(Math.floor(d.getTime()/1000)).slice(-4);
+        return yyyymmdd + "-" + timestampSeed;
+    }
+
+    async function spinNewGlobalPeriodLoop() {
+        activePeriodUniqueStr = generateNewPeriodString();
+        currentPhase = "BETTING";
+        secondsCounter = 30;
+
+        document.getElementById("srvPeriod").innerText = activePeriodUniqueStr;
+        
+        // Initialize empty pools for calculation
+        await set(ref(db, `ab_live_pools/${activePeriodUniqueStr}`), {
+            ANDAR: { totalAmount: 0 },
+            BAHAR: { totalAmount: 0 }
+        });
+
+        logger(`Period ${activePeriodUniqueStr} launched. 30 seconds betting time initialized.`);
+        broadcastPulse();
+    }
+
+    function logger(msg) {
+        const box = document.getElementById("terminalLogs");
+        box.innerHTML += `[${new Date().toLocaleTimeString()}] -> ${msg}<br>`;
+        box.scrollTop = box.scrollHeight;
+    }
+
+    async function broadcastPulse() {
+        await set(ref(db, 'ab_current_loop_state/secondsLeft'), secondsCounter);
+        await set(ref(db, 'ab_current_loop_state/phase'), currentPhase);
+        await set(ref(db, 'ab_current_loop_state/periodId'), activePeriodUniqueStr);
+        
+        document.getElementById("srvPhase").innerText = currentPhase;
+        document.getElementById("srvSecs").innerText = secondsCounter + "s";
+    }
+
+    // High fidelity global master ticker pulse logic
+    setInterval(async () => {
+        secondsCounter--;
+
+        if (currentPhase === "BETTING") {
+            if (secondsCounter <= 0) {
+                // Shift state into Showtime distribution window
+                currentPhase = "SHOWTIME";
+                secondsCounter = 10;
+                logger("Betting closed. Computing safest high retention outcome...");
+                
+                let simulationData = await computeHouseEdgeOutcome();
+                await set(ref(db, 'ab_current_loop_state/outcomeDetails'), simulationData);
+            }
+        } 
+        else if (currentPhase === "SHOWTIME") {
+            if (secondsCounter <= 0) {
+                // Restart infinite loop
+                await spinNewGlobalPeriodLoop();
+                return;
+            }
+        }
+
+        broadcastPulse();
+    }, 1000);
+
+    // Dynamic Safe Logic: Admin Profits Always Protected
+    async function computeHouseEdgeOutcome() {
+        const poolsSnap = await get(ref(db, `ab_live_pools/${activePeriodUniqueStr}`));
+        let totalAndarBets = 0;
+        let totalBaharBets = 0;
+
+        if (poolsSnap.exists()) {
+            let data = poolsSnap.val();
+            totalAndarBets = parseInt(data.ANDAR?.totalAmount || 0);
+            totalBaharBets = parseInt(data.BAHAR?.totalAmount || 0);
+        }
+
+        const forceSnap = await get(ref(db, 'ab_admin_force_signal'));
+        let signalOverride = forceSnap.val() || "AUTO";
+        
+        let winningSide = "ANDAR";
+
+        // Admin Override takes first priority, else Auto Anti-Loss Balancing applies
+        if (signalOverride === "FORCE_ANDAR") {
+            winningSide = "ANDAR";
+            logger("Forced Override Intercept: Winner explicitly set to ANDAR");
+        } else if (signalOverride === "FORCE_BAHAR") {
+            winningSide = "BAHAR";
+            logger("Forced Override Intercept: Winner explicitly set to BAHAR");
+        } else {
+            // Auto-Profit logic: Jidhar kam paisa laga hai, usko jitao!
+            if (totalAndarBets > totalBaharBets) {
+                winningSide = "BAHAR";
+            } else if (totalBaharBets > totalAndarBets) {
+                winningSide = "ANDAR";
+            } else {
+                winningSide = (Math.random() < 0.5) ? "ANDAR" : "BAHAR";
+            }
+            logger(`Smart Guard Rule Active. Pool Andar: ₹${totalAndarBets}, Pool Bahar: ₹${totalBaharBets}. Winner chosen: ${winningSide} to maximize margin profit.`);
+        }
+
+        // Build the deck sequence layout array metrics
+        const suites = ['♦','♥️','♠️','♣️'];
+        const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+        
+        let jokerRank = ranks[Math.floor(Math.random() * ranks.length)];
+        let jokerSuite = suites[Math.floor(Math.random() * suites.length)];
+        
+        let cardsDealtSequence = [];
+        let currentTurn = "ANDAR";
+        let cardCount = 6 + Math.floor(Math.random() * 4); // Perfect fit inside 10 seconds
+
+        for (let i = 0; i < cardCount; i++) {
+            let r = ranks[Math.floor(Math.random() * ranks.length)];
+            let s = suites[Math.floor(Math.random() * suites.length)];
+            
+            // Avoid matching joker rank early
+            if (r === jokerRank) { r = ranks[(ranks.indexOf(jokerRank) + 1) % ranks.length]; }
+            
+            cardsDealtSequence.push({ side: currentTurn, rank: r, suite: s });
+            currentTurn = (currentTurn === "ANDAR") ? "BAHAR" : "ANDAR";
+        }
+
+        // Final closing card matches the exact chosen side outcome
+        cardsDealtSequence.push({ side: winningSide, rank: jokerRank, suite: suites[Math.floor(Math.random() * suites.length)] });
+
+        // Calculate analytics bookkeeping numbers for house ledger profits
+        let totalIncomingVolume = totalAndarBets + totalBaharBets;
+        let totalWinningVolume = (winningSide === "ANDAR") ? totalAndarBets : totalBaharBets;
+        let houseDisbursedPayout = totalWinningVolume * 1.90;
+        let ultimateNetProfitDelta = totalIncomingVolume - houseDisbursedPayout;
+
+        // Save metadata ledger entry stream node inside database
+        await update(ref(db, 'ab_global_analytics'), {
+            totalInflow: increment(totalIncomingVolume),
+            totalOutflow: increment(houseDisbursedPayout),
+            netHouseProfit: increment(ultimateNetProfitDelta)
+        });
+
+        if (totalIncomingVolume > 0) {
+            await push(ref(ref(db, 'ab_user_activity_stream')), {
+                uid: `SYSTEM_POOL_PERIOD_${activePeriodUniqueStr}`,
+                stake: totalIncomingVolume,
+                selectedSide: "COMBINED_POOL",
+                winningSide: winningSide,
+                status: ultimateNetProfitDelta >= 0 ? "HOUSE_GAIN" : "HOUSE_DRAW",
+                payout: houseDisbursedPayout,
+                timestamp: Date.now()
+            });
+        }
+
+        return {
+            jokerRank,
+            jokerSuite,
+            winningSide,
+            cardsDealtSequence
+        };
+    }
+
+    // Boot Up Cycle Instantly
+    spinNewGlobalPeriodLoop();
+</script>
+</body>
+</html>
