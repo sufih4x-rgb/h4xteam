@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plinko Matrix - Premium Core</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #6366f1; --bg: #0f172a; --surface: #1e293b; --text: #f8fafc; --text-muted: #94a3b8; --neon-pink: #f43f5e; --neon-green: #10b981; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; }
+        .app-shell { width: 100%; max-width: 480px; min-height: 100vh; background: #111827; box-shadow: 0 0 30px rgba(0,0,0,0.5); position: relative; display: flex; flex-direction: column; }
+        
+        .top-nav { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1f2937; }
+        .back-btn { font-size: 20px; cursor: pointer; text-decoration: none; color: white; font-weight: bold; }
+        
+        .wallet-bar { background: linear-gradient(135deg, #1e1b4b, #311042); margin: 15px 20px; padding: 20px; border-radius: 16px; border: 1px solid #3730a3; text-align: center; }
+        .bal-display { font-size: 32px; font-weight: 800; color: var(--neon-green); margin-top: 5px; }
+
+        /* Plinko Board Canvas Container */
+        .board-container { flex: 1; display: flex; justify-content: center; align-items: center; padding: 10px; background: #0b0f19; position: relative; }
+        canvas { background: #0f172a; border-radius: 12px; box-shadow: inset 0 0 20px rgba(0,0,0,0.8); width: 100%; max-width: 440px; }
+
+        /* Betting Console Controls Grid */
+        .console-box { background: var(--surface); padding: 20px; border-radius: 24px 24px 0 0; border-top: 1px solid #334155; }
+        .input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+        .input-row input { flex: 1; padding: 14px; background: #0f172a; border: 1px solid #334155; border-radius: 12px; color: white; font-size: 18px; font-weight: 700; text-align: center; outline: none; }
+        
+        .ctrl-btn { background: #334155; border: none; color: white; width: 45px; height: 45px; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; }
+        .chip-row { display: flex; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        .chip { flex: 1; min-width: 60px; background: #1e293b; border: 1px solid #475569; padding: 8px; border-radius: 8px; color: white; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; }
+        
+        .launch-btn { wIdth: 100%; padding: 16px; background: linear-gradient(135deg, #ec4899, #f43f5e); border: none; border-radius: 14px; color: white; font-size: 18px; font-weight: 800; cursor: pointer; box-shadow: 0 8px 20px rgba(244,63,94,0.4); text-transform: uppercase; letter-spacing: 1px; }
+        .launch-btn:active { transform: scale(0.98); }
+        
+        /* Floating Indicator for Real-time Wins */
+        .toast-notify { position: absolute; top: 20px; left: 50%; transform: translateX(-50%); background: rgba(16,185,129,0.95); color: white; padding: 8px 20px; border-radius: 20px; font-weight: 700; display: none; z-index: 10; box-shadow: 0 4px 15px rgba(16,185,129,0.4); }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+    <div class="toast-notify" id="win-toast">Payout +₹0.00</div>
+
+    <div class="top-nav">
+        <a href="dashboard.html" class="back-btn">←</a>
+        <div style="font-weight: 800; font-size: 18px; letter-spacing: 0.5px;">PLINKO MATRIX</div>
+        <div style="width:20px;"></div>
+    </div>
+
+    <!-- Active Wallet System Architecture -->
+    <div class="wallet-bar">
+        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px;">SECURE LEDGER BALANCE</div>
+        <div class="bal-display">₹<span id="userBal">0.00</span></div>
+    </div>
+
+    <!-- Live Game Execution Canvas Node -->
+    <div class="board-container">
+        <canvas id="plinkoCanvas" width="400" height="420"></canvas>
+    </div>
+
+    <!-- Bet Modifier Setup Grid Module -->
+    <div class="console-box">
+        <div style="font-size: 11px; font-weight: 800; color: var(--text-muted); margin-bottom: 8px; text-transform: uppercase;">Set Risk Capital Amount</div>
+        <div class="input-row">
+            <button class="ctrl-btn" onclick="adjustValue(-10)">-</button>
+            <input type="number" id="betAmount" value="10" min="1">
+            <button class="ctrl-btn" onclick="adjustValue(10)">+</button>
+        </div>
+        
+        <div class="chip-row">
+            <button class="chip" onclick="setBet(10)">₹10</button>
+            <button class="chip" onclick="setBet(50)">₹50</button>
+            <button class="chip" onclick="setBet(100)">₹100</button>
+            <button class="chip" onclick="setBet(500)">₹500</button>
+            <button class="chip" style="background:#475569;" onclick="multiplyBet(2)">X2</button>
+            <button class="chip" style="background:#475569;" onclick="multiplyBet(5)">X5</button>
+        </div>
+
+        <button class="launch-btn" id="dropBallBtn" onclick="initiateBallDrop()">Drop Live Ball 🟢</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, onValue, set, update, increment, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
+        authDomain: "test-eb5e7.firebaseapp.com", 
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
+        projectId: "test-eb5e7", 
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    let uid = "";
+    let minBetAllowed = 10, maxBetAllowed = 5000;
+    
+    // Canvas & Physics Configuration Vectors
+    const canvas = document.getElementById("plinkoCanvas");
+    const ctx = canvas.getContext("2d");
+    const rows = 8; // 8 rows structure maximizes steady small center payouts
+    let pegs = [];
+    let balls = [];
+
+    // User Interface Value Modifiers Helpers
+    window.adjustValue = (v) => {
+        let input = document.getElementById("betAmount");
+        let val = parseInt(input.value) || 0;
+        if(val + v >= 1) input.value = val + v;
+    };
+    window.setBet = (v) => { document.getElementById("betAmount").value = v; };
+    window.multiplyBet = (f) => {
+        let input = document.getElementById("betAmount");
+        input.value = (parseInt(input.value) || 10) * f;
+    };
+
+    // Pin-board Multiplier Buckets Array Configurations (Center weighted for maximum retention)
+    const multiplierBuckets = [10, 2, 0.5, 0.2, 0.2, 0.5, 2, 10];
+    const bucketColors = ["#ef476f", "#f77f00", "#fcbf49", "#06d6a0", "#06d6a0", "#fcbf49", "#f77f00", "#ef476f"];
+
+    // Initialize Peg Grid Positions Vectors
+    function buildPegBoardGrid() {
+        pegs = [];
+        let spacing = 35;
+        let startY = 50;
+        for (let r = 2; r <= rows + 1; r++) {
+            let count = r + 1;
+            let startX = (canvas.width / 2) - ((count - 1) * spacing / 2);
+            for (let c = 0; c < count; c++) {
+                pegs.push({ x: startX + (c * spacing), y: startY + ((r - 2) * spacing) });
+            }
+        }
+    }
+
+    // Client Authentication Synchronization Pipeline
+    onAuthStateChanged(auth, user => {
+        if (!user) return location.href = 'index.html';
+        uid = user.uid;
+
+        // Synchronize Ledger balance parameters
+        onValue(ref(db, `user_wallet/${uid}/balance`), snap => {
+            document.getElementById("userBal").innerText = parseFloat(snap.val() || 0).toFixed(2);
+        });
+
+        // Pull active system parameter limitations
+        onValue(ref(db, 'plinko_parameters'), snap => {
+            if(snap.exists()) {
+                minBetAllowed = snap.val().minBet || 10;
+                maxBetAllowed = snap.val().maxBet || 5000;
+            }
+        });
+    });
+
+    // Main Engine Physics Trigger Drop
+    window.initiateBallDrop = async () => {
+        const betValue = parseInt(document.getElementById("betAmount").value);
+        if(isNaN(betValue) || betValue <= 0) return;
+
+        if(betValue < minBetAllowed || betValue > maxBetAllowed) {
+            alert(`Plinko Board Constraint! Allowed Min: ₹${minBetAllowed}, Max: ₹${maxBetAllowed}`);
+            return;
+        }
+
+        // Validate Live Account Ledger Reserves
+        const balanceSnap = await get(ref(db, `user_wallet/${uid}/balance`));
+        const liveBalance = balanceSnap.val() || 0;
+
+        if(liveBalance < betValue) {
+            alert("Insufficient Operational Ledger Capital Balance!");
+            return;
+        }
+
+        // De-credit active account pool stakes
+        document.getElementById("dropBallBtn").disabled = true;
+        await update(ref(db, `user_wallet/${uid}`), { balance: increment(-betValue) });
+
+        // Query Admin Profit Matrix settings to calculate destination bucket trajectory path
+        const strategySnap = await get(ref(db, 'plinko_strategy_mode'));
+        const mode = strategySnap.val() || "AUTO";
+
+        let targetBucketIndex = 3; // Defaults to safe 0.2x index vector core
+        if (mode === "AUTO") {
+            // High retention auto algorithm logic: 85% force drop on center 0.2x / 0.5x buckets
+            let rand = Math.random();
+            if (rand < 0.50) targetBucketIndex = (Math.random() > 0.5) ? 3 : 4; // 0.2x
+            else if (rand < 0.85) targetBucketIndex = (Math.random() > 0.5) ? 2 : 5; // 0.5x
+            else if (rand < 0.98) targetBucketIndex = (Math.random() > 0.5) ? 1 : 6; // 2.0x
+            else targetBucketIndex = (Math.random() > 0.5) ? 0 : 7; // 10x
+        } else {
+            // Force Absolute Manual overrides via parameters mapping values
+            const manualOverrideSnap = await get(ref(db, 'plinko_forced_target'));
+            targetBucketIndex = manualOverrideSnap.exists() ? parseInt(manualOverrideSnap.val()) : 3;
+        }
+
+        // Append active ball node properties parameters inside frame registry loop array
+        balls.push({
+            x: (canvas.width / 2) + (Math.random() * 4 - 2),
+            y: 20,
+            vx: 0,
+            vy: 2,
+            radius: 6,
+            bet: betValue,
+            targetBucket: targetBucketIndex,
+            currentStepRow: 0
+        });
+        
+        // Anti-spam controller delay loop
+        setTimeout(() => { document.getElementById("dropBallBtn").disabled = false; }, 400);
+    };
+
+    // Physics Update Loop Engine Frame Iteration
+    function executeEngineUpdate() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+        // Draw Pins Board
+        ctx.fillStyle = "#94a3b8";
+        pegs.forEach(peg => {
+            ctx.beginPath();
+            ctx.arc(peg.x, peg.y, 3, 0, Math.PI * 2);
+            ctx.fill();
+        });
+
+        // Draw Multiplier Bottom Trays Layout View Box Nodes
+        let bucketWidth = canvas.width / multiplierBuckets.length;
+        let trayY = canvas.height - 30;
+        for (let i = 0; i < multiplierBuckets.length; i++) {
+            ctx.fillStyle = bucketColors[i];
+            ctx.fillRect(i * bucketWidth + 2, trayY, bucketWidth - 4, 25);
+            ctx.fillStyle = "#000";
+            ctx.font = "bold 11px Inter";
+            ctx.textAlign = "center";
+            ctx.fillText(multiplierBuckets[i] + "x", (i * bucketWidth) + (bucketWidth / 2), trayY + 17);
+        }
+
+        // Live Processing Vector Calculations Loop
+        for (let b = balls.length - 1; b >= 0; b--) {
+            let ball = balls[b];
+            ball.vy += 0.18; // Gravity simulation
+            ball.x += ball.vx;
+            ball.y += ball.vy;
+
+            // Bounce deflection engine processing calculations
+            pegs.forEach(peg => {
+                let dx = ball.x - peg.x;
+                let dy = ball.y - peg.y;
+                let dist = Math.sqrt(dx * dx + dy * dy);
+                if (dist < ball.radius + 3) {
+                    ball.vy = 1.5; 
+                    // Algorithmic path alignment force vectoring
+                    let spacing = 35;
+                    let targetX = (canvas.width / 2);
+                    let rowYIndex = Math.floor((peg.y - 50) / spacing) + 1;
+                    
+                    // Direct dynamic correction steering math logic shifts ball smoothly towards admin targeted choice
+                    let totalRowsOffset = rows - rowYIndex;
+                    let destinationCenterX = (ball.targetBucket * bucketWidth) + (bucketWidth / 2);
+                    let positionDeviationDelta = destinationCenterX - ball.x;
+                    
+                    ball.vx = (positionDeviationDelta / (totalRowsOffset + 1)) * 0.45 + (Math.random() * 0.8 - 0.4);
+                }
+            });
+
+            // Draw current active physical node state
+            ctx.fillStyle = "#10b981";
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ball.radius, 0, Math.PI * 2);
+            ctx.fill();
+
+            // Destination collision boundary termination trigger checking
+            if (ball.y >= trayY) {
+                let landingIndex = Math.floor(ball.x / bucketWidth);
+                if (landingIndex < 0) landingIndex = 0;
+                if (landingIndex >= multiplierBuckets.length) landingIndex = multiplierBuckets.length - 1;
+
+                processTerminalPayout(ball.bet, landingIndex);
+                balls.splice(b, 1);
+            }
+        }
+
+        requestAnimationFrame(executeEngineUpdate);
+    }
+
+    // Final Ledger credit calculations framework execution
+    async function processTerminalPayout(baseStakedValue, finalIndex) {
+        let multiplier = multiplierBuckets[finalIndex];
+        let calculatedGrossPayoutValue = baseStakedValue * multiplier;
+        
+        let netProfitMarginDelta = baseStakedValue - calculatedGrossPayoutValue;
+
+        // Perform balance injection atomic counter modifications
+        await update(ref(db, `user_wallet/${uid}`), { balance: increment(calculatedGrossPayoutValue) });
+        
+        // Push ledger metrics statement inside live shared analytics log channel nodes
+        const transactionLogRef = ref(db, 'plinko_global_ledger_stream');
+        await update(transactionLogRef, {
+            totalInflow: increment(baseStakedValue),
+            totalOutflow: increment(calculatedGrossPayoutValue),
+            netProfit: increment(netProfitMarginDelta)
+        });
+
+        // UI Toast Alert notification element
+        let toast = document.getElementById("win-toast");
+        toast.innerText = `Multiplier Result: [ ${multiplier}x ] +₹${calculatedGrossPayoutValue.toFixed(2)}`;
+        toast.style.display = "block";
+        toast.style.background = multiplier >= 1 ? "rgba(16,185,129,0.95)" : "rgba(244,63,94,0.95)";
+        setTimeout(() => { toast.style.display = "none"; }, 2500);
+    }
+
+    window.onload = () => { buildPegBoardGrid(); executeEngineUpdate(); };
+</script>
+</body>
+</html>
