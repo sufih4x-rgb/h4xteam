@@ -96,7 +96,7 @@
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, set, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, set, remove, update, get, increment } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = { 
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
@@ -120,14 +120,14 @@
         6:{c:['Red'],s:'Big'}, 7:{c:['Green'],s:'Big'}, 8:{c:['Red'],s:'Big'}, 9:{c:['Green'],s:'Big'}
     };
 
-    // Calculate absolute clock synchronizations (Prevents timer modification drops on updates)
+    // SYSTEM MASTER TICK PULSE METRIC HEARTBEAT LOOP 
     function executeServerClockHeartbeat() {
-        setInterval(() => {
-            const timeObj = new Date();
-            const elapsedSecondsThisMinute = timeObj.getSeconds();
+        setInterval(async () => {
+            const now = Date.now();
+            const elapsedSecondsThisMinute = new Date(now).getSeconds();
             const calculatedTimeLeft = 60 - elapsedSecondsThisMinute;
 
-            // Generate absolute period format matching YYYYMMDD + Absolute daily runtime minute stamp
+            const timeObj = new Date(now);
             const yyyy = timeObj.getFullYear();
             const mm = String(timeObj.getMonth() + 1).padStart(2, '0');
             const dd = String(timeObj.getDate()).padStart(2, '0');
@@ -135,17 +135,16 @@
             
             const constructedPeriodIDStr = `${yyyy}${mm}${dd}${minuteStampSequence}`;
 
-            // Handle transition frames smoothly
             if (currentCalculatedPeriodSequence !== "" && constructedPeriodIDStr !== currentCalculatedPeriodSequence && calculatedTimeLeft === 60) {
-                evaluateAndDrawPeriodOutcome();
+                await evaluateAndDrawPeriodOutcome();
             }
 
             currentCalculatedPeriodSequence = constructedPeriodIDStr;
 
-            // Transmit calculated timing parameters over master tracking node instances
-            set(ref(db, 'server_synchronization_state'), {
+            // Direct sync master node updates state variables instantly
+            await set(ref(db, 'server_synchronization_state'), {
                 period: currentCalculatedPeriodSequence,
-                timeLeft: calculatedTimeLeft === 60 ? 0 : calculatedTimeLeft
+                startTimestamp: now - (elapsedSecondsThisMinute * 1000)
             });
 
             document.getElementById("adm-period-display").innerText = currentCalculatedPeriodSequence;
@@ -153,7 +152,6 @@
         }, 1000);
     }
 
-    // Monitor active real-time profiles
     onValue(ref(db, 'online_registry'), snap => {
         const uCount = snap.numChildren();
         document.getElementById("online-count-view").innerText = uCount;
@@ -168,22 +166,25 @@
         });
     });
 
-    window.toggleStrategyProtocol = () => {
+    window.toggleStrategyProtocol = async () => {
         let btn = document.getElementById("adm-strategy-toggle");
         if(systemStrategyPolicy === "AUTO") {
             systemStrategyPolicy = "MANUAL";
             btn.innerText = "MANUAL INTERVENTIONS ENFORCED"; btn.style.background = "#ef476f";
+            await set(ref(db, 'wingo_admin_override'), { forcedNumber: "MANUAL" });
         } else {
             systemStrategyPolicy = "AUTO"; targetedOverrideIndex = null;
             document.getElementById("target-override-view").innerText = "None (Auto Profit Active)";
             btn.innerText = "AUTO PROFIT MODE ENFORCED"; btn.style.background = "#f59e0b";
+            await set(ref(db, 'wingo_admin_override'), { forcedNumber: "AUTO" });
         }
     };
 
-    window.assignForcedVectorTarget = (num) => {
+    window.assignForcedVectorTarget = async (num) => {
         if(systemStrategyPolicy === "AUTO") { alert("Deactivate AUTO Selection strategy first!"); return; }
         targetedOverrideIndex = num;
         document.getElementById("target-override-view").innerText = `Forcing Draw Target [ ${num} ] to resolve.`;
+        await set(ref(db, 'wingo_admin_override'), { forcedNumber: num });
     };
 
     window.commitGateParameters = () => {
@@ -193,8 +194,8 @@
         alert("Gate limits successfully integrated globally!");
     };
 
-    // Keep stream tracking active
-    onValue(ref(db, 'active_investment_pools'), snap => {
+    // TRACK LIVE INCOMING STAKES STREAMS PATH MATRICES REALTIME 
+    onValue(ref(db, 'wingo_active_pools'), snap => {
         let activePoolMap = snap.child(currentCalculatedPeriodSequence).val() || {};
         localPoolDataCache = activePoolMap;
         
@@ -214,8 +215,8 @@
         if(elementsPresent === 0) view.innerHTML = `<div style="color:#6b7280; font-size:14px;">Awaiting active selection entries from live client nodes...</div>`;
     });
 
-    // Evaluate payouts optimally on execution loop intervals
-    function evaluateAndDrawPeriodOutcome() {
+    // MASTER ENGINE DISPATCH RESOLUTION CONTROLLER LOOP 
+    async function evaluateAndDrawPeriodOutcome() {
         let assignedResolutionIndex = 0;
         let cumulativeInflowCapital = 0;
         let designatedOutflowValue = 0;
@@ -237,7 +238,6 @@
                 });
             });
         } else {
-            // Run analysis across vector index ranges [0-9] to match maximum profit profiles
             let highestCalculatedNetYield = -99999999;
             let bestTargetProfitIndex = 0;
             let bestTargetOutflow = 0;
@@ -266,24 +266,61 @@
             designatedOutflowValue = bestTargetOutflow;
         }
 
-        // Track financial records updates
         let roundYieldResult = cumulativeInflowCapital - designatedOutflowValue;
         runningSystemCumulativeProfit += roundYieldResult;
         document.getElementById("net-profit-view").innerText = `₹${runningSystemCumulativeProfit.toFixed(2)}`;
 
-        // Transmit structure resolution objects directly into data nodes
         let drawResultObject = {
             period: currentCalculatedPeriodSequence,
             number: assignedResolutionIndex,
             size: gameIndexMatrixRules[assignedResolutionIndex].s,
-            color: gameIndexMatrixRules[assignedResolutionIndex].c.join('-')
+            color: gameIndexMatrixRules[assignedResolutionIndex].c // Synchronized clean array data format structure
         };
 
-        set(ref(db, `wingo_historical_register/${currentCalculatedPeriodSequence}`), drawResultObject);
-        remove(ref(db, `active_investment_pools/${currentCalculatedPeriodSequence}`));
+        // Write directly updates register nodes 
+        await set(ref(db, `wingo_historical_register/${currentCalculatedPeriodSequence}`), drawResultObject);
+        
+        // Automated distribution loop settlement simulation
+        await simulateGlobalUsersPayout(drawResultObject);
+
+        // Wipe current session pools data cache cleaner
+        await remove(ref(db, `wingo_active_pools/${currentCalculatedPeriodSequence}`));
 
         targetedOverrideIndex = null;
         document.getElementById("target-override-view").innerText = "None (Auto Profit Active)";
+        await set(ref(db, 'wingo_admin_override'), { forcedNumber: "AUTO" });
+    }
+
+    async function simulateGlobalUsersPayout(resultObj) {
+        if(!localPoolDataCache) return;
+        for(let uid in localPoolDataCache) {
+            let userBets = localPoolDataCache[uid];
+            for(let choice in userBets) {
+                let amt = userBets[choice];
+                let isWin = false;
+                let mult = 1.92;
+
+                if(choice === resultObj.number.toString()) { isWin = true; mult = 8.8; }
+                else if(choice === resultObj.size) { isWin = true; mult = 1.92; }
+                else if(resultObj.color.includes(choice)) {
+                    isWin = true;
+                    mult = (choice === 'Violet') ? 4.5 : (resultObj.number === 0 || resultObj.number === 5 ? 1.45 : 1.92);
+                }
+
+                let finalPayout = isWin ? (amt * mult) : 0;
+                if(isWin) {
+                    await update(ref(db, `user_wallet/${uid}`), { balance: increment(finalPayout) });
+                }
+
+                await set(ref(db, `user_bets/${uid}/${resultObj.period}_${choice}`), {
+                    period: resultObj.period,
+                    choice: choice,
+                    amt: amt,
+                    winStatus: isWin ? "WIN" : "LOSS",
+                    payout: finalPayout
+                });
+            }
+        }
     }
 
     window.onload = () => { executeServerClockHeartbeat(); };
