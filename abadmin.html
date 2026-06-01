@@ -2,30 +2,100 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Andar Bahar - Core Server Loop Pulse Engine</title>
+    <title>Andar Bahar Governance Console & Risk Ledger</title>
     <style>
-        body { font-family: monospace; background: #02040a; color: #00ff66; padding: 30px; }
-        .log-box { background: #090f1f; border: 1px solid #1e293b; padding: 20px; border-radius: 10px; height: 350px; overflow-y: scroll; color: #94a3b8; }
-        .accent { color: #fbbf24; font-weight: bold; }
+        body { font-family: -apple-system, system-ui, BlinkMacSystemFont, sans-serif; background: #05070f; color: #e2e8f0; padding: 25px; margin: 0; }
+        .grid-layout { max-width: 1100px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
+        .panel-card { background: #0c0f1d; border: 1px solid #1e293b; padding: 20px; border-radius: 12px; }
+        .metrics-row { display: flex; gap: 15px; flex-wrap: wrap; }
+        .metric-item { flex: 1; background: #111625; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #1e293b; min-width: 180px; }
+        .metric-num { font-size: 26px; font-weight: 900; margin-top: 5px; }
+        
+        .config-row { display: flex; gap: 15px; margin-top: 10px; align-items: center; }
+        .config-row input { background: #05070f; border: 1px solid #334155; padding: 10px; border-radius: 6px; color: white; font-size: 14px; width: 120px; text-align: center; }
+        .save-btn { background: #10b981; color: white; border: none; padding: 11px 20px; font-weight: 700; border-radius: 6px; cursor: pointer; }
+        
+        .btn-override { padding: 12px 20px; border: none; border-radius: 6px; font-weight: 800; cursor: pointer; text-transform: uppercase; font-size: 12px; }
+        table { width: 100%; border-collapse: collapse; margin-top: 12px; background: #111625; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px; text-align: left; font-size: 13px; border-bottom: 1px solid #1e293b; }
+        th { background: #1e293b; color: #94a3b8; font-size: 11px; text-transform: uppercase; }
     </style>
 </head>
 <body>
 
-<h2>⚙️ Andar Bahar Continuous Loop Synchronizer Server</h2>
-<p>Keep this tab open as background daemon worker to rotate global game states every 40 seconds.</p>
+<div class="grid-layout">
+    <h2 style="color:#c084fc; margin:0; font-size:26px; font-weight:900;">🛡️ Andar Bahar Corporate Governance Ecosystem</h2>
 
-<div style="background:#0f172a; padding:15px; border-radius:8px; margin-bottom:15px; border:1px solid #334155;">
-    <div>CURRENT REALTIME CLOCK PERIOD: <span id="srvPeriod" class="accent">---------</span></div>
-    <div>ACTIVE RUNNING PHASE STATUS: <span id="srvPhase" style="color:#38bdf8; font-weight:bold;">BETTING</span></div>
-    <div>SECONDS TIMER LEFT IN PHASE: <span id="srvSecs" style="color:#ef476f; font-weight:bold;">30</span></div>
+    <!-- House Total Financial Ledger Analytics Section -->
+    <div class="panel-card" style="border-left: 4px solid #10b981;">
+        <h3 style="margin-top:0; font-size:15px; color:#94a3b8;">GLOBAL OVERALL FINANCIAL BALANCES</h3>
+        <div class="metrics-row">
+            <div class="metric-item">
+                <div style="font-size:11px; color:#94a3b8; font-weight:700;">TOTAL DEPOSITED FLOW</div>
+                <div class="metric-num" id="totalInflowText" style="color:#38bdf8;">₹0.00</div>
+            </div>
+            <div class="metric-item">
+                <div style="font-size:11px; color:#94a3b8; font-weight:700;">TOTAL EXPELLED PAYOUTS</div>
+                <div class="metric-num" id="totalOutflowText" style="color:#f43f5e;">₹0.00</div>
+            </div>
+            <div class="metric-item">
+                <div style="font-size:11px; color:#94a3b8; font-weight:700;">NET ADMIN HOUSE PROFIT (GUARANTEED)</div>
+                <div class="metric-num" id="netProfitText" style="color:#10b981;">₹0.00</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Minimum and Maximum Stake Configuration Panel Section -->
+    <div class="panel-card">
+        <h3 style="margin-top:0; font-size:16px; color:#fbbf24;">Staking Policy Limits Configuration</h3>
+        <div class="config-row">
+            <div>
+                <label style="font-size:12px; color:#94a3b8; display:block; margin-bottom:4px;">Minimum Bet Amount</label>
+                <input type="number" id="cfgMinBet" value="10">
+            </div>
+            <div>
+                <label style="font-size:12px; color:#94a3b8; display:block; margin-bottom:4px;">Maximum Bet Amount</label>
+                <input type="number" id="cfgMaxBet" value="5000">
+            </div>
+            <div style="margin-top:18px;">
+                <button class="save-btn" onclick="saveOperationalConfig()">Apply Configuration Rules 💾</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forced Intervention Override Actions Section -->
+    <div class="panel-card">
+        <h3 style="margin-top:0; font-size:16px; color:#38bdf8;">Absolute Outcome Command Triggers</h3>
+        <div style="display:flex; gap:10px; margin-top:10px;">
+            <button class="btn-override" style="background:#fbbf24; color:#000;" onclick="sendForceSignal('FORCE_ANDAR')">Force Next As Andar</button>
+            <button class="btn-override" style="background:#c084fc; color:#000;" onclick="sendForceSignal('FORCE_BAHAR')">Force Next As Bahar</button>
+            <button class="btn-override" style="background:#334155; color:#fff;" onclick="sendForceSignal('AUTO')">Reset Back to Auto Profit Guard Mode</button>
+        </div>
+        <div style="margin-top:12px; font-size:13px; font-weight:700; color:#94a3b8;">Active Core Pulse State Intercept: <span id="activeOverrideSignal" style="color:#fbbf24;">AUTO</span></div>
+    </div>
+
+    <!-- History Log Activity Audit Ledger Rows Table Section -->
+    <div class="panel-card">
+        <h3 style="margin-top:0; font-size:16px; color:#94a3b8;">Live Shared Session Stream & Historical Audit Ledger</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Target Event/User Stream Key</th>
+                    <th>Combined Pool Stake Size</th>
+                    <th>Result Verdict</th>
+                    <th>Financial Delta House Profit</th>
+                </tr>
+            </thead>
+            <tbody id="adminLedgerStreamRows">
+                <tr><td colspan="4" style="text-align:center; color:#475569;">Awaiting dynamic transaction pipeline events...</td></tr>
+            </tbody>
+        </table>
+    </div>
 </div>
-
-<h4>Live Server Console Logs Stream:</h4>
-<div class="log-box" id="terminalLogs"></div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, set, update, increment, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, set, update, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
     const firebaseConfig = { 
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
@@ -37,171 +107,70 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    let currentPhase = "BETTING"; // "BETTING" (30s) or "SHOWTIME" (10s)
-    let secondsCounter = 30;
-    let activePeriodUniqueStr = "";
+    // Fetch and bind financial totals data metrics
+    onValue(ref(db, 'ab_global_analytics'), snap => {
+        if(snap.exists()) {
+            let data = snap.val();
+            document.getElementById("totalInflowText").innerText = `₹${parseFloat(data.totalInflow || 0).toFixed(2)}`;
+            document.getElementById("totalOutflowText").innerText = `₹${parseFloat(data.totalOutflow || 0).toFixed(2)}`;
+            document.getElementById("netProfitText").innerText = `₹${parseFloat(data.netHouseProfit || 0).toFixed(2)}`;
+        }
+    });
 
-    function generateNewPeriodString() {
-        let d = new Date();
-        let yyyymmdd = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
-        let timestampSeed = String(Math.floor(d.getTime()/1000)).slice(-4);
-        return yyyymmdd + "-" + timestampSeed;
-    }
+    // Sync input components values with historical configuration data states
+    onValue(ref(db, 'ab_game_config'), snap => {
+        if(snap.exists()){
+            let conf = snap.val();
+            document.getElementById("cfgMinBet").value = conf.minBet || 10;
+            document.getElementById("cfgMaxBet").value = conf.maxBet || 5000;
+        }
+    });
 
-    async function spinNewGlobalPeriodLoop() {
-        activePeriodUniqueStr = generateNewPeriodString();
-        currentPhase = "BETTING";
-        secondsCounter = 30;
+    onValue(ref(db, 'ab_admin_force_signal'), snap => {
+        document.getElementById("activeOverrideSignal").innerText = snap.val() || "AUTO";
+    });
 
-        document.getElementById("srvPeriod").innerText = activePeriodUniqueStr;
+    window.saveOperationalConfig = () => {
+        let minB = parseInt(document.getElementById("cfgMinBet").value) || 10;
+        let maxB = parseInt(document.getElementById("cfgMaxBet").value) || 5000;
+        set(ref(db, 'ab_game_config'), { minBet: minB, maxBet: maxB });
+        alert("Policy structural parameters changed successfully!");
+    };
+
+    window.sendForceSignal = (signal) => {
+        set(ref(db, 'ab_admin_force_signal'), signal);
+        alert(`Operational Intercept forced into state: ${signal}`);
+    };
+
+    // Render historical session logs elements inside table layout view
+    const queryStream = query(ref(db, 'ab_user_activity_stream'), limitToLast(15));
+    onValue(queryStream, snap => {
+        const tbody = document.getElementById("adminLedgerStreamRows");
+        tbody.innerHTML = "";
         
-        // Initialize empty pools for calculation
-        await set(ref(db, `ab_live_pools/${activePeriodUniqueStr}`), {
-            ANDAR: { totalAmount: 0 },
-            BAHAR: { totalAmount: 0 }
-        });
-
-        logger(`Period ${activePeriodUniqueStr} launched. 30 seconds betting time initialized.`);
-        broadcastPulse();
-    }
-
-    function logger(msg) {
-        const box = document.getElementById("terminalLogs");
-        box.innerHTML += `[${new Date().toLocaleTimeString()}] -> ${msg}<br>`;
-        box.scrollTop = box.scrollHeight;
-    }
-
-    async function broadcastPulse() {
-        await set(ref(db, 'ab_current_loop_state/secondsLeft'), secondsCounter);
-        await set(ref(db, 'ab_current_loop_state/phase'), currentPhase);
-        await set(ref(db, 'ab_current_loop_state/periodId'), activePeriodUniqueStr);
-        
-        document.getElementById("srvPhase").innerText = currentPhase;
-        document.getElementById("srvSecs").innerText = secondsCounter + "s";
-    }
-
-    // High fidelity global master ticker pulse logic
-    setInterval(async () => {
-        secondsCounter--;
-
-        if (currentPhase === "BETTING") {
-            if (secondsCounter <= 0) {
-                // Shift state into Showtime distribution window
-                currentPhase = "SHOWTIME";
-                secondsCounter = 10;
-                logger("Betting closed. Computing safest high retention outcome...");
-                
-                let simulationData = await computeHouseEdgeOutcome();
-                await set(ref(db, 'ab_current_loop_state/outcomeDetails'), simulationData);
-            }
-        } 
-        else if (currentPhase === "SHOWTIME") {
-            if (secondsCounter <= 0) {
-                // Restart infinite loop
-                await spinNewGlobalPeriodLoop();
-                return;
-            }
+        if(!snap.exists()) {
+            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#475569;">No database tracking records reported inside current nodes.</td></tr>`;
+            return;
         }
 
-        broadcastPulse();
-    }, 1000);
+        let inverseHistoryStack = [];
+        snap.forEach(child => { inverseHistoryStack.unshift(child.val()); });
 
-    // Dynamic Safe Logic: Admin Profits Always Protected
-    async function computeHouseEdgeOutcome() {
-        const poolsSnap = await get(ref(db, `ab_live_pools/${activePeriodUniqueStr}`));
-        let totalAndarBets = 0;
-        let totalBaharBets = 0;
-
-        if (poolsSnap.exists()) {
-            let data = poolsSnap.val();
-            totalAndarBets = parseInt(data.ANDAR?.totalAmount || 0);
-            totalBaharBets = parseInt(data.BAHAR?.totalAmount || 0);
-        }
-
-        const forceSnap = await get(ref(db, 'ab_admin_force_signal'));
-        let signalOverride = forceSnap.val() || "AUTO";
-        
-        let winningSide = "ANDAR";
-
-        // Admin Override takes first priority, else Auto Anti-Loss Balancing applies
-        if (signalOverride === "FORCE_ANDAR") {
-            winningSide = "ANDAR";
-            logger("Forced Override Intercept: Winner explicitly set to ANDAR");
-        } else if (signalOverride === "FORCE_BAHAR") {
-            winningSide = "BAHAR";
-            logger("Forced Override Intercept: Winner explicitly set to BAHAR");
-        } else {
-            // Auto-Profit logic: Jidhar kam paisa laga hai, usko jitao!
-            if (totalAndarBets > totalBaharBets) {
-                winningSide = "BAHAR";
-            } else if (totalBaharBets > totalAndarBets) {
-                winningSide = "ANDAR";
-            } else {
-                winningSide = (Math.random() < 0.5) ? "ANDAR" : "BAHAR";
-            }
-            logger(`Smart Guard Rule Active. Pool Andar: ₹${totalAndarBets}, Pool Bahar: ₹${totalBaharBets}. Winner chosen: ${winningSide} to maximize margin profit.`);
-        }
-
-        // Build the deck sequence layout array metrics
-        const suites = ['♦','♥️','♠️','♣️'];
-        const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-        
-        let jokerRank = ranks[Math.floor(Math.random() * ranks.length)];
-        let jokerSuite = suites[Math.floor(Math.random() * suites.length)];
-        
-        let cardsDealtSequence = [];
-        let currentTurn = "ANDAR";
-        let cardCount = 6 + Math.floor(Math.random() * 4); // Perfect fit inside 10 seconds
-
-        for (let i = 0; i < cardCount; i++) {
-            let r = ranks[Math.floor(Math.random() * ranks.length)];
-            let s = suites[Math.floor(Math.random() * suites.length)];
+        inverseHistoryStack.forEach(log => {
+            let directNetGain = parseFloat(log.stake || 0) - parseFloat(log.payout || 0);
+            let colorMarkup = directNetGain >= 0 ? 'color:#10b981; font-weight:700;' : 'color:#f43f5e; font-weight:700;';
             
-            // Avoid matching joker rank early
-            if (r === jokerRank) { r = ranks[(ranks.indexOf(jokerRank) + 1) % ranks.length]; }
-            
-            cardsDealtSequence.push({ side: currentTurn, rank: r, suite: s });
-            currentTurn = (currentTurn === "ANDAR") ? "BAHAR" : "ANDAR";
-        }
-
-        // Final closing card matches the exact chosen side outcome
-        cardsDealtSequence.push({ side: winningSide, rank: jokerRank, suite: suites[Math.floor(Math.random() * suites.length)] });
-
-        // Calculate analytics bookkeeping numbers for house ledger profits
-        let totalIncomingVolume = totalAndarBets + totalBaharBets;
-        let totalWinningVolume = (winningSide === "ANDAR") ? totalAndarBets : totalBaharBets;
-        let houseDisbursedPayout = totalWinningVolume * 1.90;
-        let ultimateNetProfitDelta = totalIncomingVolume - houseDisbursedPayout;
-
-        // Save metadata ledger entry stream node inside database
-        await update(ref(db, 'ab_global_analytics'), {
-            totalInflow: increment(totalIncomingVolume),
-            totalOutflow: increment(houseDisbursedPayout),
-            netHouseProfit: increment(ultimateNetProfitDelta)
+            let tr = `
+                <tr>
+                    <td style="font-family:monospace; color:#38bdf8;">${log.uid}</td>
+                    <td>₹${parseFloat(log.stake || 0).toFixed(2)}</td>
+                    <td style="color:#fbbf24; font-weight:bold;">${log.winningSide}</td>
+                    <td style="${colorMarkup}">₹${directNetGain.toFixed(2)}</td>
+                </tr>
+            `;
+            tbody.innerHTML += tr;
         });
-
-        if (totalIncomingVolume > 0) {
-            await push(ref(ref(db, 'ab_user_activity_stream')), {
-                uid: `SYSTEM_POOL_PERIOD_${activePeriodUniqueStr}`,
-                stake: totalIncomingVolume,
-                selectedSide: "COMBINED_POOL",
-                winningSide: winningSide,
-                status: ultimateNetProfitDelta >= 0 ? "HOUSE_GAIN" : "HOUSE_DRAW",
-                payout: houseDisbursedPayout,
-                timestamp: Date.now()
-            });
-        }
-
-        return {
-            jokerRank,
-            jokerSuite,
-            winningSide,
-            cardsDealtSequence
-        };
-    }
-
-    // Boot Up Cycle Instantly
-    spinNewGlobalPeriodLoop();
+    });
 </script>
 </body>
 </html>
