@@ -4,89 +4,109 @@
     <meta charset="UTF-8">
     <title>Win Go 1Min - Server Admin Console</title>
     <style>
-        body { font-family: 'Segoe UI', sans-serif; background: #1a1a1a; color: #fff; padding: 20px; margin: 0; }
-        .dashboard-container { max-width: 900px; margin: auto; }
-        .box-panel { background: #2d2d2d; border: 1px solid #3d3d3d; padding: 20px; border-radius: 12px; margin-bottom: 25px; }
+        body { font-family: 'Segoe UI', sans-serif; background: #121212; color: #fff; padding: 20px; margin: 0; }
+        .dashboard-container { max-width: 1000px; margin: auto; }
+        .box-panel { background: #1e1e1e; border: 1px solid #2d2d2d; padding: 22px; border-radius: 14px; margin-bottom: 20px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
         .flex-row { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
-        .pool-badge { background: #3a3a3a; padding: 12px 20px; border-radius: 8px; text-align: center; border-left: 4px solid #f44336; min-width: 120px;}
-        .badge-value { font-size: 18px; font-weight: bold; margin-top: 4px; color: #00e676; }
-        button { padding: 12px 24px; font-weight: bold; border-radius: 6px; cursor: pointer; border: none; }
+        .metric-card { background: #252525; padding: 15px 25px; border-radius: 10px; border: 1px solid #333; text-align: center; min-width: 140px; }
+        .metric-val { font-size: 24px; font-weight: bold; margin-top: 5px; color: #00e676; }
+        .pool-badge { background: #2a2a2a; padding: 12px 18px; border-radius: 8px; text-align: center; border-bottom: 3px solid #ff1744; min-width: 100px; font-size:14px; }
+        button { padding: 12px 24px; font-weight: bold; border-radius: 8px; cursor: pointer; border: none; font-size:14px; }
         .toggle-btn { background: #ff9100; color: white; font-size: 16px; }
-        .force-btn { background: #00b0ff; color: white; margin: 5px; font-size: 14px; }
-        .force-btn:hover { background: #0091ea; }
+        .force-btn { background: #00b0ff; color: white; margin: 4px; }
+        input { padding: 10px; width: 120px; background: #252525; border: 1px solid #444; color: #fff; border-radius: 6px; font-size:15px; text-align:center; }
     </style>
 </head>
 <body>
 
 <div class="dashboard-container">
-    <h2>00097.com - 1Min Master Synchronization Control Center</h2>
+    <h2 style="color:#ff1744; letter-spacing:0.5px;">INT CLUB Commercial Core Control Room</h2>
 
-    <!-- Dynamic Clock Analytics Row View -->
+    <div class="box-panel flex-row" style="background: linear-gradient(145deg, #1e1e1e, #252525);">
+        <div>
+            <h3 style="margin:0; opacity:0.6; font-size:14px;">Current Operational State Tracker:</h3>
+            <h1 style="margin:5px 0 0 0; font-size:32px; color:#00b0ff;">Period: <span id="adm-period-display">Loading...</span></h1>
+        </div>
+        <div class="flex-row">
+            <div class="metric-card" style="border-left: 4px solid #00e676;">
+                <div style="font-size:12px; opacity:0.7;">ONLINE USERS</div>
+                <div class="metric-val" id="online-count-view" style="color:#00e676;">0</div>
+            </div>
+            <div class="metric-card" style="border-left: 4px solid #ffea00;">
+                <div style="font-size:12px; opacity:0.7;">ADMIN NET PROFIT</div>
+                <div class="metric-val" id="net-profit-view" style="color:#ffea00;">₹0.00</div>
+            </div>
+            <div class="metric-card" style="border-left: 4px solid #ff1744;">
+                <div style="font-size:12px; opacity:0.7;">TIME REMAINING</div>
+                <div class="metric-val" id="adm-seconds-display" style="color:#ff1744; font-size:28px;">60s</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="box-panel">
+        <h3 style="margin-top:0; color:#00e676;">Live Incoming Investments Dashboard (Current Round)</h3>
+        <div class="flex-row" id="live-pools-view-box" style="justify-content: flex-start; gap:12px;">
+            <div style="color:#777;">No active stakes placed in this period loop yet.</div>
+        </div>
+    </div>
+
     <div class="box-panel flex-row">
         <div>
-            <h3 style="margin:0; opacity:0.7;">Active Engine Tracking State:</h3>
-            <h1 style="margin:5px 0 0 0; font-size:32px; color:#00e676;">Period: <span id="adm-period-display">202606010001</span></h1>
+            <h3 style="margin:0;">Adjust Gate Bet Limits Configurations</h3>
+            <p style="margin:4px 0 0 0; font-size:12px; opacity:0.5;">Updates boundaries across all client browsers instantly.</p>
         </div>
-        <div style="text-align: right;">
-            <h3 style="margin:0; opacity:0.7;">Dynamic Countdown:</h3>
-            <h1 style="margin:5px 0 0 0; font-size:42px; color:#ff1744;" id="adm-seconds-display">60s</h1>
+        <div>
+            <label style="font-size:14px; opacity:0.8;">Min: </label>
+            <input type="number" id="minBetInp" value="10">
+            <label style="margin-left:15px; font-size:14px; opacity:0.8;">Max: </label>
+            <input type="number" id="maxBetInp" value="5000">
+            <button style="background:#00e676; color:#000; margin-left:15px;" onclick="saveConfigLimits()">Update Gate Settings</button>
         </div>
     </div>
 
-    <!-- Optimization Strategy Mode Selector -->
     <div class="box-panel flex-row">
         <div>
-            <h3 style="margin:0;">Risk Mitigation Protocol Strategy:</h3>
-            <p style="margin:5px 0 0 0; opacity:0.6; font-size:14px;">AUTO MODE scans user pools to draw outcomes yielding maximum profit margins for admin.</p>
+            <h3 style="margin:0;">Risk Mitigation Engine Strategy Protocol:</h3>
+            <p style="margin:5px 0 0 0; opacity:0.6; font-size:13px;">AUTO MODE performs backend checks to force draw indices generating maximum profit margins.</p>
         </div>
-        <button class="toggle-btn" id="adm-strategy-toggle" onclick="swapSystemMode()">AUTO SYSTEM MODE ON (Guaranteed Profit)</button>
+        <button class="toggle-btn" id="adm-strategy-toggle" onclick="swapSystemMode()">AUTO SYSTEM MODE ON (Always Profit)</button>
     </div>
 
-    <!-- Live Analytics User Pools Tracking Container -->
     <div class="box-panel">
-        <h3 style="margin-top:0;">Live Running Investments (This Round)</h3>
-        <div class="flex-row" id="live-pools-view-box" style="justify-content: flex-start;">
-            <div style="color:#aaa; padding:10px;">Waiting for user bet placements data feeds...</div>
-        </div>
-    </div>
-
-    <!-- Overrides Control Surface Tools Grid -->
-    <div class="box-panel">
-        <h3 style="margin-top:0;">Manual Execution Override (Turn Auto Mode OFF to choose)</h3>
+        <h3 style="margin-top:0; color:#00b0ff;">Manual Execution Override Control Layout</h3>
         <div style="margin-bottom:15px;">
             <script>
                 for(let idx=0; idx<=9; idx++) {
-                    document.write(`<button class="force-btn" onclick="registerManualTarget(${idx})">Force Number ${idx}</button>`);
+                    document.write(`<button class="force-btn" onclick="registerManualTarget(${idx})">Force Draw ${idx}</button>`);
                 }
             </script>
         </div>
-        <div style="font-size:16px; font-weight:bold; color:#ffea00;">Selected Forced Outcome Target: <span id="target-override-view">None (Using Profit Engine)</span></div>
+        <div style="font-size:15px; font-weight:bold; color:#ffea00;">Overridden State Target View: <span id="target-override-view">None (Using Profit Engine)</span></div>
     </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
-
 <script>
     const firebaseConfig = {
-  apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-  authDomain: "test-eb5e7.firebaseapp.com",
-  databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-  projectId: "test-eb5e7",
-  storageBucket: "test-eb5e7.appspot.com",
-  messagingSenderId: "366282855653",
-  appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
-  measurementId: "G-ECKCTBLQJ8"
-};
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+        authDomain: "test-eb5e7.firebaseapp.com",
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+        projectId: "test-eb5e7",
+        storageBucket: "test-eb5e7.appspot.com",
+        messagingSenderId: "366282855653",
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c",
+        measurementId: "G-ECKCTBLQJ8"
+    };
     firebase.initializeApp(firebaseConfig);
     const databaseRef = firebase.database();
 
-    // App internal state parameters initialization
-    let trackingPeriodStr = "202606010001";
-    let centralizedSecondsClock = 60; // 1 Minute Loop Execution Value
+    let trackingPeriodStr = "";
+    let centralizedSecondsClock = 60; 
     let managementStrategy = "AUTO"; 
     let manualOverrideTargetIndex = null;
     let cachedPoolSnapshot = {};
+    let globalCalculatedProfitAccumulator = 0;
 
     const structuralMatrixRules = {
         0:{c:['Red','Violet'],s:'Small'}, 1:{c:['Green'],s:'Small'}, 2:{c:['Red'],s:'Small'},
@@ -94,96 +114,125 @@
         6:{c:['Red'],s:'Big'}, 7:{c:['Green'],s:'Big'}, 8:{c:['Red'],s:'Big'}, 9:{c:['Green'],s:'Big'}
     };
 
-    // Central Clock Engine Loop Initialization Handler
+    // 24 Hour Chronological Realtime Period Generator Logic Engine
+    function calculateChronologicalPeriod() {
+        const currentZoneTime = new Date();
+        const yyyy = currentZoneTime.getFullYear();
+        const mm = String(currentZoneTime.getMonth() + 1).padStart(2, '0');
+        const dd = String(currentZoneTime.getDate()).padStart(2, '0');
+        
+        // Calculate dynamic total minutes passed within the current 24-hour cycle
+        const totalMinutesToday = (currentZoneTime.getHours() * 60) + currentZoneTime.getMinutes() + 1;
+        const serializedMinuteSuffix = String(totalMinutesToday).padStart(4, '0');
+        
+        return `${yyyy}${mm}${dd}${serializedMinuteSuffix}`;
+    }
+
+    // Server-Side Master Clock Loop Tracker
     function activateCentralClock() {
+        trackingPeriodStr = calculateChronologicalPeriod();
+        
         setInterval(() => {
             if(centralizedSecondsClock > 0) {
                 centralizedSecondsClock--;
                 databaseRef.ref('server_state').set({ period: trackingPeriodStr, timeLeft: centralizedSecondsClock });
             } else {
-                centralizedSecondsClock = 60; // Recycle 1-Min counter loop
+                centralizedSecondsClock = 60; 
                 executePeriodResolutionEngine();
+                trackingPeriodStr = calculateChronologicalPeriod(); // Re-sync next minute stamp tracking
             }
             document.getElementById("adm-period-display").innerText = trackingPeriodStr;
             document.getElementById("adm-seconds-display").innerText = centralizedSecondsClock + "s";
         }, 1000);
     }
 
+    // Presence Realtime Users Monitor
+    databaseRef.ref('online_users').on('value', snap => {
+        document.getElementById("online-count-view").innerText = snap.numChildren();
+    });
+
     function swapSystemMode() {
-        let buttonElement = document.getElementById("adm-strategy-toggle");
+        let btn = document.getElementById("adm-strategy-toggle");
         if(managementStrategy === "AUTO") {
             managementStrategy = "MANUAL";
-            buttonElement.innerText = "MANUAL MODE ON (Click choice below)";
-            buttonElement.style.background = "#d50000";
+            btn.innerText = "MANUAL CONTROLS ACTIVE"; btn.style.background = "#d50000";
         } else {
-            managementStrategy = "AUTO";
-            manualOverrideTargetIndex = null;
+            managementStrategy = "AUTO"; manualOverrideTargetIndex = null;
             document.getElementById("target-override-view").innerText = "None (Using Profit Engine)";
-            buttonElement.innerText = "AUTO SYSTEM MODE ON (Guaranteed Profit)";
-            buttonElement.style.background = "#ff9100";
+            btn.innerText = "AUTO SYSTEM MODE ON (Guaranteed Profit)"; btn.style.background = "#ff9100";
         }
     }
 
-    function registerManualTarget(targetNum) {
-        if(managementStrategy === "AUTO") { alert("Deactivate AUTO Profit Strategy Mode first!"); return; }
-        manualOverrideTargetIndex = targetNum;
-        document.getElementById("target-override-view").innerText = `Forcing Number [ ${targetNum} ] to win.`;
+    function registerManualTarget(num) {
+        if(managementStrategy === "AUTO") { alert("Deactivate AUTO Mode first!"); return; }
+        manualOverrideTargetIndex = num;
+        document.getElementById("target-override-view").innerText = `Forcing Number [ ${num} ] to win.`;
     }
 
-    // Dynamic Live Realtime Analytics Pool Synchronization Data Mapper Loop
+    function saveConfigLimits() {
+        let minB = parseInt(document.getElementById("minBetInp").value);
+        let maxB = parseInt(document.getElementById("maxBetInp").value);
+        databaseRef.ref('game_config').set({ minBet: minB, maxBet: maxB });
+        alert("Gate limit values successfully updated globally!");
+    }
+
+    // Dynamic Live Pools Listener
     databaseRef.ref('live_pools').on('value', snap => {
         let currentActivePoolData = snap.child(trackingPeriodStr).val() || {};
         cachedPoolSnapshot = currentActivePoolData;
-
         let aggregates = { 'Red':0,'Green':0,'Violet':0,'Big':0,'Small':0,'0':0,'1':0,'2':0,'3':0,'4':0,'5':0,'6':0,'7':0,'8':0,'9':0 };
 
         Object.keys(currentActivePoolData).forEach(uid => {
-            Object.keys(currentActivePoolData[uid]).forEach(betKey => {
-                aggregates[betKey] += currentActivePoolData[uid][betKey];
-            });
+            Object.keys(currentActivePoolData[uid]).forEach(betKey => { aggregates[betKey] += currentActivePoolData[uid][betKey]; });
         });
 
-        let viewContainer = document.getElementById("live-pools-view-box");
-        viewContainer.innerHTML = "";
-        let totalActiveKeysFound = 0;
-
+        let viewContainer = document.getElementById("live-pools-view-box"); viewContainer.innerHTML = "";
+        let itemsCount = 0;
         Object.keys(aggregates).forEach(itemKey => {
             if(aggregates[itemKey] > 0) {
-                totalActiveKeysFound++;
-                viewContainer.innerHTML += `
-                    <div class="pool-badge">
-                        <div style="font-size:13px; opacity:0.8;">${itemKey}</div>
-                        <div class="badge-value">₹${aggregates[itemKey]}</div>
-                    </div>
-                `;
+                itemsCount++;
+                viewContainer.innerHTML += `<div class="pool-badge"><b>${itemKey}</b><br><span style="color:#00e676;">₹${aggregates[itemKey]}</span></div>`;
             }
         });
-
-        if(totalActiveKeysFound === 0) {
-            viewContainer.innerHTML = `<div style="color:#aaa; padding:10px;">Waiting for user bet placements data feeds...</div>`;
-        }
+        if(itemsCount === 0) viewContainer.innerHTML = `<div style="color:#777;">No active stakes placed in this period loop yet.</div>`;
     });
 
-    // Payout Analysis evaluation simulation calculation algorithm engine
+    // Payout Analysis evaluation simulation calculation engine
     function executePeriodResolutionEngine() {
         let definitiveWinnerIndex = 0;
+        let totalRoundInflowCapital = 0;
+        let finalChosenScenarioOutflow = 0;
+
+        // Sum up absolute collective total inflow pool values inside current frame index pointers
+        Object.keys(cachedPoolSnapshot).forEach(uid => {
+            Object.keys(cachedPoolSnapshot[uid]).forEach(k => { totalRoundInflowCapital += cachedPoolSnapshot[uid][k]; });
+        });
 
         if(managementStrategy === "MANUAL" && manualOverrideTargetIndex !== null) {
             definitiveWinnerIndex = manualOverrideTargetIndex;
+            // Calculate specific manual payout outflow structure
+            Object.keys(cachedPoolSnapshot).forEach(uid => {
+                Object.keys(cachedPoolSnapshot[uid]).forEach(betKey => {
+                    let amt = cachedPoolSnapshot[uid][betKey];
+                    if(betKey === definitiveWinnerIndex.toString()) finalChosenScenarioOutflow += (amt * 8.8);
+                    else if(betKey === structuralMatrixRules[definitiveWinnerIndex].s) finalChosenScenarioOutflow += (amt * 1.92);
+                    else if(structuralMatrixRules[definitiveWinnerIndex].c.includes(betKey)) {
+                        finalChosenScenarioOutflow += (amt * (betKey==='Violet' ? 4.5 : 1.92));
+                    }
+                });
+            });
         } else {
-            // AUTO PROFIT ENGINE: Scans indexes 0-9 to minimize admin payout liability
+            // AUTO PROFIT MECHANISM SCANNERS
             let maximumCalculatedProfitResult = -99999999;
             let optimalTargetIndex = 0;
+            let optimalOutflow = 0;
 
             for (let testIndex = 0; testIndex <= 9; testIndex++) {
                 let currentScenarioOutflowPayoutValue = 0;
-                let totalCollectedInflowCapital = 0;
 
                 Object.keys(cachedPoolSnapshot).forEach(uid => {
                     Object.keys(cachedPoolSnapshot[uid]).forEach(betKey => {
                         let capitalAmount = cachedPoolSnapshot[uid][betKey];
-                        totalCollectedInflowCapital += capitalAmount;
-
                         if(betKey === testIndex.toString()) currentScenarioOutflowPayoutValue += (capitalAmount * 8.8);
                         else if(betKey === structuralMatrixRules[testIndex].s) currentScenarioOutflowPayoutValue += (capitalAmount * 1.92);
                         else if(structuralMatrixRules[testIndex].c.includes(betKey)) {
@@ -192,16 +241,23 @@
                     });
                 });
 
-                let derivedProfitValue = totalCollectedInflowCapital - currentScenarioOutflowPayoutValue;
+                let derivedProfitValue = totalRoundInflowCapital - currentScenarioOutflowPayoutValue;
                 if(derivedProfitValue > maximumCalculatedProfitResult) {
                     maximumCalculatedProfitResult = derivedProfitValue;
                     optimalTargetIndex = testIndex;
+                    optimalOutflow = currentScenarioOutflowPayoutValue;
                 }
             }
             definitiveWinnerIndex = optimalTargetIndex;
+            finalChosenScenarioOutflow = optimalOutflow;
         }
 
-        // Schema model packaging structures
+        // Increment net system metrics accumulation indexes logs
+        let netRoundProfit = totalRoundInflowCapital - finalChosenScenarioOutflow;
+        globalCalculatedProfitAccumulator += netRoundProfit;
+        document.getElementById("net-profit-view").innerText = `₹${globalCalculatedProfitAccumulator.toFixed(2)}`;
+
+        // Commit finalized structural output to dataset history tracking paths
         let finalOutcomePayload = {
             period: trackingPeriodStr,
             number: definitiveWinnerIndex,
@@ -209,21 +265,14 @@
             color: structuralMatrixRules[definitiveWinnerIndex].c.join('-')
         };
 
-        // Commit resolution object directly into master historical dataset node reference tree
         databaseRef.ref('wingo_history/' + trackingPeriodStr).set(finalOutcomePayload);
-
-        // Clear previous active pool node map indices reference pointers logs
-        databaseRef.ref('live_pools/' + trackingPeriodStr).remove();
+        databaseRef.ref('live_pools/' + trackingPeriodStr).remove(); // Clear pool database path references safely
+        
         manualOverrideTargetIndex = null;
         document.getElementById("target-override-view").innerText = "None (Using Profit Engine)";
-
-        // Increment tracking sequence values
-        trackingPeriodStr = (parseInt(trackingPeriodStr) + 1).toString();
     }
 
-    window.onload = () => {
-        activateCentralClock();
-    };
+    window.onload = () => { activateCentralClock(); };
 </script>
 </body>
 </html>
