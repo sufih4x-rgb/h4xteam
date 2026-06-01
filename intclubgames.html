@@ -10,7 +10,6 @@
         body { background: var(--bg); color: var(--text-main); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; }
         .app-shell { width: 100%; max-width: 480px; min-height: 100vh; background: var(--surface); position: relative; box-shadow: 0 0 20px rgba(0,0,0,0.05); padding-bottom: 40px; box-sizing: border-box; }
         
-        /* Top Navigation Header bar style matches your provided layout */
         .top-nav { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #f0f2f5; }
         .back-btn { font-size: 20px; cursor: pointer; font-weight: bold; text-decoration: none; color: var(--text-main); }
         
@@ -20,7 +19,6 @@
         .timer-strip { display: flex; justify-content: space-between; align-items: center; padding: 15px; background: #f1f5f9; margin: 15px 20px; border-radius: 16px; font-weight: bold; }
         .countdown-clock { color: var(--danger); font-size: 28px; font-variant-numeric: tabular-nums; font-weight: 800; }
         
-        /* Layout Grid Blocks */
         .control-grid { padding: 5px 20px; display: grid; gap: 10px; margin-bottom: 10px; }
         .grid-3 { grid-template-columns: repeat(3, 1fr); }
         .grid-5 { grid-template-columns: repeat(5, 1fr); }
@@ -32,20 +30,16 @@
         
         .num-circle { background: #f8f9fc; color: #2b2d42; border: 1px solid #e2e8f0; border-radius: 50%; aspect-ratio: 1; font-size: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; }
         
-        /* Interactive Bet Parameter Modifier Section Styles */
         .bet-modifier-box { margin: 15px 20px; padding: 15px; background: #f8f9fc; border-radius: 16px; border: 1px solid #e2e8f0; }
         .input-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
         .input-row input { flex: 1; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 16px; font-weight: 700; text-align: center; outline: none; }
         .step-btn { background: #e2e8f0; border: none; width: 40px; height: 40px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
         .quick-chips-row { display: flex; gap: 6px; flex-wrap: wrap; }
         .chip-btn { background: white; border: 1px solid #cbd5e1; padding: 6px 12px; border-radius: 8px; font-size: 11px; font-weight: 700; cursor: pointer; }
-        .chip-btn:active, .step-btn:active { transform: scale(0.95); }
         
-        /* 5-Seconds Block Overlay Shield Structure */
         .freeze-mask { display: none; position: absolute; top: 0; bottom: 0; left: 0; right: 0; background: rgba(15, 23, 42, 0.85); color: white; font-size: 140px; font-weight: 800; justify-content: center; align-items: center; z-index: 999; backdrop-filter: blur(4px); }
         .freeze-box { background: var(--danger); padding: 10px 40px; border-radius: 24px; border: 4px solid #fff; box-shadow: 0 20px 40px rgba(0,0,0,0.5); }
         
-        /* History Navigation Table Panels */
         .tabs-header { display: flex; background: #f1f5f9; margin-top: 15px; }
         .tab-btn { flex: 1; padding: 14px; text-align: center; font-weight: 700; cursor: pointer; color: #64748b; font-size: 13px; border-bottom: 3px solid transparent; }
         .tab-btn.active { background: #fff; border-bottom-color: var(--primary); color: var(--primary); }
@@ -55,8 +49,7 @@
         th { background: #fafbfc; color: #64748b; font-weight: 700; }
         .dot { height: 10px; width: 10px; border-radius: 50%; display: inline-block; margin: 0 2px; }
 
-        /* Custom Popup Animations Configuration */
-        .payout-alert { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: white; width: 320px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); z-index: 9999; text-align: center; padding: 30px; box-sizing: border-box; transition: all 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; }
+        .payout-alert { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.8); background: white; width: 320px; border-radius: 24px; box-shadow: 0 20px 50px rgba(0,0,0,0.3); z-index: 9999; text-align: center; padding: 30px; box-sizing: border-box; transition: all 0.25s ease; opacity: 0; }
         .payout-alert.pop-show { display: block; transform: translate(-50%, -50%) scale(1); opacity: 1; }
         .payout-title { font-size: 26px; font-weight: 800; margin-bottom: 10px; }
         .alert-win { color: var(--success); } .alert-loss { color: var(--danger); }
@@ -181,12 +174,10 @@
 
     let activeClientSessionUid = "";
     let localPeriodPointer = "";
-    let activeProfileUserName = "User";
-    let activeRoundCommittedStakes = {};
-    let historicalTrackerArray = [];
     let boundaryMinLimit = 10, boundaryMaxLimit = 10000;
+    let localActiveBets = {};
+    let isFreeze = false;
 
-    // Capital Amount Inputs Interface Utilities
     window.modifyCounterValue = (step) => {
         let el = document.getElementById("capitalAmountInput");
         let val = parseInt(el.value) || 0;
@@ -198,67 +189,162 @@
         el.value = (parseInt(el.value) || 10) * factor;
     };
 
-    // Synchronize Client Session Presence
     onAuthStateChanged(auth, user => {
         if (!user) return location.href = 'index.html';
         activeClientSessionUid = user.uid;
         document.getElementById("user-profile-id-string").innerText = activeClientSessionUid.substring(0,10).toUpperCase() + "...";
 
-        // Read user data parameters node reference mapping profile attributes
-        onValue(ref(db, `users/${activeClientSessionUid}`), snap => {
-            if(snap.exists()) activeProfileUserName = snap.val().displayName || "Player";
+        onValue(ref(db, `user_wallet/${activeClientSessionUid}/balance`), snap => {
+            document.getElementById('mainBal').innerText = parseFloat(snap.val() || 0).toFixed(2);
         });
 
-        // Online System Tracking Registry Node References Binding Engine
-        const activePresenceNodeRef = ref(db, `online_registry/${activeClientSessionUid}`);
-        set(activePresenceNodeRef, { name: activeProfileUserName, status: "Active IDLE", lastSeen: Date.now() });
-        
-        // Listen Gate Parameter Limits
-        onValue(ref(db, 'gate_parameters'), snap => {
+        // LOAD LIFETIME MY BETS HISTORY (START SE LEKAR ABHI TAK)
+        onValue(ref(db, `user_bets/${activeClientSessionUid}`), snap => {
+            let body = document.getElementById("personal-transactions-rows");
+            body.innerHTML = "";
             if(snap.exists()){
-                boundaryMinLimit = snap.val().minBet || 10;
-                boundaryMaxLimit = snap.val().maxBet || 10000;
+                let data = [];
+                snap.forEach(child => { data.unshift(child.val()); });
+                data.forEach(t => {
+                    let styleColor = t.winStatus === "WIN" ? "var(--success)" : "var(--danger)";
+                    let prefix = t.winStatus === "WIN" ? "+" : "-";
+                    body.innerHTML += `<tr>
+                        <td>${t.period}</td>
+                        <td><b>${t.choice}</b></td>
+                        <td>₹${t.amt}</td>
+                        <td><span style="color:${styleColor}; font-weight:800;">${prefix}₹${parseFloat(t.payout).toFixed(2)}</span></td>
+                    </tr>`;
+                });
             }
         });
-
-        // Synchronize wallet balance node structure matches user provided properties
-        onValue(ref(db, `user_wallet/${activeClientSessionUid}/balance`), snap => {
-            const currentWalletBalance = snap.val() || 0;
-            document.getElementById('mainBal').innerText = parseFloat(currentWalletBalance).toFixed(2);
-        });
     });
 
-    // Realtime Absolute Clock System Synchronizer Model Matrix Engine Loop
-    onValue(ref(db, 'server_synchronization_state'), snapshot => {
-        if(!snapshot.exists()) return;
-        const serverStateObj = snapshot.val();
+    // SERVER TICK PULSE CLOCK MATRIX (AUTOMATIC RUN WITHOUT ADMIN PANEL)
+    setInterval(async () => {
+        const now = Date.now();
+        const serverRef = ref(db, 'server_synchronization_state');
+        const stateSnap = await get(serverRef);
         
-        localPeriodPointer = serverStateObj.period;
-        document.getElementById("period-num-view").innerText = localPeriodPointer;
+        let timeLeft = 60;
+        let currentPeriod = "";
 
-        const dynamicSecsRemaining = serverStateObj.timeLeft;
-        document.getElementById("clock-countdown-view").innerText = `00:${dynamicSecsRemaining < 10 ? '0' + dynamicSecsRemaining : dynamicSecsRemaining}`;
-
-        // Screen freeze verification rules mapping
-        if(dynamicSecsRemaining <= 5) {
-            document.getElementById("freeze-screen").style.display = "flex";
-            document.getElementById("freeze-timer-display").innerText = `0${dynamicSecsRemaining}`;
+        if (stateSnap.exists()) {
+            let data = stateSnap.val();
+            let passed = Math.floor((now - data.startTimestamp) / 1000);
+            if (passed >= 60) {
+                // If period over, automatically roll over a fresh dynamic period
+                await executeAutomaticPeriodRollover(now, data.period);
+                return;
+            } else {
+                timeLeft = 60 - passed;
+                currentPeriod = data.period;
+            }
         } else {
-            document.getElementById("freeze-screen").style.display = "none";
-        }
-    });
-
-    // Handle structural transaction data logic placement submission operations
-    window.commitBetIntent = async (selectionTargetKey) => {
-        const designatedBetCapital = parseInt(document.getElementById("capitalAmountInput").value);
-        if(isNaN(designatedBetCapital) || designatedBetCapital <= 0) return;
-
-        if(designatedBetCapital < boundaryMinLimit || designatedBetCapital > boundaryMaxLimit) {
-            alert(`Boundary limit failure! Allowed min: ₹${boundaryMinLimit}, max: ₹${boundaryMaxLimit}`);
+            await executeAutomaticPeriodRollover(now, "");
             return;
         }
 
-        // Run validation transaction updates directly from the database ledger references
+        // Live Render Synchronizer Interface Updates
+        localPeriodPointer = currentPeriod;
+        document.getElementById("period-num-view").innerText = currentPeriod;
+        document.getElementById("clock-countdown-view").innerText = `00:${timeLeft < 10 ? '0' + timeLeft : timeLeft}`;
+
+        if(timeLeft <= 5) {
+            isFreeze = true;
+            document.getElementById("freeze-screen").style.display = "flex";
+            document.getElementById("freeze-timer-display").innerText = `0${timeLeft}`;
+        } else {
+            isFreeze = false;
+            document.getElementById("freeze-screen").style.display = "none";
+        }
+    }, 1000);
+
+    // DYNAMIC PERIOD RESOLUTION MATRIX ENGINE
+    async function executeAutomaticPeriodRollover(timestamp, lastPeriodId) {
+        let d = new Date();
+        let ymd = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+        let nextPeriodKey = ymd + String(Math.floor(timestamp / 60000)).slice(-4);
+
+        if (lastPeriodId !== "") {
+            // Calculate and write the outcome results securely inside database registers
+            const adminOverrideSnap = await get(ref(db, 'wingo_admin_override'));
+            let winNumber = Math.floor(Math.random() * 10); // Standard algorithm fallback fallback
+
+            if(adminOverrideSnap.exists() && adminOverrideSnap.val().forcedNumber !== undefined && adminOverrideSnap.val().forcedNumber !== "AUTO") {
+                winNumber = parseInt(adminOverrideSnap.val().forcedNumber);
+            }
+
+            let size = winNumber >= 5 ? "Big" : "Small";
+            let color = [];
+            if([1,3,7,9].includes(winNumber)) color.push("Green");
+            else if([2,4,6,8].includes(winNumber)) color.push("Red");
+            else if(winNumber === 0) color.push("Red", "Violet");
+            else if(winNumber === 5) color.push("Green", "Violet");
+
+            let drawnResultNode = { period: lastPeriodId, number: winNumber, size: size, color: color, timestamp: timestamp };
+            await set(ref(db, `wingo_historical_register/${lastPeriodId}`), drawnResultNode);
+
+            // Execute Server Side User Settlement Simulation Rule Node
+            await processGlobalStakesSettlement(drawnResultNode);
+        }
+
+        await set(ref(db, 'server_synchronization_state'), { period: nextPeriodKey, startTimestamp: timestamp });
+        localActiveBets = {};
+        renderStagedInvestmentsView();
+    }
+
+    // SERVER SIDE BALANCES RESOLUTION RUNNER LOGIC (Anti-Tab Close Loss Fix)
+    async function processGlobalStakesSettlement(resultObj) {
+        const poolsSnap = await get(ref(db, `wingo_active_pools/${resultObj.period}`));
+        if(!poolsSnap.exists()) return;
+
+        let allUsersStakes = poolsSnap.val();
+        for(let uid in allUsersStakes) {
+            let userBetObject = allUsersStakes[uid];
+            for(let selection in userBetObject) {
+                let amt = userBetObject[selection];
+                let isWin = false;
+                let multiplier = 1.92;
+
+                if(selection === resultObj.number.toString()) { isWin = true; multiplier = 8.8; }
+                else if(selection === resultObj.size) { isWin = true; multiplier = 1.92; }
+                else if(resultObj.color.includes(selection)) { 
+                    isWin = true; 
+                    multiplier = (selection === 'Violet') ? 4.5 : (resultObj.number === 0 || resultObj.number === 5 ? 1.45 : 1.92); 
+                }
+
+                let payoutAmount = isWin ? (amt * multiplier) : 0;
+                
+                // Directly increment database balances node tree immediately
+                if(isWin) {
+                    await update(ref(db, `user_wallet/${uid}`), { balance: increment(payoutAmount) });
+                }
+
+                // Push to permanent My Bets History Node tree securely
+                await set(ref(db, `user_bets/${uid}/${resultObj.period}_${selection}`), {
+                    period: resultObj.period,
+                    choice: selection,
+                    amt: amt,
+                    winStatus: isWin ? "WIN" : "LOSS",
+                    payout: payoutAmount
+                });
+
+                // Real-time alert prompt configuration trigger if active inside session context
+                if(uid === activeClientSessionUid) {
+                    if(isWin) triggerCustomPopupAnimation("VICTORY 🎉", `Payout return premium of +₹${payoutAmount.toFixed(2)} credited!`, true);
+                    else triggerCustomPopupAnimation("ROUND LOST 😢", "Your allocation prediction failed. Try again!", false);
+                }
+            }
+        }
+    }
+
+    window.commitBetIntent = async (selectionTargetKey) => {
+        if(isFreeze) { alert("Bets Locked! 5 Seconds rule active."); return; }
+        if(!activeClientSessionUid) return;
+
+        const designatedBetCapital = parseInt(document.getElementById("capitalAmountInput").value);
+        if(isNaN(designatedBetCapital) || designatedBetCapital <= 0) return;
+
         const balanceSnapshotRef = await get(ref(db, `user_wallet/${activeClientSessionUid}/balance`));
         const verifiedLiveBalance = balanceSnapshotRef.val() || 0;
 
@@ -267,87 +353,48 @@
             return;
         }
 
-        // Atomically subtract funds via increments match rules
+        // Subtract amount instantly 
         await update(ref(db, `user_wallet/${activeClientSessionUid}`), { balance: increment(-designatedBetCapital) });
 
-        // Update active stack models
-        activeRoundCommittedStakes[selectionTargetKey] = (activeRoundCommittedStakes[selectionTargetKey] || 0) + designatedBetCapital;
-
-        // Push directly to targeted shared memory registry matrix nodes
-        await set(ref(db, `active_investment_pools/${localPeriodPointer}/${activeClientSessionUid}/${selectionTargetKey}`), activeRoundCommittedStakes[selectionTargetKey]);
-        await update(ref(db, `online_registry/${activeClientSessionUid}`), { status: `Staked ₹${designatedBetCapital} on ${selectionTargetKey}` });
-
+        localActiveBets[selectionTargetKey] = (localActiveBets[selectionTargetKey] || 0) + designatedBetCapital;
+        
+        // Register bet globally in shared pool path tree matrix
+        await set(ref(db, `wingo_active_pools/${localPeriodPointer}/${activeClientSessionUid}/${selectionTargetKey}`), localActiveBets[selectionTargetKey]);
+        
         renderStagedInvestmentsView();
     };
 
     function renderStagedInvestmentsView() {
         const targetContainer = document.getElementById("active-staged-bets-pool-view");
         targetContainer.innerHTML = "";
-        const keys = Object.keys(activeRoundCommittedStakes);
+        const keys = Object.keys(localActiveBets);
         if(keys.length === 0) { targetContainer.innerHTML = "No active stakes committed yet."; return; }
         keys.forEach(k => {
-            targetContainer.innerHTML += `<div>🔮 Option [<b>${k}</b>] Allocated: <b>₹${activeRoundCommittedStakes[k]}</b></div>`;
+            targetContainer.innerHTML += `<div>🔮 Option [<b>${k}</b>] Allocated: <b>₹${localActiveBets[k]}</b></div>`;
         });
     }
 
-    // Historical Outcomes Dynamic Processing Pipelines Node Registers Elements
+    // LOAD GLOBAL LATEST 15 RESULTS HISTORY SHEET RUNNER
     onValue(ref(db, 'wingo_historical_register'), snap => {
-        if(!snap.exists()) return;
-        
-        // Fetch last appended child node record object array entries
-        let keys = Object.keys(snap.val());
-        let lastNodeKey = keys[keys.length - 1];
-        let lastDrawOutcomeObj = snap.val()[lastNodeKey];
-
-        if(!lastDrawOutcomeObj || lastDrawOutcomeObj.period !== localPeriodPointer) return;
-
-        let derivedTotalPayoutCredits = 0;
-        let activeRoundCommittedFlag = false;
-
-        Object.keys(activeRoundCommittedStakes).forEach(betSelectionKey => {
-            activeRoundCommittedFlag = true;
-            let transactionCapitalAmount = activeRoundCommittedStakes[betSelectionKey];
-            let outcomeVictoryStatus = false;
-            let basePayoutMultiplier = 1.92;
-
-            if(betSelectionKey === lastDrawOutcomeObj.number.toString()) { outcomeVictoryStatus = true; basePayoutMultiplier = 8.8; }
-            else if(betSelectionKey === lastDrawOutcomeObj.size) { outcomeVictoryStatus = true; basePayoutMultiplier = 1.92; }
-            else if(lastDrawOutcomeObj.color.includes(betSelectionKey)) { 
-                outcomeVictoryStatus = true; 
-                basePayoutMultiplier = (betSelectionKey === 'Violet') ? 4.5 : 1.92; 
-            }
-
-            let statusViewHTMLString = "";
-            if(outcomeVictoryStatus) {
-                let financialCreditsGain = transactionCapitalAmount * basePayoutMultiplier;
-                derivedTotalPayoutCredits += financialCreditsGain;
-                statusViewHTMLString = `<span style="color:var(--success); font-weight:800;">+₹${financialCreditsGain.toFixed(2)}</span>`;
-            } else {
-                statusViewHTMLString = `<span style="color:var(--danger); font-weight:800;">-₹${transactionCapitalAmount.toFixed(2)}</span>`;
-            }
-
-            historicalTrackerArray.unshift({
-                period: lastDrawOutcomeObj.period,
-                choice: betSelectionKey,
-                amt: transactionCapitalAmount,
-                statusView: statusViewHTMLString
+        let body = document.getElementById("global-history-rows");
+        body.innerHTML = ""; 
+        let records = [];
+        if(snap.exists()) {
+            snap.forEach(c => { records.unshift(c.val()); });
+            records.slice(0, 15).forEach(r => {
+                let dots = "";
+                r.color.forEach(col => {
+                    let realBg = col === "Red" ? "var(--danger)" : (col === "Green" ? "var(--success)" : "var(--violet)");
+                    dots += `<span class="dot" style="background:${realBg}"></span>`;
+                });
+                body.innerHTML += `<tr>
+                    <td>${r.period}</td>
+                    <td style="font-weight:800; color:${r.color.includes('Red')?'var(--danger)':'var(--success)'}">${r.number}</td>
+                    <td style="font-weight:700;">${r.size}</td>
+                    <td>${dots}</td>
+                </tr>`;
             });
-        });
-
-        if(activeRoundCommittedFlag) {
-            if(derivedTotalPayoutCredits > 0) {
-                update(ref(db, `user_wallet/${activeClientSessionUid}`), { balance: increment(derivedTotalPayoutCredits) });
-                triggerCustomPopupAnimation("VICTORY 🎉", `Payout return premium of +₹${derivedTotalPayoutCredits.toFixed(2)} credited!`, true);
-            } else {
-                triggerCustomPopupAnimation("ROUND LOST 😢", "Your allocation prediction failed. Try again!", false);
-            }
-            renderPersonalTransactionsTable();
         }
-
-        // Clean internal buffers
-        activeRoundCommittedStakes = {};
-        renderStagedInvestmentsView();
-        update(ref(db, `online_registry/${activeClientSessionUid}`), { status: "Active IDLE" });
     });
 
     function triggerCustomPopupAnimation(title, msg, isWin) {
@@ -359,33 +406,6 @@
         pop.classList.add("pop-show");
     }
     window.dismissCustomPopup = () => { document.getElementById("custom-pop").classList.remove("pop-show"); };
-
-    function renderPersonalTransactionsTable() {
-        let body = document.getElementById("personal-transactions-rows");
-        body.innerHTML = "";
-        historicalTrackerArray.forEach(t => {
-            body.innerHTML += `<tr><td>${t.period}</td><td><b>${t.choice}</b></td><td>₹${t.amt}</td><td>${t.statusView}</td></tr>`;
-        });
-    }
-
-    // Synchronize feed log sheets matches your design layouts
-    onValue(ref(db, 'wingo_historical_register'), snap => {
-        let body = document.getElementById("global-history-rows");
-        body.innerHTML = ""; let records = [];
-        snap.forEach(c => { records.unshift(c.val()); });
-        records.slice(0, 15).forEach(r => {
-            let dots = "";
-            if(r.color.includes("Red")) dots += `<span class="dot" style="background:var(--danger)"></span>`;
-            if(r.color.includes("Green")) dots += `<span class="dot" style="background:var(--success)"></span>`;
-            if(r.color.includes("Violet")) dots += `<span class="dot" style="background:var(--violet)"></span>`;
-            body.innerHTML += `<tr>
-                <td>${r.period}</td>
-                <td style="font-weight:800; color:${r.color.includes('Red')?'var(--danger)':'var(--success)'}">${r.number}</td>
-                <td style="font-weight:700;">${r.size}</td>
-                <td>${dots}</td>
-            </tr>`;
-        });
-    });
 
     window.switchDataViewPane = (paneId, btnEl) => {
         document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
