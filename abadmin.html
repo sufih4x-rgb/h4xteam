@@ -2,101 +2,133 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Andar Bahar Governance Console & Risk Ledger</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Andar Bahar - Executive Governance Dashboard</title>
     <style>
-        body { font-family: -apple-system, system-ui, BlinkMacSystemFont, sans-serif; background: #05070f; color: #e2e8f0; padding: 25px; margin: 0; }
-        .grid-layout { max-width: 1100px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
-        .panel-card { background: #0c0f1d; border: 1px solid #1e293b; padding: 20px; border-radius: 12px; }
-        .metrics-row { display: flex; gap: 15px; flex-wrap: wrap; }
-        .metric-item { flex: 1; background: #111625; padding: 15px; border-radius: 10px; text-align: center; border: 1px solid #1e293b; min-width: 180px; }
-        .metric-num { font-size: 26px; font-weight: 900; margin-top: 5px; }
+        body { font-family: -apple-system, system-ui, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #060913; color: #f1f5f9; padding: 25px; margin: 0; }
+        .dashboard-container { max-width: 1100px; margin: auto; display: flex; flex-direction: column; gap: 20px; }
+        .panel-card { background: #0d1222; border: 1px solid #1e293b; padding: 20px; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); }
+        h2, h3 { margin-top: 0; font-weight: 800; letter-spacing: -0.5px; }
         
-        .config-row { display: flex; gap: 15px; margin-top: 10px; align-items: center; }
-        .config-row input { background: #05070f; border: 1px solid #334155; padding: 10px; border-radius: 6px; color: white; font-size: 14px; width: 120px; text-align: center; }
-        .save-btn { background: #10b981; color: white; border: none; padding: 11px 20px; font-weight: 700; border-radius: 6px; cursor: pointer; }
+        /* Financial Ledger Grid */
+        .metrics-row { display: flex; gap: 15px; flex-wrap: wrap; margin-top: 10px; }
+        .metric-item { flex: 1; background: #131a30; padding: 20px; border-radius: 10px; text-align: center; border: 1px solid #22314d; min-width: 200px; }
+        .metric-title { font-size: 11px; color: #94a3b8; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+        .metric-num { font-size: 28px; font-weight: 900; margin-top: 8px; }
+
+        /* Configuration Forms */
+        .config-row { display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-end; }
+        .input-group { display: flex; flex-direction: column; gap: 6px; }
+        .input-group label { font-size: 12px; color: #94a3b8; font-weight: 600; }
+        .input-group input { background: #060913; border: 1px solid #334155; padding: 12px; border-radius: 8px; color: #fff; font-size: 15px; width: 140px; text-align: center; transition: 0.2s; }
+        .input-group input:focus { border-color: #38bdf8; outline: none; }
         
-        .btn-override { padding: 12px 20px; border: none; border-radius: 6px; font-weight: 800; cursor: pointer; text-transform: uppercase; font-size: 12px; }
-        table { width: 100%; border-collapse: collapse; margin-top: 12px; background: #111625; border-radius: 8px; overflow: hidden; }
-        th, td { padding: 12px; text-align: left; font-size: 13px; border-bottom: 1px solid #1e293b; }
-        th { background: #1e293b; color: #94a3b8; font-size: 11px; text-transform: uppercase; }
+        /* Action Buttons */
+        .btn { padding: 12px 24px; border: none; font-weight: 700; border-radius: 8px; cursor: pointer; font-size: 13px; text-transform: uppercase; transition: 0.2s; }
+        .btn-save { background: #10b981; color: white; }
+        .btn-save:hover { background: #059669; }
+        .btn-override { padding: 14px 24px; font-size: 12px; letter-spacing: 0.5px; }
+        
+        /* Realtime Streaming Log Table */
+        .table-wrapper { overflow-x: auto; margin-top: 10px; }
+        table { width: 100%; border-collapse: collapse; background: #131a30; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 14px; text-align: left; font-size: 13.5px; border-bottom: 1px solid #1e293b; }
+        th { background: #1e293b; color: #94a3b8; font-size: 11px; text-transform: uppercase; font-weight: 700; letter-spacing: 0.5px; }
+        tr:last-child td { border-bottom: none; }
     </style>
 </head>
 <body>
 
-<div class="grid-layout">
-    <h2 style="color:#c084fc; margin:0; font-size:26px; font-weight:900;">🛡️ Andar Bahar Corporate Governance Ecosystem</h2>
+<div class="dashboard-container">
+    <!-- Top Branding -->
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div>
+            <h2 style="color:#c084fc; margin:0; font-size:26px;">🛡️ Corporate Governance Console</h2>
+            <span style="font-size:12px; color:#475569;">Andar Bahar Passive Autonomous Ecosystem</span>
+        </div>
+        <div style="background: #1e293b; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: bold; color: #94a3b8;">
+            🔴 Serverless Listening Mode Active
+        </div>
+    </div>
 
-    <!-- House Total Financial Ledger Analytics Section -->
+    <!-- 1. Realtime Analytics Matrix -->
     <div class="panel-card" style="border-left: 4px solid #10b981;">
-        <h3 style="margin-top:0; font-size:15px; color:#94a3b8;">GLOBAL OVERALL FINANCIAL BALANCES</h3>
+        <h3 style="font-size:14px; color:#94a3b8; margin-bottom:15px;">GLOBAL FINANCIAL INTERCEPT BALANCE</h3>
         <div class="metrics-row">
             <div class="metric-item">
-                <div style="font-size:11px; color:#94a3b8; font-weight:700;">TOTAL DEPOSITED FLOW</div>
-                <div class="metric-num" id="totalInflowText" style="color:#38bdf8;">₹0.00</div>
+                <div class="metric-title">Total Inflow Volume</div>
+                <div class="metric-num" id="txtTotalInflow" style="color:#38bdf8;">₹0.00</div>
             </div>
             <div class="metric-item">
-                <div style="font-size:11px; color:#94a3b8; font-weight:700;">TOTAL EXPELLED PAYOUTS</div>
-                <div class="metric-num" id="totalOutflowText" style="color:#f43f5e;">₹0.00</div>
+                <div class="metric-title">Total Expelled Payouts</div>
+                <div class="metric-num" id="txtTotalOutflow" style="color:#f43f5e;">₹0.00</div>
             </div>
             <div class="metric-item">
-                <div style="font-size:11px; color:#94a3b8; font-weight:700;">NET ADMIN HOUSE PROFIT (GUARANTEED)</div>
-                <div class="metric-num" id="netProfitText" style="color:#10b981;">₹0.00</div>
+                <div class="metric-title">Net Admin Margin Profit</div>
+                <div class="metric-num" id="txtNetProfit" style="color:#10b981;">₹0.00</div>
             </div>
         </div>
     </div>
 
-    <!-- Minimum and Maximum Stake Configuration Panel Section -->
+    <!-- 2. Staking System Rules Config -->
     <div class="panel-card">
-        <h3 style="margin-top:0; font-size:16px; color:#fbbf24;">Staking Policy Limits Configuration</h3>
+        <h3 style="font-size:15px; color:#fbbf24; margin-bottom:15px;">Operational Risk Parameters</h3>
         <div class="config-row">
-            <div>
-                <label style="font-size:12px; color:#94a3b8; display:block; margin-bottom:4px;">Minimum Bet Amount</label>
-                <input type="number" id="cfgMinBet" value="10">
+            <div class="input-group">
+                <label>Minimum Stake Allowed (₹)</label>
+                <input type="number" id="inputMinBet" value="10">
             </div>
-            <div>
-                <label style="font-size:12px; color:#94a3b8; display:block; margin-bottom:4px;">Maximum Bet Amount</label>
-                <input type="number" id="cfgMaxBet" value="5000">
+            <div class="input-group">
+                <label>Maximum Stake Allowed (₹)</label>
+                <input type="number" id="inputMaxBet" value="5000">
             </div>
-            <div style="margin-top:18px;">
-                <button class="save-btn" onclick="saveOperationalConfig()">Apply Configuration Rules 💾</button>
-            </div>
+            <button class="btn btn-save" onclick="updateRiskConfigRules()">Update Staking Rules 💾</button>
         </div>
     </div>
 
-    <!-- Forced Intervention Override Actions Section -->
-    <div class="panel-card">
-        <h3 style="margin-top:0; font-size:16px; color:#38bdf8;">Absolute Outcome Command Triggers</h3>
-        <div style="display:flex; gap:10px; margin-top:10px;">
-            <button class="btn-override" style="background:#fbbf24; color:#000;" onclick="sendForceSignal('FORCE_ANDAR')">Force Next As Andar</button>
-            <button class="btn-override" style="background:#c084fc; color:#000;" onclick="sendForceSignal('FORCE_BAHAR')">Force Next As Bahar</button>
-            <button class="btn-override" style="background:#334155; color:#fff;" onclick="sendForceSignal('AUTO')">Reset Back to Auto Profit Guard Mode</button>
+    <!-- 3. Absolute Manual Signal Hack / Override Controller -->
+    <div class="panel-card" style="border-left: 4px solid #38bdf8;">
+        <h3 style="font-size:15px; color:#38bdf8; margin-bottom:5px;">Manual Outcome Switch Overrides</h3>
+        <p style="font-size:12px; color:#64748b; margin:0 0 15px 0;">Force next session's game outcome instantly. Auto mode safely plays matching algorithm to secure house margins.</p>
+        
+        <div style="display:flex; gap:12px; flex-wrap:wrap;">
+            <button class="btn btn-override" style="background:#38bdf8; color:#060913;" onclick="dispatchForceIntercept('FORCE_ANDAR')">Force Next Result: ANDAR 🔵</button>
+            <button class="btn btn-override" style="background:#ec4899; color:#fff;" onclick="dispatchForceIntercept('FORCE_BAHAR')">Force Next Result: BAHAR 🔴</button>
+            <button class="btn btn-override" style="background:#334155; color:#fff;" onclick="dispatchForceIntercept('AUTO')">Reset back to Auto Profit Guard 🤖</button>
         </div>
-        <div style="margin-top:12px; font-size:13px; font-weight:700; color:#94a3b8;">Active Core Pulse State Intercept: <span id="activeOverrideSignal" style="color:#fbbf24;">AUTO</span></div>
+        
+        <div style="margin-top:18px; font-size:14px; font-weight:700; color:#94a3b8;">
+            Active Command Pipeline Status: <span id="lblActiveSignal" style="color:#fbbf24; background:rgba(251,191,36,0.1); padding:4px 10px; border-radius:4px;">AUTO</span>
+        </div>
     </div>
 
-    <!-- History Log Activity Audit Ledger Rows Table Section -->
+    <!-- 4. Live Session Activity Log Stream -->
     <div class="panel-card">
-        <h3 style="margin-top:0; font-size:16px; color:#94a3b8;">Live Shared Session Stream & Historical Audit Ledger</h3>
-        <table>
-            <thead>
-                <tr>
-                    <th>Target Event/User Stream Key</th>
-                    <th>Combined Pool Stake Size</th>
-                    <th>Result Verdict</th>
-                    <th>Financial Delta House Profit</th>
-                </tr>
-            </thead>
-            <tbody id="adminLedgerStreamRows">
-                <tr><td colspan="4" style="text-align:center; color:#475569;">Awaiting dynamic transaction pipeline events...</td></tr>
-            </tbody>
-        </table>
+        <h3 style="font-size:15px; color:#94a3b8; margin-bottom:12px;">Realtime Shared Audit Ledger (Last 15 Sessions)</h3>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Session Unique Key ID</th>
+                        <th>Total Combined Pool Pool</th>
+                        <th>Calculated Winner</th>
+                        <th>Net House Delta Revenue</th>
+                    </tr>
+                </thead>
+                <tbody id="ledgerStreamRows">
+                    <tr><td colspan="4" style="text-align:center; color:#475569; padding:20px;">Awaiting upcoming automated session logs pipeline stream...</td></tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 
+<!-- Firebase Infrastructure Connector -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, set, update, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, set, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+    // Same Global Realtime Config
     const firebaseConfig = { 
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
         authDomain: "test-eb5e7.firebaseapp.com", 
@@ -107,68 +139,81 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // Fetch and bind financial totals data metrics
+    // 1. Listen to Realtime Global Ledger Accounting nodes
     onValue(ref(db, 'ab_global_analytics'), snap => {
         if(snap.exists()) {
-            let data = snap.val();
-            document.getElementById("totalInflowText").innerText = `₹${parseFloat(data.totalInflow || 0).toFixed(2)}`;
-            document.getElementById("totalOutflowText").innerText = `₹${parseFloat(data.totalOutflow || 0).toFixed(2)}`;
-            document.getElementById("netProfitText").innerText = `₹${parseFloat(data.netHouseProfit || 0).toFixed(2)}`;
+            let record = snap.val();
+            document.getElementById("txtTotalInflow").innerText = `₹${parseFloat(record.totalInflow || 0).toFixed(2)}`;
+            document.getElementById("txtTotalOutflow").innerText = `₹${parseFloat(record.totalOutflow || 0).toFixed(2)}`;
+            
+            let netHouseGains = parseFloat(record.netHouseProfit || 0);
+            const profitLabel = document.getElementById("txtNetProfit");
+            profitLabel.innerText = `₹${netHouseGains.toFixed(2)}`;
+            profitLabel.style.color = netHouseGains >= 0 ? "#10b981" : "#f43f5e";
         }
     });
 
-    // Sync input components values with historical configuration data states
+    // 2. Sync Limit Parameter Configurations
     onValue(ref(db, 'ab_game_config'), snap => {
         if(snap.exists()){
-            let conf = snap.val();
-            document.getElementById("cfgMinBet").value = conf.minBet || 10;
-            document.getElementById("cfgMaxBet").value = conf.maxBet || 5000;
+            let rules = snap.val();
+            document.getElementById("inputMinBet").value = rules.minBet || 10;
+            document.getElementById("inputMaxBet").value = rules.maxBet || 5000;
         }
     });
 
+    // 3. Keep Track of Active Cheat Signal pipeline state
     onValue(ref(db, 'ab_admin_force_signal'), snap => {
-        document.getElementById("activeOverrideSignal").innerText = snap.val() || "AUTO";
+        let activeSignal = snap.val() || "AUTO";
+        const pipelineBadge = document.getElementById("lblActiveSignal");
+        pipelineBadge.innerText = activeSignal;
+        
+        if(activeSignal === 'AUTO') pipelineBadge.style.color = "#fbbf24";
+        else if(activeSignal === 'FORCE_ANDAR') pipelineBadge.style.color = "#38bdf8";
+        else pipelineBadge.style.color = "#ec4899";
     });
 
-    window.saveOperationalConfig = () => {
-        let minB = parseInt(document.getElementById("cfgMinBet").value) || 10;
-        let maxB = parseInt(document.getElementById("cfgMaxBet").value) || 5000;
-        set(ref(db, 'ab_game_config'), { minBet: minB, maxBet: maxB });
-        alert("Policy structural parameters changed successfully!");
+    // Save Action Trigger function handlers
+    window.updateRiskConfigRules = () => {
+        let minAmount = parseInt(document.getElementById("inputMinBet").value) || 10;
+        let maxAmount = parseInt(document.getElementById("inputMaxBet").value) || 5000;
+        
+        set(ref(db, 'ab_game_config'), { minBet: minAmount, maxBet: maxAmount });
+        alert("Configuration policies successfully synchronized to the cloud system!");
     };
 
-    window.sendForceSignal = (signal) => {
-        set(ref(db, 'ab_admin_force_signal'), signal);
-        alert(`Operational Intercept forced into state: ${signal}`);
+    window.dispatchForceIntercept = (targetStateSignal) => {
+        set(ref(db, 'ab_admin_force_signal'), targetStateSignal);
+        alert(`System Intercept strictly routed into target state: ${targetStateSignal}`);
     };
 
-    // Render historical session logs elements inside table layout view
-    const queryStream = query(ref(db, 'ab_user_activity_stream'), limitToLast(15));
-    onValue(queryStream, snap => {
-        const tbody = document.getElementById("adminLedgerStreamRows");
-        tbody.innerHTML = "";
+    // 4. Render Transactional Streams in reverse order
+    const queryPipelineLogs = query(ref(db, 'ab_user_activity_stream'), limitToLast(15));
+    onValue(queryPipelineLogs, snap => {
+        const targetBody = document.getElementById("ledgerStreamRows");
+        targetBody.innerHTML = "";
         
         if(!snap.exists()) {
-            tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#475569;">No database tracking records reported inside current nodes.</td></tr>`;
+            targetBody.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#475569; padding:20px;">No operational logs saved inside database nodes yet.</td></tr>`;
             return;
         }
 
-        let inverseHistoryStack = [];
-        snap.forEach(child => { inverseHistoryStack.unshift(child.val()); });
+        let lifoDataStack = [];
+        snap.forEach(element => { lifoDataStack.unshift(element.val()); });
 
-        inverseHistoryStack.forEach(log => {
-            let directNetGain = parseFloat(log.stake || 0) - parseFloat(log.payout || 0);
-            let colorMarkup = directNetGain >= 0 ? 'color:#10b981; font-weight:700;' : 'color:#f43f5e; font-weight:700;';
+        lifoDataStack.forEach(sessionLog => {
+            let sessionMarginDelta = parseFloat(sessionLog.stake || 0) - parseFloat(sessionLog.payout || 0);
+            let valueColorStyle = sessionMarginDelta >= 0 ? 'color:#10b981; font-weight:bold;' : 'color:#f43f5e; font-weight:bold;';
             
-            let tr = `
+            let rowLayout = `
                 <tr>
-                    <td style="font-family:monospace; color:#38bdf8;">${log.uid}</td>
-                    <td>₹${parseFloat(log.stake || 0).toFixed(2)}</td>
-                    <td style="color:#fbbf24; font-weight:bold;">${log.winningSide}</td>
-                    <td style="${colorMarkup}">₹${directNetGain.toFixed(2)}</td>
+                    <td style="font-family:monospace; color:#38bdf8; font-weight:600;">${sessionLog.uid}</td>
+                    <td>₹${parseFloat(sessionLog.stake || 0).toFixed(2)}</td>
+                    <td style="color:#fbbf24; font-weight:700;">${sessionLog.winningSide}</td>
+                    <td style="${valueColorStyle}">₹${sessionMarginDelta.toFixed(2)}</td>
                 </tr>
             `;
-            tbody.innerHTML += tr;
+            targetBody.innerHTML += rowLayout;
         });
     });
 </script>
