@@ -126,9 +126,8 @@
 <!-- Firebase Infrastructure Connector -->
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getDatabase, ref, onValue, set, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, onValue, set, update, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-    // Same Global Realtime Config
     const firebaseConfig = { 
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
         authDomain: "test-eb5e7.firebaseapp.com", 
@@ -139,7 +138,7 @@
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
 
-    // 1. Listen to Realtime Global Ledger Accounting nodes
+    // 1. Realtime Global Ledger Monitoring
     onValue(ref(db, 'ab_global_analytics'), snap => {
         if(snap.exists()) {
             let record = snap.val();
@@ -153,7 +152,7 @@
         }
     });
 
-    // 2. Sync Limit Parameter Configurations
+    // 2. Risk Matrix Rule Synchronizer
     onValue(ref(db, 'ab_game_config'), snap => {
         if(snap.exists()){
             let rules = snap.val();
@@ -162,9 +161,14 @@
         }
     });
 
-    // 3. Keep Track of Active Cheat Signal pipeline state
+    // 3. Command Intercept Path Syncing
     onValue(ref(db, 'ab_admin_force_signal'), snap => {
-        let activeSignal = snap.val() || "AUTO";
+        let rawVal = snap.val();
+        let activeSignal = "AUTO";
+        if (rawVal) {
+            activeSignal = typeof rawVal === 'object' ? (rawVal.forcedNumber || "AUTO") : rawVal;
+        }
+        
         const pipelineBadge = document.getElementById("lblActiveSignal");
         pipelineBadge.innerText = activeSignal;
         
@@ -173,21 +177,26 @@
         else pipelineBadge.style.color = "#ec4899";
     });
 
-    // Save Action Trigger function handlers
     window.updateRiskConfigRules = () => {
         let minAmount = parseInt(document.getElementById("inputMinBet").value) || 10;
         let maxAmount = parseInt(document.getElementById("inputMaxBet").value) || 5000;
         
-        set(ref(db, 'ab_game_config'), { minBet: minAmount, maxBet: maxAmount });
-        alert("Configuration policies successfully synchronized to the cloud system!");
+        update(ref(db, 'ab_game_config'), { minBet: minAmount, maxBet: maxAmount }).then(() => {
+            alert("Configuration policies successfully synchronized to the cloud system!");
+        });
     };
 
     window.dispatchForceIntercept = (targetStateSignal) => {
-        set(ref(db, 'ab_admin_force_signal'), targetStateSignal);
-        alert(`System Intercept strictly routed into target state: ${targetStateSignal}`);
+        // Enforces structural integrity that matching engine reads flawlessly
+        set(ref(db, 'ab_admin_force_signal'), {
+            forcedNumber: targetStateSignal,
+            timestamp: Date.now()
+        }).then(() => {
+            alert(`System Intercept strictly routed into target state: ${targetStateSignal}`);
+        });
     };
 
-    // 4. Render Transactional Streams in reverse order
+    // 4. Ledger Session Stack Render
     const queryPipelineLogs = query(ref(db, 'ab_user_activity_stream'), limitToLast(15));
     onValue(queryPipelineLogs, snap => {
         const targetBody = document.getElementById("ledgerStreamRows");
@@ -202,14 +211,16 @@
         snap.forEach(element => { lifoDataStack.unshift(element.val()); });
 
         lifoDataStack.forEach(sessionLog => {
-            let sessionMarginDelta = parseFloat(sessionLog.stake || 0) - parseFloat(sessionLog.payout || 0);
+            let totalStakes = parseFloat(sessionLog.stake || 0);
+            let totalPayouts = parseFloat(sessionLog.payout || 0);
+            let sessionMarginDelta = totalStakes - totalPayouts;
             let valueColorStyle = sessionMarginDelta >= 0 ? 'color:#10b981; font-weight:bold;' : 'color:#f43f5e; font-weight:bold;';
             
             let rowLayout = `
                 <tr>
-                    <td style="font-family:monospace; color:#38bdf8; font-weight:600;">${sessionLog.uid}</td>
-                    <td>₹${parseFloat(sessionLog.stake || 0).toFixed(2)}</td>
-                    <td style="color:#fbbf24; font-weight:700;">${sessionLog.winningSide}</td>
+                    <td style="font-family:monospace; color:#38bdf8; font-weight:600;">${sessionLog.uid || 'N/A'}</td>
+                    <td>₹${totalStakes.toFixed(2)}</td>
+                    <td style="color:#fbbf24; font-weight:700;">${sessionLog.winningSide || 'N/A'}</td>
                     <td style="${valueColorStyle}">₹${sessionMarginDelta.toFixed(2)}</td>
                 </tr>
             `;
