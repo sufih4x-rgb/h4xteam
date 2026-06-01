@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Plinko Matrix Control Board</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #060814; color: #f1f5f9; padding: 30px; margin: 0; }
+        .container { max-width: 1000px; margin: auto; }
+        .panel { background: #0e1326; border: 1px solid #1d2846; padding: 25px; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.4); }
+        .flex-row { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+        .stat-card { background: #161f38; padding: 20px; border-radius: 12px; border: 1px solid #23315a; text-align: center; min-width: 180px; flex: 1; }
+        .stat-val { font-size: 28px; font-weight: 800; margin-top: 5px; }
+        
+        button { padding: 12px 24px; font-weight: 700; border-radius: 10px; cursor: pointer; border: none; font-size: 14px; transition: 0.2s; }
+        .toggle-btn { background: #f59e0b; color: #000; font-size: 15px; }
+        .force-btn { background: #e11d48; color: white; margin: 5px; }
+        .force-btn:active { transform: scale(0.95); }
+        input { padding: 12px; width: 120px; background: #161f38; border: 1px solid #23315a; color: #fff; border-radius: 8px; font-size:16px; text-align:center; outline:none; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2 style="color:#6366f1; margin-top:0; font-size: 32px; font-weight: 800;">Plinko Algorithmic Control Engine</h2>
+
+    <!-- Operational Platform Profit Log Counters Dashboard -->
+    <div class="panel flex-row" style="border-left: 5px solid #6366f1;">
+        <div class="stat-card">
+            <div style="font-size:11px; color:#94a3b8; font-weight:700; text-transform:uppercase;">Total Bet Capital Received</div>
+            <div class="stat-val" id="total-inflow-view" style="color:#38bdf8;">₹0.00</div>
+        </div>
+        <div class="stat-card">
+            <div style="font-size:11px; color:#94a3b8; font-weight:700; text-transform:uppercase;">Total Payouts Returned</div>
+            <div class="stat-val" id="total-outflow-view" style="color:#f43f5e;">₹0.00</div>
+        </div>
+        <div class="stat-card">
+            <div style="font-size:11px; color:#94a3b8; font-weight:700; text-transform:uppercase;">Net System Profit/Loss Margins</div>
+            <div class="stat-val" id="net-profit-view" style="color:#10b981;">₹0.00</div>
+        </div>
+    </div>
+
+    <!-- Threshold Constraint Parameters Interface -->
+    <div class="panel flex-row">
+        <div>
+            <h3 style="margin:0; font-size:18px; color: #38bdf8;">Plinko Board Boundary Parameters</h3>
+            <p style="margin:4px 0 0 0; font-size:12px; color:#94a3b8;">Configures maximum allowed stake limits vectors instantly.</p>
+        </div>
+        <div>
+            <label style="font-size:14px;">Min Limit: </label><input type="number" id="minBet" value="10">
+            <label style="margin-left:15px; font-size:14px;">Max Limit: </label><input type="number" id="maxBet" value="5000">
+            <button style="background:#10b981; color:#060814; margin-left:15px;" onclick="savePlatformLimits()">Commit Thresholds</button>
+        </div>
+    </div>
+
+    <!-- Real-time Strategy Modulation Panel Module Matrix -->
+    <div class="panel flex-row">
+        <div>
+            <h3 style="margin:0; font-size:18px; color:#fbbf24;">Profit Protection Automation Guard</h3>
+            <p style="margin:4px 0 0 0; font-size:12px; color:#94a3b8;">AUTO mode executes a mathematical probability filter keeping balls centered for 100% stable platform house margins.</p>
+        </div>
+        <button class="toggle-btn" id="strategy-btn" onclick="togglePlatformStrategy()">AUTO HIGH-RETENTION PROFIT ACTIVE</button>
+    </div>
+
+    <div class="panel">
+        <h3 style="margin-top:0; color:#f43f5e; font-size:18px;">Target Tray Force Overrides Vector Control</h3>
+        <p style="font-size:12px; color:#94a3b8; margin-bottom:15px;">Force the next player ball drop to terminate inside a precise multiplier index coordinate bucket (0 to 7 from Left to Right).</p>
+        <div>
+            <button class="force-btn" onclick="setManualForcedIndex(0)">Bucket 0 (10x)</button>
+            <button class="force-btn" onclick="setManualForcedIndex(1)">Bucket 1 (2x)</button>
+            <button class="force-btn" onclick="setManualForcedIndex(2)">Bucket 2 (0.5x)</button>
+            <button class="force-btn" onclick="setManualForcedIndex(3)">Bucket 3 (0.2x)</button>
+            <button class="force-btn" onclick="setManualForcedIndex(4)">Bucket 4 (0.2x)</button>
+            <button class="force-btn" onclick="setManualForcedIndex(5)">Bucket 5 (0.5x)</button>
+            <button class="force-btn" onclick="setManualForcedIndex(6)">Bucket 6 (2x)</button>
+            <button class="force-btn" onclick="setManualForcedIndex(7)">Bucket 7 (10x)</button>
+        </div>
+        <div style="margin-top:15px; font-weight:700; color:#fbbf24; font-size:14px;">Current Intercept Status: <span id="override-status-view">None (Running Optimization Filter)</span></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
+        authDomain: "test-eb5e7.firebaseapp.com", 
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
+        projectId: "test-eb5e7", 
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let activeStrategyStateString = "AUTO";
+
+    // Continuous Real-time Global P&L Tracking Ledger Sync
+    onValue(ref(db, 'plinko_global_ledger_stream'), snap => {
+        if(snap.exists()) {
+            const data = snap.val();
+            const totalInflow = data.totalInflow || 0;
+            const totalOutflow = data.totalOutflow || 0;
+            const netProfit = data.netProfit || 0;
+
+            document.getElementById("total-inflow-view").innerText = `₹${parseFloat(totalInflow).toFixed(2)}`;
+            document.getElementById("total-outflow-view").innerText = `₹${parseFloat(totalOutflow).toFixed(2)}`;
+            
+            let profitContainer = document.getElementById("net-profit-view");
+            profitContainer.innerText = `₹${parseFloat(netProfit).toFixed(2)}`;
+            profitContainer.style.color = netProfit >= 0 ? "#10b981" : "#f43f5e";
+        }
+    });
+
+    window.savePlatformLimits = () => {
+        let minV = parseInt(document.getElementById("minBet").value);
+        let maxV = parseInt(document.getElementById("maxBet").value);
+        set(ref(db, 'plinko_parameters'), { minBet: minV, maxBet: maxV });
+        alert("Plinko core constraint thresholds updated globally!");
+    };
+
+    window.togglePlatformStrategy = () => {
+        let btn = document.getElementById("strategy-btn");
+        if(activeStrategyStateString === "AUTO") {
+            activeStrategyStateString = "MANUAL";
+            set(ref(db, 'plinko_strategy_mode'), "MANUAL");
+            btn.innerText = "MANUAL INTERVENTION DRIVEN"; btn.style.background = "#e11d48"; btn.style.color = "#fff";
+        } else {
+            activeStrategyStateString = "AUTO";
+            set(ref(db, 'plinko_strategy_mode'), "AUTO");
+            document.getElementById("override-status-view").innerText = "None (Running Optimization Filter)";
+            btn.innerText = "AUTO HIGH-RETENTION PROFIT ACTIVE"; btn.style.background = "#f59e0b"; btn.style.color = "#000";
+        }
+    };
+
+    window.setManualForcedIndex = (idx) => {
+        if(activeStrategyStateString === "AUTO") {
+            alert("Warning! Deactivate AUTO Profit mode guard before setting forced intercepts.");
+            return;
+        }
+        set(ref(db, 'plinko_forced_target'), idx);
+        document.getElementById("override-status-view").innerText = `Enforcing next ball trajectory directly into Bucket Index Block [ ${idx} ]`;
+    };
+</script>
+</body>
+</html>
