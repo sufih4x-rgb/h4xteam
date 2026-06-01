@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>INT Official Game</title>
+    <style>
+        body { font-family: 'Segoe UI', Arial, sans-serif; background: #0c0f1d; color: #fff; margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .vortex-container { max-width: 480px; width: 100%; background: #121829; border: 1px solid #1e293b; border-radius: 24px; padding: 20px; box-shadow: 0 12px 40px rgba(0,0,0,0.6); box-sizing: border-box; }
+        .top-bar { display: flex; justify-content: space-between; align-items: center; background: #1a233a; padding: 10px 15px; border-radius: 12px; margin-bottom: 20px; }
+        .balance-box { font-weight: bold; color: #38bdf8; font-size: 16px; }
+        
+        /* Concentric Vortex Wheel Representation */
+        .wheel-area { display: flex; justify-content: center; align-items: center; margin: 30px 0; position: relative; }
+        .vortex-wheel { width: 260px; height: 260px; border-radius: 50%; background: radial-gradient(circle, #1e293b 20%, #0f172a 70%, #020617 100%); border: 8px solid #334155; display: flex; justify-content: center; align-items: center; position: relative; box-shadow: 0 0 30px rgba(168,85,247,0.2); transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1); }
+        .center-core { width: 70px; height: 70px; background: #1e1b4b; border-radius: 50%; display: flex; justify-content: center; align-items: center; border: 3px solid #a855f7; box-shadow: 0 0 15px #a855f7; font-size: 24px; z-index: 10; }
+        
+        /* Multiplier Badges inside UI */
+        .multiplier-display { font-size: 32px; font-weight: 900; color: #a855f7; margin: 15px 0; text-align: center; text-shadow: 0 0 10px rgba(168,85,247,0.5); }
+        
+        /* Element Betting Grid */
+        .element-grid { display: flex; gap: 10px; margin-top: 20px; }
+        .element-card { flex: 1; padding: 15px 5px; border-radius: 12px; text-align: center; cursor: pointer; border: 2px solid transparent; font-weight: bold; transition: 0.2s; }
+        .elem-fire { background: rgba(239,68,68,0.1); border-color: #ef4444; color: #f87171; }
+        .elem-water { background: rgba(56,189,248,0.1); border-color: #38bdf8; color: #7dd3fc; }
+        .elem-earth { background: rgba(34,197,94,0.1); border-color: #22c55e; color: #4ade80; }
+        .element-card.active { transform: scale(1.05); box-shadow: 0 0 15px currentColor; }
+
+        /* Betting Dashboard */
+        .bet-bar { background: #0f172a; padding: 15px; border-radius: 16px; margin-top: 20px; display: flex; flex-direction: column; gap: 10px; }
+        .flex-row { display: flex; justify-content: space-between; align-items: center; }
+        .bet-input { background: #1e293b; border: 1px solid #334155; padding: 10px; border-radius: 8px; color: #fff; width: 100px; text-align: center; font-size: 16px; }
+        .btn-launch { background: #a855f7; color: white; border: none; padding: 12px 25px; font-size: 16px; font-weight: bold; border-radius: 8px; cursor: pointer; width: 100%; transition: 0.2s; }
+        .btn-launch:disabled { background: #4b5563; cursor: not-allowed; }
+        
+        .ticker-text { font-size: 13px; color: #64748b; text-align: center; }
+    </style>
+</head>
+<body>
+
+<div class="vortex-container">
+    <!-- Top Meta Details -->
+    <div class="top-bar">
+        <div>
+            <div style="font-size: 11px; color: #94a3b8; font-weight: bold;">VORTEX ID</div>
+            <div id="lblPeriod" style="font-family: monospace; font-weight: bold;">---------</div>
+        </div>
+        <div class="balance-box">Wallet: ₹<span id="lblBalance">1000.00</span></div>
+    </div>
+
+    <!-- Live Phase Info -->
+    <div class="flex-row" style="padding: 0 5px;">
+        <span id="lblPhase" style="color: #a855f7; font-weight: bold; letter-spacing: 1px;">BETTING PHASE</span>
+        <span id="lblTimer" style="font-size: 20px; font-weight: 900; color: #ef4444;">30s</span>
+    </div>
+
+    <!-- Visual Wheel Base -->
+    <div class="wheel-area">
+        <div class="vortex-wheel" id="mainWheel">
+            <div class="center-core" id="wheelCoreIcon">🌀</div>
+        </div>
+    </div>
+
+    <!-- Live Multiplier Outflow Result -->
+    <div class="multiplier-display" id="lblMultiplierResult">--</div>
+
+    <!-- Element Betting Section (Same as image_0a57e6.jpg options) -->
+    <div style="font-size: 12px; color: #94a3b8; font-weight: bold; margin-left: 5px;">CHOOSE TARGET ELEMENT</div>
+    <div class="element-grid">
+        <div class="element-card elem-fire" id="card_FIRE" onclick="selectElement('FIRE')">🔥 FIRE<br><span style="font-size:11px; opacity:0.7;">3.9X</span></div>
+        <div class="element-card elem-water" id="card_WATER" onclick="selectElement('WATER')">💧 WATER<br><span style="font-size:11px; opacity:0.7;">2.5X</span></div>
+        <div class="element-card elem-earth" id="card_EARTH" onclick="selectElement('EARTH')">🟢 EARTH<br><span style="font-size:11px; opacity:0.7;">1.55X</span></div>
+    </div>
+
+    <!-- Control Operations -->
+    <div class="bet-bar">
+        <div class="flex-row">
+            <span style="font-size: 14px; color: #94a3b8;">Bet Amount (INR):</span>
+            <input type="number" class="bet-input" id="numBetAmount" value="10" min="5">
+        </div>
+        <button class="btn-launch" id="btnPlaceBet" onclick="executeBetSubmission()">PLACE BET AMOUNT</button>
+    </div>
+
+    <p class="ticker-text" id="lblStatusMsg">Select an element and place your amount to start.</p>
+</div>
+
+<!-- Firebase Framework Components -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, set, update, increment, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    // Same connected test real database configuration
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
+        authDomain: "test-eb5e7.firebaseapp.com", 
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
+        projectId: "test-eb5e7", 
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    const PHASE_ROUND_TIME = 40; // 30s betting + 10s wheel spinning/payouts
+    let activeElement = "NONE";
+    let activePeriodId = "";
+    let lockState = false;
+    let userBalance = 1000.00;
+
+    // 1. Core Clock Core Daemon (Lazy Automation Engine)
+    async function tickPulseEngine() {
+        const now = Date.now();
+        const stateSnap = await get(ref(db, 'vortex_current_state'));
+
+        if (!stateSnap.exists() || !stateSnap.val().startTimestamp) {
+            await deployFreshVortexPeriod(now);
+            return;
+        }
+
+        const state = stateSnap.val();
+        const timePassed = Math.floor((now - state.startTimestamp) / 1000);
+
+        if (timePassed >= PHASE_ROUND_TIME) {
+            await deployFreshVortexPeriod(now);
+        } else {
+            renderUIRoundFrame(timePassed, state);
+        }
+    }
+
+    // 2. Deploy Fresh Multiplier State Node
+    async function deployFreshVortexPeriod(timestamp) {
+        let d = new Date();
+        let ymd = d.getFullYear() + String(d.getMonth()+1).padStart(2,'0') + String(d.getDate()).padStart(2,'0');
+        let seed = String(Math.floor(timestamp / 1000)).slice(-4);
+        let nextPeriodKey = "VTX-" + ymd + "-" + seed;
+
+        const currentSnap = await get(ref(db, 'vortex_current_state'));
+        if (currentSnap.exists()) {
+            let lastPeriod = currentSnap.val().periodId;
+            if (lastPeriod) {
+                // Calculate safest house edge outcome for previous round
+                let dynamicOutcome = await processSmartHouseVortexOutcome(lastPeriod);
+                await set(ref(db, 'vortex_current_state/outcomeDetails'), dynamicOutcome);
+            }
+        }
+
+        // Initialize fresh empty pools
+        await set(ref(db, `vortex_live_pools/${nextPeriodKey}`), {
+            FIRE: { totalAmount: 0 },
+            WATER: { totalAmount: 0 },
+            EARTH: { totalAmount: 0 }
+        });
+
+        let freshState = {
+            periodId: nextPeriodKey,
+            startTimestamp: timestamp,
+            phase: "BETTING"
+        };
+        await set(ref(db, 'vortex_current_state'), freshState);
+        renderUIRoundFrame(0, freshState);
+    }
+
+    // 3. Smart Risk Profit Guard Logic (House Edge System)
+    async function processSmartHouseVortexOutcome(periodId) {
+        const poolSnap = await get(ref(db, `vortex_live_pools/${periodId}`));
+        let fPool = 0, wPool = 0, ePool = 0;
+
+        if (poolSnap.exists()) {
+            let pData = poolSnap.val();
+            fPool = parseInt(pData.FIRE?.totalAmount || 0);
+            wPool = parseInt(pData.WATER?.totalAmount || 0);
+            ePool = parseInt(pData.EARTH?.totalAmount || 0);
+        }
+
+        // Check Admin Override Signals
+        const cmdSnap = await get(ref(db, 'vortex_admin_signal'));
+        let signal = cmdSnap.val() || "AUTO";
+        let winnerElement = "EARTH";
+
+        if (signal === "FORCE_FIRE") winnerElement = "FIRE";
+        else if (signal === "FORCE_WATER") winnerElement = "WATER";
+        else if (signal === "FORCE_EARTH") winnerElement = "EARTH";
+        else {
+            // Smart Guard Risk Optimization (Wins side with lowest liability payout multiplier)
+            let fireLiability = fPool * 3.9;
+            let waterLiability = wPool * 2.5;
+            let earthLiability = ePool * 1.55;
+
+            if (fireLiability <= waterLiability && fireLiability <= earthLiability) winnerElement = "FIRE";
+            else if (waterLiability <= fireLiability && waterLiability <= earthLiability) winnerElement = "WATER";
+            else winnerElement = "EARTH";
+        }
+
+        let multiMap = { "FIRE": 3.9, "WATER": 2.5, "EARTH": 1.55 };
+        let finalMultiplier = multiMap[winnerElement];
+
+        // Ledger Calculations
+        let totalStakes = fPool + wPool + ePool;
+        let winStakes = (winnerElement === "FIRE") ? fPool : (winnerElement === "WATER" ? wPool : ePool);
+        let totalPayout = winStakes * finalMultiplier;
+        let houseNetGain = totalStakes - totalPayout;
+
+        await update(ref(db, 'vortex_analytics'), {
+            totalInflow: increment(totalStakes),
+            totalOutflow: increment(totalPayout),
+            netHouseProfit: increment(houseNetGain)
+        });
+
+        if (totalStakes > 0) {
+            await push(ref(db, 'vortex_activity_stream'), {
+                uid: `VTX_SESSION_${periodId}`,
+                stake: totalStakes,
+                winner: winnerElement,
+                multiplier: finalMultiplier,
+                payout: totalPayout,
+                timestamp: Date.now()
+            });
+        }
+
+        return { winnerElement, finalMultiplier };
+    }
+
+    // 4. Render Interface Update Sequence
+    function renderUIRoundFrame(secondsPassed, state) {
+        activePeriodId = state.periodId;
+        document.getElementById("lblPeriod").innerText = state.periodId;
+
+        let phase = "BETTING";
+        let countdown = 30 - secondsPassed;
+
+        if (secondsPassed >= 30) {
+            phase = "SHOWTIME";
+            countdown = PHASE_ROUND_TIME - secondsPassed;
+            lockState = true;
+            document.getElementById("btnPlaceBet").disabled = true;
+        } else {
+            lockState = false;
+            document.getElementById("btnPlaceBet").disabled = false;
+        }
+
+        document.getElementById("lblPhase").innerText = phase === "BETTING" ? "BETTING WINDOW OPEN" : "WHEEL EVALUATION";
+        document.getElementById("lblPhase").style.color = phase === "BETTING" ? "#38bdf8" : "#e9d5ff";
+        document.getElementById("lblTimer").innerText = countdown + "s";
+
+        if (phase === "SHOWTIME" && state.outcomeDetails) {
+            let out = state.outcomeDetails;
+            document.getElementById("lblMultiplierResult").innerText = out.finalMultiplier + "X";
+            
+            // Visual element icon replacement inside core wheel frame
+            let iconMap = { "FIRE": "🔥", "WATER": "💧", "EARTH": "🟢" };
+            document.getElementById("wheelCoreIcon").innerText = iconMap[out.winnerElement];
+            
+            // Animate spinning transformation wheel style
+            document.getElementById("mainWheel").style.transform = `rotate(${secondsPassed * 180}deg)`;
+            document.getElementById("lblStatusMsg").innerText = `Result Resolved! Winning Element: ${out.winnerElement}`;
+        } else {
+            // Clear layout frames for incoming fresh sessions
+            document.getElementById("lblMultiplierResult").innerText = "--";
+            document.getElementById("wheelCoreIcon").innerText = "🌀";
+            document.getElementById("mainWheel").style.transform = "rotate(0deg)";
+            if(phase === "BETTING") {
+                document.getElementById("lblStatusMsg").innerText = "Select target element asset & submit stake.";
+            }
+        }
+    }
+
+    // 5. Betting Selection Triggers
+    window.selectElement = (elementName) => {
+        if (lockState) return;
+        activeElement = elementName;
+        
+        document.querySelectorAll('.element-card').forEach(el => el.classList.remove('active'));
+        document.getElementById(`card_${elementName}`).classList.add('active');
+    };
+
+    window.executeBetSubmission = async () => {
+        if (lockState) { alert("Bets locked for this session round!"); return; }
+        if (activeElement === "NONE") { alert("Please select a target element asset first!"); return; }
+
+        let stakeValue = parseInt(document.getElementById("numBetAmount").value) || 0;
+        if (stakeValue < 5) { alert("Minimum required bet amount is ₹5"); return; }
+        if (stakeValue > userBalance) { alert("Insufficient funds inside wallet!"); return; }
+
+        userBalance -= stakeValue;
+        document.getElementById("lblBalance").innerText = userBalance.toFixed(2);
+
+        // Directly increment target path inside realtime database tree configuration
+        await update(ref(db, `vortex_live_pools/${activePeriodId}/${activeElement}`), {
+            totalAmount: increment(stakeValue)
+        });
+
+        document.getElementById("lblStatusMsg").innerText = `✅ Registered ₹${stakeValue} successfully on ${activeElement}!`;
+    };
+
+    // Keep active interval threads running safely
+    setInterval(tickPulseEngine, 1000);
+</script>
+</body>
+</html>
