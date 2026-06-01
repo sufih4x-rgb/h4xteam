@@ -1,1 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>DOT GAMES | Control Center Platform</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; background: #0b0f19; color: #f1f5f9; padding: 25px; margin: 0; }
+        .wrapper { max-width: 1100px; margin: auto; }
+        .panel { background: #111827; border: 1px solid #1f2937; padding: 25px; border-radius: 18px; margin-bottom: 22px; box-shadow: 0 10px 30px rgba(0,0,0,0.25); }
+        .flex-row { display: flex; justify-content: space-between; align-items: center; gap: 20px; flex-wrap: wrap; }
+        .card { background: #1f2937; padding: 15px 25px; border-radius: 14px; border: 1px solid #374151; text-align: center; min-width: 150px; }
+        .card-val { font-size: 26px; font-weight: 800; margin-top: 5px; color: #10b981; }
+        .pool-badge { background: #1f2937; padding: 12px 18px; border-radius: 10px; text-align: center; border: 1px solid #374151; min-width: 110px; }
+        button { padding: 12px 22px; font-weight: 700; border-radius: 10px; cursor: pointer; border: none; font-size: 14px; transition: all 0.2s; }
+        .toggle-btn { background: #f59e0b; color: #000; font-size: 15px; }
+        .force-btn { background: #3b82f6; color: white; margin: 4px; border: 1px solid #2563eb; }
+        input { padding: 12px; width: 130px; background: #1f2937; border: 1px solid #374151; color: #fff; border-radius: 8px; font-size:15px; text-align:center; }
+        .users-table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 14px; }
+        .users-table th, .users-table td { padding: 12px; text-align: left; border-bottom: 1px solid #1f2937; }
+        .users-table th { background: #1f2937; color: #9ca3af; }
+    </style>
+</head>
+<body>
 
+<div class="wrapper">
+    <h2 style="color:#3b82f6; margin-top:0; font-weight:800; font-size:28px; letter-spacing:-0.5px;">DOT GAMES Core Enterprise Console</h2>
+
+    <div class="panel flex-row" style="border-left: 5px solid #3b82f6;">
+        <div>
+            <h3 style="margin:0; opacity:0.6; font-size:13px; text-transform:uppercase; letter-spacing:0.5px;">Active Syncing Framework:</h3>
+            <h1 style="margin:5px 0 0 0; font-size:30px; color:#3b82f6;" id="adm-period-display">Calculating...</h1>
+        </div>
+        <div class="flex-row">
+            <div class="card">
+                <div style="font-size:11px; color:#9ca3af; font-weight:700;">ONLINE USERS</div>
+                <div class="card-val" id="online-count-view" style="color:#10b981;">0</div>
+            </div>
+            <div class="card">
+                <div style="font-size:11px; color:#9ca3af; font-weight:700;">TOTAL P&L METRICS</div>
+                <div class="card-val" id="net-profit-view" style="color:#fbbf24;">₹0.00</div>
+            </div>
+            <div class="card">
+                <div style="font-size:11px; color:#9ca3af; font-weight:700;">CLOCK STATUS</div>
+                <div class="card-val" id="adm-seconds-display" style="color:#ef476f; font-size:28px;">00s</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3 style="margin-top:0; color:#10b981;">Live Current Capital Investment Pool Streams</h3>
+        <div class="flex-row" id="live-pools-view-box" style="justify-content: flex-start; gap:12px;">
+            <div style="color:#6b7280; font-size:14px;">Awaiting active selection entries from live client nodes...</div>
+        </div>
+    </div>
+
+    <div class="panel">
+        <h3 style="margin-top:0; color:#60a5fa;">Realtime Active Users Profile Metrics Ledger</h3>
+        <table class="users-table">
+            <thead><tr><th>Session UID Reference</th><th>User Identity Profile Name</th><th>Current Activity Action Status</th></tr></thead>
+            <tbody id="live-users-activity-rows"><tr><td colspan="3" style="color:#6b7280;">No active player nodes mapped.</td></tr></tbody>
+        </table>
+    </div>
+
+    <div class="panel flex-row">
+        <div>
+            <h3 style="margin:0; font-size:16px;">Gate Boundary Operational Settings</h3>
+            <p style="margin:4px 0 0 0; font-size:12px; color:#9ca3af;">Configures programmatic bet caps constraints variables inside user interfaces.</p>
+        </div>
+        <div>
+            <label style="font-size:14px;">Min Bet: </label><input type="number" id="minBetInp" value="10">
+            <label style="margin-left:15px; font-size:14px;">Max Bet: </label><input type="number" id="maxBetInp" value="10000">
+            <button style="background:#10b981; color:#0b0f19; margin-left:15px;" onclick="commitGateParameters()">Update Gate</button>
+        </div>
+    </div>
+
+    <div class="panel flex-row">
+        <div>
+            <h3 style="margin:0; font-size:16px;">Risk Automation Selection Mitigation Protocols</h3>
+            <p style="margin:4px 0 0 0; font-size:12px; color:#9ca3af;">AUTO MODE automatically shifts results to paths yielding maximum financial margins for admin balance.</p>
+        </div>
+        <button class="toggle-btn" id="adm-strategy-toggle" onclick="toggleStrategyProtocol()">AUTO PROFIT MODE ENFORCED</button>
+    </div>
+
+    <div class="panel">
+        <h3 style="margin-top:0; color:#60a5fa;">Forced Overrides Target Vectors</h3>
+        <div style="margin-bottom:15px;">
+            <script>
+                for(let i=0; i<=9; i++) {
+                    document.write(`<button class="force-btn" onclick="assignForcedVectorTarget(${i})">Force Draw ${i}</button>`);
+                }
+            </script>
+        </div>
+        <div style="font-size:14px; font-weight:700; color:#fbbf24;">Target Outcome State: <span id="target-override-view">None (Auto Profit Active)</span></div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set, remove, update } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
+        authDomain: "test-eb5e7.firebaseapp.com", 
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
+        projectId: "test-eb5e7", 
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let currentCalculatedPeriodSequence = "";
+    let systemStrategyPolicy = "AUTO";
+    let targetedOverrideIndex = null;
+    let localPoolDataCache = {};
+    let runningSystemCumulativeProfit = 0;
+
+    const gameIndexMatrixRules = {
+        0:{c:['Red','Violet'],s:'Small'}, 1:{c:['Green'],s:'Small'}, 2:{c:['Red'],s:'Small'},
+        3:{c:['Green'],s:'Small'}, 4:{c:['Red'],s:'Small'}, 5:{c:['Green','Violet'],s:'Big'},
+        6:{c:['Red'],s:'Big'}, 7:{c:['Green'],s:'Big'}, 8:{c:['Red'],s:'Big'}, 9:{c:['Green'],s:'Big'}
+    };
+
+    // Calculate absolute clock synchronizations (Prevents timer modification drops on updates)
+    function executeServerClockHeartbeat() {
+        setInterval(() => {
+            const timeObj = new Date();
+            const elapsedSecondsThisMinute = timeObj.getSeconds();
+            const calculatedTimeLeft = 60 - elapsedSecondsThisMinute;
+
+            // Generate absolute period format matching YYYYMMDD + Absolute daily runtime minute stamp
+            const yyyy = timeObj.getFullYear();
+            const mm = String(timeObj.getMonth() + 1).padStart(2, '0');
+            const dd = String(timeObj.getDate()).padStart(2, '0');
+            const minuteStampSequence = String((timeObj.getHours() * 60) + timeObj.getMinutes() + 1).padStart(4, '0');
+            
+            const constructedPeriodIDStr = `${yyyy}${mm}${dd}${minuteStampSequence}`;
+
+            // Handle transition frames smoothly
+            if (currentCalculatedPeriodSequence !== "" && constructedPeriodIDStr !== currentCalculatedPeriodSequence && calculatedTimeLeft === 60) {
+                evaluateAndDrawPeriodOutcome();
+            }
+
+            currentCalculatedPeriodSequence = constructedPeriodIDStr;
+
+            // Transmit calculated timing parameters over master tracking node instances
+            set(ref(db, 'server_synchronization_state'), {
+                period: currentCalculatedPeriodSequence,
+                timeLeft: calculatedTimeLeft === 60 ? 0 : calculatedTimeLeft
+            });
+
+            document.getElementById("adm-period-display").innerText = currentCalculatedPeriodSequence;
+            document.getElementById("adm-seconds-display").innerText = (calculatedTimeLeft === 60 ? 0 : calculatedTimeLeft) + "s";
+        }, 1000);
+    }
+
+    // Monitor active real-time profiles
+    onValue(ref(db, 'online_registry'), snap => {
+        const uCount = snap.numChildren();
+        document.getElementById("online-count-view").innerText = uCount;
+        
+        let body = document.getElementById("live-users-activity-rows");
+        body.innerHTML = "";
+        if(!snap.exists()) { body.innerHTML = `<tr><td colspan="3" style="color:#6b7280;">No active player nodes mapped.</td></tr>`; return; }
+        
+        snap.forEach(child => {
+            const userKey = child.key; const uData = child.val();
+            body.innerHTML += `<tr><td><code>${userKey}</code></td><td><b>${uData.name || 'Anonymous'}</b></td><td><span style="color:#3b82f6; font-weight:700;">${uData.status || 'Active IDLE'}</span></td></tr>`;
+        });
+    });
+
+    window.toggleStrategyProtocol = () => {
+        let btn = document.getElementById("adm-strategy-toggle");
+        if(systemStrategyPolicy === "AUTO") {
+            systemStrategyPolicy = "MANUAL";
+            btn.innerText = "MANUAL INTERVENTIONS ENFORCED"; btn.style.background = "#ef476f";
+        } else {
+            systemStrategyPolicy = "AUTO"; targetedOverrideIndex = null;
+            document.getElementById("target-override-view").innerText = "None (Auto Profit Active)";
+            btn.innerText = "AUTO PROFIT MODE ENFORCED"; btn.style.background = "#f59e0b";
+        }
+    };
+
+    window.assignForcedVectorTarget = (num) => {
+        if(systemStrategyPolicy === "AUTO") { alert("Deactivate AUTO Selection strategy first!"); return; }
+        targetedOverrideIndex = num;
+        document.getElementById("target-override-view").innerText = `Forcing Draw Target [ ${num} ] to resolve.`;
+    };
+
+    window.commitGateParameters = () => {
+        let minV = parseInt(document.getElementById("minBetInp").value);
+        let maxV = parseInt(document.getElementById("maxBetInp").value);
+        set(ref(db, 'gate_parameters'), { minBet: minV, maxBet: maxV });
+        alert("Gate limits successfully integrated globally!");
+    };
+
+    // Keep stream tracking active
+    onValue(ref(db, 'active_investment_pools'), snap => {
+        let activePoolMap = snap.child(currentCalculatedPeriodSequence).val() || {};
+        localPoolDataCache = activePoolMap;
+        
+        let aggregateStakesObj = { 'Red':0,'Green':0,'Violet':0,'Big':0,'Small':0,'0':0,'1':0,'2':0,'3':0,'4':0,'5':0,'6':0,'7':0,'8':0,'9':0 };
+        Object.keys(activePoolMap).forEach(uid => {
+            Object.keys(activePoolMap[uid]).forEach(k => { aggregateStakesObj[k] += activePoolMap[uid][k]; });
+        });
+
+        let view = document.getElementById("live-pools-view-box"); view.innerHTML = "";
+        let elementsPresent = 0;
+        Object.keys(aggregateStakesObj).forEach(k => {
+            if(aggregateStakesObj[k] > 0) {
+                elementsPresent++;
+                view.innerHTML += `<div class="pool-badge">📦 <b>${k}</b><br><span style="color:#10b981; font-weight:700;">₹${aggregateStakesObj[k]}</span></div>`;
+            }
+        });
+        if(elementsPresent === 0) view.innerHTML = `<div style="color:#6b7280; font-size:14px;">Awaiting active selection entries from live client nodes...</div>`;
+    });
+
+    // Evaluate payouts optimally on execution loop intervals
+    function evaluateAndDrawPeriodOutcome() {
+        let assignedResolutionIndex = 0;
+        let cumulativeInflowCapital = 0;
+        let designatedOutflowValue = 0;
+
+        Object.keys(localPoolDataCache).forEach(uid => {
+            Object.keys(localPoolDataCache[uid]).forEach(k => { cumulativeInflowCapital += localPoolDataCache[uid][k]; });
+        });
+
+        if(systemStrategyPolicy === "MANUAL" && targetedOverrideIndex !== null) {
+            assignedResolutionIndex = targetedOverrideIndex;
+            Object.keys(localPoolDataCache).forEach(uid => {
+                Object.keys(localPoolDataCache[uid]).forEach(betKey => {
+                    let amt = localPoolDataCache[uid][betKey];
+                    if(betKey === assignedResolutionIndex.toString()) designatedOutflowValue += (amt * 8.8);
+                    else if(betKey === gameIndexMatrixRules[assignedResolutionIndex].s) designatedOutflowValue += (amt * 1.92);
+                    else if(gameIndexMatrixRules[assignedResolutionIndex].c.includes(betKey)) {
+                        designatedOutflowValue += (amt * (betKey === 'Violet' ? 4.5 : 1.92));
+                    }
+                });
+            });
+        } else {
+            // Run analysis across vector index ranges [0-9] to match maximum profit profiles
+            let highestCalculatedNetYield = -99999999;
+            let bestTargetProfitIndex = 0;
+            let bestTargetOutflow = 0;
+
+            for(let i=0; i<=9; i++) {
+                let scenarioOutflow = 0;
+                Object.keys(localPoolDataCache).forEach(uid => {
+                    Object.keys(localPoolDataCache[uid]).forEach(betKey => {
+                        let amt = localPoolDataCache[uid][betKey];
+                        if(betKey === i.toString()) scenarioOutflow += (amt * 8.8);
+                        else if(betKey === gameIndexMatrixRules[i].s) scenarioOutflow += (amt * 1.92);
+                        else if(gameIndexMatrixRules[i].c.includes(betKey)) {
+                            scenarioOutflow += (amt * (betKey === 'Violet' ? 4.5 : 1.92));
+                        }
+                    });
+                });
+
+                let potentialNetYield = cumulativeInflowCapital - scenarioOutflow;
+                if(potentialNetYield > highestCalculatedNetYield) {
+                    highestCalculatedNetYield = potentialNetYield;
+                    bestTargetProfitIndex = i;
+                    bestTargetOutflow = scenarioOutflow;
+                }
+            }
+            assignedResolutionIndex = bestTargetProfitIndex;
+            designatedOutflowValue = bestTargetOutflow;
+        }
+
+        // Track financial records updates
+        let roundYieldResult = cumulativeInflowCapital - designatedOutflowValue;
+        runningSystemCumulativeProfit += roundYieldResult;
+        document.getElementById("net-profit-view").innerText = `₹${runningSystemCumulativeProfit.toFixed(2)}`;
+
+        // Transmit structure resolution objects directly into data nodes
+        let drawResultObject = {
+            period: currentCalculatedPeriodSequence,
+            number: assignedResolutionIndex,
+            size: gameIndexMatrixRules[assignedResolutionIndex].s,
+            color: gameIndexMatrixRules[assignedResolutionIndex].c.join('-')
+        };
+
+        set(ref(db, `wingo_historical_register/${currentCalculatedPeriodSequence}`), drawResultObject);
+        remove(ref(db, `active_investment_pools/${currentCalculatedPeriodSequence}`));
+
+        targetedOverrideIndex = null;
+        document.getElementById("target-override-view").innerText = "None (Auto Profit Active)";
+    }
+
+    window.onload = () => { executeServerClockHeartbeat(); };
+</script>
+</body>
+</html>
