@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vortex - Ultimate Control & Risk Panel</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: #05070f; color: #e2e8f0; padding: 25px; margin: 0; }
+        .wrapper { max-width: 1000px; margin: auto; display: flex; flex-direction: column; gap: 22px; }
+        .glass-card { background: #0d1222; border: 1px solid #1e293b; padding: 20px; border-radius: 14px; box-shadow: 0 4px 25px rgba(0,0,0,0.5); }
+        h2, h3 { margin: 0 0 15px 0; font-weight: 800; }
+        
+        /* Analytics Grid Layout */
+        .analytics-grid { display: flex; gap: 15px; flex-wrap: wrap; }
+        .box { flex: 1; background: #131a30; padding: 20px; border-radius: 10px; border: 1px solid #22314d; text-align: center; min-width: 200px; }
+        .box-title { font-size: 11px; color: #94a3b8; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; }
+        .box-val { font-size: 26px; font-weight: 900; margin-top: 5px; }
+
+        /* Direct Signal Triggers */
+        .btn-set { padding: 12px 20px; border: none; font-weight: bold; border-radius: 8px; cursor: pointer; text-transform: uppercase; font-size: 12px; transition: 0.2s; }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background: #131a30; border-radius: 8px; overflow: hidden; }
+        th, td { padding: 12px 15px; text-align: left; font-size: 13.5px; border-bottom: 1px solid #1e293b; }
+        th { background: #1e293b; color: #94a3b8; font-size: 11px; text-transform: uppercase; }
+    </style>
+</head>
+<body>
+
+<div class="wrapper">
+    <!-- Branding -->
+    <div>
+        <h2 style="color:#a855f7; margin:0; font-size:26px;">🛡️ VORTEX STRATEGIC GOVERNANCE PANEL</h2>
+        <span style="font-size:12px; color:#475569;">Concentric Multiplier System Monitoring Dashboard</span>
+    </div>
+
+    <!-- Analytics Node Block -->
+    <div class="glass-card" style="border-left: 4px solid #10b981;">
+        <div class="analytics-grid">
+            <div class="box">
+                <div class="box-title">Total Staked Deposits</div>
+                <div class="box-val" id="anInflow" style="color:#38bdf8;">₹0.00</div>
+            </div>
+            <div class="box">
+                <div class="box-title">Total Disbursed Payouts</div>
+                <div class="box-val" id="anOutflow" style="color:#f43f5e;">₹0.00</div>
+            </div>
+            <div class="box">
+                <div class="box-title">Net House Profit Margin</div>
+                <div class="box-val" id="anNet" style="color:#10b981;">₹0.00</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Active Intervention Commands Override -->
+    <div class="glass-card" style="border-left: 4px solid #a855f7;">
+        <h3>Manual Outcome Matrix Intercept</h3>
+        <p style="font-size:12px; color:#64748b; margin-top:-10px; margin-bottom:15px;">Instantly route the next spin result multiplier asset to secure margins or reward targets.</p>
+        
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn-set" style="background:#ef4444; color:white;" onclick="dispatchVortexSignal('FORCE_FIRE')">Force Next Result: FIRE 🔥</button>
+            <button class="btn-set" style="background:#38bdf8; color:#05070f;" onclick="dispatchVortexSignal('FORCE_WATER')">Force Next Result: WATER 💧</button>
+            <button class="btn-set" style="background:#22c55e; color:white;" onclick="dispatchVortexSignal('FORCE_EARTH')">Force Next Result: EARTH 🟢</button>
+            <button class="btn-set" style="background:#4b5563; color:white;" onclick="dispatchVortexSignal('AUTO')">Reset back to Auto Profit Guard Mode 🤖</button>
+        </div>
+
+        <div style="margin-top:15px; font-weight:bold; font-size:14px; color:#94a3b8;">
+            Active Strategy Pipeline State: <span id="lblActiveState" style="color:#fbbf24; background:rgba(251,191,36,0.1); padding:4px 8px; border-radius:4px;">AUTO</span>
+        </div>
+    </div>
+
+    <!-- LIFO Realtime Session Audit Records Ledger -->
+    <div class="glass-card">
+        <h3>Live Session Audit Streams</h3>
+        <table>
+            <thead>
+                <tr>
+                    <th>Vortex Session Round Key</th>
+                    <th>Total Turnover Stack</th>
+                    <th>Calculated Winner Element</th>
+                    <th>Disbursed Multiplier</th>
+                    <th>Net Profit Margin Delta</th>
+                </tr>
+            </thead>
+            <tbody id="auditRows">
+                <tr><td colspan="5" style="text-align:center; color:#475569;">Awaiting live data streams inside active database tree...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Core Management Script -->
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getDatabase, ref, onValue, set, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+    const firebaseConfig = { 
+        apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg", 
+        authDomain: "test-eb5e7.firebaseapp.com", 
+        databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com", 
+        projectId: "test-eb5e7", 
+        appId: "1:366282855653:web:dca7e000f5a22fb11f300c" 
+    };
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    // 1. Live Listen Accounting parameters
+    onValue(ref(db, 'vortex_analytics'), snap => {
+        if (snap.exists()) {
+            let data = snap.val();
+            document.getElementById("anInflow").innerText = `₹${parseFloat(data.totalInflow || 0).toFixed(2)}`;
+            document.getElementById("anOutflow").innerText = `₹${parseFloat(data.totalOutflow || 0).toFixed(2)}`;
+            
+            let net = parseFloat(data.netHouseProfit || 0);
+            document.getElementById("anNet").innerText = `₹${net.toFixed(2)}`;
+            document.getElementById("anNet").style.color = net >= 0 ? "#10b981" : "#f43f5e";
+        }
+    });
+
+    // 2. Monitor Active Override Badges
+    onValue(ref(db, 'vortex_admin_signal'), snap => {
+        document.getElementById("lblActiveState").innerText = snap.val() || "AUTO";
+    });
+
+    window.dispatchVortexSignal = (targetSignal) => {
+        set(ref(db, 'vortex_admin_signal'), targetSignal);
+        alert(`Target operation forced into code trajectory: ${targetSignal}`);
+    };
+
+    // 3. Populate LIFO Streaming Report Table
+    const queryLogs = query(ref(db, 'vortex_activity_stream'), limitToLast(12));
+    onValue(queryLogs, snap => {
+        const tbody = document.getElementById("auditRows");
+        tbody.innerHTML = "";
+
+        if (!snap.exists()) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#475569;">No database session logs reported inside node structure yet.</td></tr>`;
+            return;
+        }
+
+        let lifoList = [];
+        snap.forEach(c => { lifoList.unshift(c.val()); });
+
+        lifoList.forEach(log => {
+            let directNetGain = parseFloat(log.stake || 0) - parseFloat(log.payout || 0);
+            let valueColorStyle = directNetGain >= 0 ? 'color:#10b981; font-weight:bold;' : 'color:#f43f5e; font-weight:bold;';
+            
+            let row = `
+                <tr>
+                    <td style="font-family:monospace; color:#38bdf8; font-weight:600;">${log.uid}</td>
+                    <td>₹${parseFloat(log.stake || 0).toFixed(2)}</td>
+                    <td style="color:#a855f7; font-weight:bold;">${log.winner}</td>
+                    <td><b>${log.multiplier}x</b></td>
+                    <td style="${valueColorStyle}">₹${directNetGain.toFixed(2)}</td>
+                </tr>
+            `;
+            tbody.innerHTML += row;
+        });
+    });
+</script>
+</body>
+</html>
