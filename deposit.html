@@ -3,11 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
 <title>User Deposit Panel</title>
-
 <style>
-
 :root{
     --blue:#2563eb;
     --green:#22c55e;
@@ -15,19 +12,16 @@
     --white:#ffffff;
     --gray:#6b7280;
 }
-
 *{
     margin:0;
     padding:0;
     box-sizing:border-box;
     font-family:'Segoe UI',sans-serif;
 }
-
 body{
     background:#f8fafc;
     padding:20px;
 }
-
 .card{
     max-width:420px;
     margin:auto;
@@ -36,20 +30,17 @@ body{
     padding:20px;
     box-shadow:0 10px 30px rgba(0,0,0,0.08);
 }
-
 h2{
     text-align:center;
     font-size:26px;
     font-weight:800;
     color:#111827;
 }
-
 .sub{
     text-align:center;
     color:#6b7280;
     margin-bottom:15px;
 }
-
 input{
     width:100%;
     padding:15px;
@@ -60,11 +51,9 @@ input{
     font-weight:600;
     outline:none;
 }
-
 input:focus{
     border-color:var(--blue);
 }
-
 button{
     width:100%;
     padding:15px;
@@ -76,19 +65,16 @@ button{
     margin-top:12px;
     cursor:pointer;
 }
-
 #qrBox{
     text-align:center;
     margin-top:15px;
 }
-
 #qrBox img{
     width:240px;
     padding:10px;
     border:1px solid #eee;
     border-radius:20px;
 }
-
 .row{
     background:#fff;
     border:1px solid #eee;
@@ -98,15 +84,12 @@ button{
     display:flex;
     justify-content:space-between;
 }
-
 .status{
     font-weight:800;
 }
-
 .green{color:var(--green);}
 .red{color:var(--red);}
 .blue{color:var(--blue);}
-
 .balance{
     background:#111827;
     color:white;
@@ -115,35 +98,40 @@ button{
     text-align:center;
     margin-bottom:15px;
 }
-
 .balance h3{
     margin:0;
     font-size:14px;
     opacity:0.7;
 }
-
 .balance h1{
     margin:5px 0 0;
     font-size:28px;
 }
-
+.warning-paisa {
+    font-size: 11px;
+    color: #b45309;
+    background: #fffbeb;
+    padding: 10px;
+    border-radius: 10px;
+    margin-top: 8px;
+    border: 1px solid #fef3c7;
+    font-weight: 600;
+}
 </style>
 </head>
-
 <body>
 
 <div class="card">
-
 <h2>Deposit</h2>
 <p class="sub">Add money to your wallet</p>
 
-<!-- BALANCE -->
 <div class="balance">
 <h3>BALANCE</h3>
 <h1>₹<span id="balance">0</span></h1>
 </div>
 
 <input type="number" id="amount" placeholder="Enter Amount" oninput="generateQR()">
+<div id="paisaNotice" class="warning-paisa" style="display:none;"></div>
 
 <div id="qrBox"></div>
 
@@ -153,22 +141,20 @@ button{
 
 <h3 style="margin-top:20px;">History</h3>
 <div id="history"></div>
-
 </div>
 
 <script type="module">
-
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, onValue, push, set, get, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, onValue, push, get, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 
 const firebaseConfig = {
-apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
-authDomain: "test-eb5e7.firebaseapp.com",
-databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
-projectId: "test-eb5e7",
-storageBucket: "test-eb5e7.appspot.com",
-appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
+    apiKey: "AIzaSyAzfvbiqRqsQwBOOIkegxJD09di-S_tfHg",
+    authDomain: "test-eb5e7.firebaseapp.com",
+    databaseURL: "https://test-eb5e7-default-rtdb.firebaseio.com",
+    projectId: "test-eb5e7",
+    storageBucket: "test-eb5e7.appspot.com",
+    appId: "1:366282855653:web:dca7e000f5a22fb11f300c"
 };
 
 const app = initializeApp(firebaseConfig);
@@ -177,102 +163,130 @@ const auth = getAuth(app);
 
 let uid = "";
 let ADMIN_UPI = "";
+let currentPayloadAmount = "0.00";
+let pureBaseAmount = 0;
 
-// AUTH FIX (IMPORTANT)
 onAuthStateChanged(auth,(user)=>{
-if(user){
-uid = user.uid;
-loadData();
-}else{
-location.href = "index.html";
-}
+    if(user){
+        uid = user.uid;
+        loadData();
+    }else{
+        location.href = "index.html";
+    }
 });
 
-// LOAD SETTINGS
 onValue(ref(db,"settings"),(snap)=>{
-if(snap.exists()){
-ADMIN_UPI = snap.val().admin_upi || "";
-}
+    if(snap.exists()){
+        ADMIN_UPI = snap.val().admin_upi || "";
+    }
 });
 
-// BALANCE
 function loadData(){
+    // Wallet Balance Reader
+    onValue(ref(db, `user_wallet/${uid}/balance`),(snap)=>{
+        document.getElementById("balance").innerText = snap.val() || 0;
+    });
 
-onValue(ref(db, `user_wallet/${uid}/balance`),(snap)=>{
-document.getElementById("balance").innerText = snap.val() || 0;
-});
+    // History Matrix Sync
+    onValue(ref(db,"user_requests"),(snap)=>{
+        let html = "";
+        snap.forEach(c=>{
+            const d = c.val();
+            if(d.uid === uid){
+                let color = "blue";
+                if(d.status==="approved") color="green";
+                if(d.status==="rejected") color="red";
+                if(d.status==="expired") color="red";
 
-// HISTORY
-onValue(ref(db,"user_requests"),(snap)=>{
-let html = "";
-
-snap.forEach(c=>{
-const d = c.val();
-
-if(d.uid === uid){
-
-let color = "blue";
-if(d.status==="approved") color="green";
-if(d.status==="rejected") color="red";
-
-html = `
-<div class="row">
-<div>
-<div>₹${d.amount}</div>
-<small>${d.utr}</small>
-</div>
-<div class="status ${color}">
-${d.status.toUpperCase()}
-</div>
-</div>
-` + html;
-
-}
-});
-
-document.getElementById("history").innerHTML = html || "No History";
-});
+                html = `
+                <div class="row">
+                <div>
+                <div>₹${d.payable_amount || d.amount}</div>
+                <small>${d.utr}</small>
+                </div>
+                <div class="status ${color}">
+                ${d.status.toUpperCase()}
+                </div>
+                </div>
+                ` + html;
+            }
+        });
+        document.getElementById("history").innerHTML = html || "No History";
+    });
 }
 
-// QR GENERATE
 window.generateQR = () => {
-let amt = document.getElementById("amount").value;
+    let amt = document.getElementById("amount").value;
+    if(!ADMIN_UPI || !amt || parseFloat(amt) <= 0) {
+        document.getElementById("qrBox").innerHTML = "";
+        document.getElementById("paisaNotice").style.display = "none";
+        return;
+    }
 
-if(!ADMIN_UPI || !amt) return;
+    pureBaseAmount = Math.floor(parseFloat(amt));
+    
+    // Strict Engine: Under 0.50 Paise selection range lock
+    let randomPaise = Math.floor(Math.random() * 50) + 1; 
+    if(randomPaise < 10) randomPaise = "0" + randomPaise;
+    
+    currentPayloadAmount = pureBaseAmount + "." + randomPaise;
 
-let upi = `upi://pay?pa=${ADMIN_UPI}&am=${amt}&cu=INR`;
+    document.getElementById("paisaNotice").innerText = `⚠️ Alert: Please pay exact amount ₹${currentPayloadAmount}. Wallet will credit flat ₹${pureBaseAmount}.`;
+    document.getElementById("paisaNotice").style.display = "block";
 
-document.getElementById("qrBox").innerHTML =
-`<img src="https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(upi)}">`;
+    let upi = `upi://pay?pa=${ADMIN_UPI}&am=${currentPayloadAmount}&cu=INR`;
+    document.getElementById("qrBox").innerHTML = `<img src="https://api.qrserver.com/v1/create-qr-code/?data=${encodeURIComponent(upi)}">`;
 };
 
-// SUBMIT REQUEST
-window.submitRequest = () => {
+window.submitRequest = async () => {
+    let amt = document.getElementById("amount").value;
+    let utr = document.getElementById("utr").value.trim();
 
-let amt = document.getElementById("amount").value;
-let utr = document.getElementById("utr").value;
+    if(!amt || !utr){
+        return alert("Fill all fields");
+    }
+    if(utr.length !== 12 || isNaN(utr)){
+        return alert("Invalid UTR. Must be 12 digits.");
+    }
 
-if(!amt || !utr){
-return alert("Fill all fields");
-}
+    try {
+        // Anti-Fraud Framework: Check if UTR is already recycled
+        const checkLedger = await get(ref(db, "user_requests"));
+        let utrDuplicated = false;
 
-if(utr.length !== 12){
-return alert("Invalid UTR");
-}
+        if (checkLedger.exists()) {
+            checkLedger.forEach(child => {
+                if (child.val().utr === utr) {
+                    utrDuplicated = true;
+                }
+            });
+        }
 
-push(ref(db,"user_requests"),{
-uid: uid,
-amount: amt,
-utr: utr,
-status: "pending",
-time: Date.now()
-});
+        if (utrDuplicated) {
+            return alert("Security Block: This UTR has already been processed or is under investigation.");
+        }
 
-alert("Request Sent");
-document.getElementById("utr").value = "";
+        // Push values safely with structural definitions
+        const trackingRef = push(ref(db,"user_requests"));
+        await set(trackingRef, {
+            uid: uid,
+            amount: pureBaseAmount,                      // Pure coin wallet value
+            payable_amount: currentPayloadAmount,        // Absolute exact bank string
+            utr: utr,
+            status: "pending",
+            time: Date.now()
+        });
+
+        alert("Request Sent Securely. Waiting for bank reconciliation.");
+        document.getElementById("utr").value = "";
+        document.getElementById("amount").value = "";
+        document.getElementById("qrBox").innerHTML = "";
+        document.getElementById("paisaNotice").style.display = "none";
+
+    } catch (err) {
+        alert("Transaction push aborted.");
+    }
 };
-
 </script>
-
 </body>
 </html>
